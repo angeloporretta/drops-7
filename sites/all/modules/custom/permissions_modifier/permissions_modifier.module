@@ -22,7 +22,10 @@ function permissions_modifier_permission() {
   return array(
     'access colorizer' => array(
       'title' => t('Access Colorizer'),
-    )
+    ),
+    'access oa settings' => array(
+      'title' => t('Access Open Atrium Settings'),
+    ),
   );
 }
 
@@ -33,4 +36,11 @@ function permissions_modifier_menu_alter(&$items) {
   
   $items['admin/appearance/colorizer']['access callback'] = 'user_access';
   $items['admin/appearance/colorizer']['access arguments'] = array('access colorizer');
+  
+  $items['admin/openatrium']['access callback'] = 'user_access';
+  $items['admin/openatrium']['access arguments'] = array('access oa settings');
+  
+  $items['admin/openatrium/setting']['access callback'] = 'user_access';
+  $items['admin/openatrium/setting']['access arguments'] = array('access oa settings');
+
 }
