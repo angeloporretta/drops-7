@@ -1,0 +1,6 @@
+name = Impetus Panes
+description = A collection of custom panel panes.
+dependencies[] = panels
+dependencies[] = ctools
+package = custom
+core = 7.x
