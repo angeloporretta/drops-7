@@ -1,0 +1,78 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+ * Implements hook_enable.
+ */
+function user_functionality_toggle_enable() {
+  
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('name', 'permissions_modifier', '=')
+    ->execute();
+}
+
+/**
+ * Implements hook_permission.
+ */
+function user_functionality_toggle_permission() {
+  
+  return array(
+    'toggle user functionality' => array(
+      'title' => t('Toggle Extra User Functionality'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function user_functionality_toggle_menu() {
+  
+  return array(
+    'admin/config/people/extra' => array(
+      'title' => t('Toggle User Settings'),
+      'description' => t('Toggles extra user functionality on or off,'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('user_functionality_toggle_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('toggle user functionality'),
+      'file' => 'user_functionality_toggle_forms.inc',
+      'type' => MENU_NORMAL_ITEM,
+    )
+  );
+}
+
+/**
+ * Implements hook_forms.
+ */
+function user_functionality_toggle_forms($form_id, $args) {
+  
+  return array(
+    'user_functionality_toggle_form' => array(
+      'callback' => 'user_functionality_toggle_render_admin_form',
+    ),
+  );
+}
+
+/**
+ * Implements hook_form_alter.
+ */
+function user_functionality_toggle_form_alter(&$form, &$form_state, $form_id) {
+
+  switch ($form_id) {
+    case 'user_login':
+      
+      if(variable_get('toggle_remember_me', 1) == 0) {
+        unset($form['remember_me']);
+      }
+      
+      if(variable_get('toggle_forgot_password', 1) == 0) {
+        $form['pass']['#description'] = t('The password field is case sensitive.');
+      }
+    break;
+  }
+}
+

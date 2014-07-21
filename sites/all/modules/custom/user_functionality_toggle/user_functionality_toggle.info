@@ -1,0 +1,7 @@
+name = User Functionality Toggle
+description = Optionally adds or removes some functionality provided by the user module and related modules.
+dependencies[] = user
+dependencies[] = logintoboggan
+dependencies[] = remember_me
+package = custom
+core = 7.x
