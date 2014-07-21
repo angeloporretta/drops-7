@@ -1,0 +1,4 @@
+name = Permissions Modifier
+description = Modifies the permissions of existing contributed modules to make things a little more secure.
+core = 7.x
+package = custom

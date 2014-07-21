@@ -1,0 +1,36 @@
+<?php
+/**
+ * @file: Core module code.
+ */
+
+/**
+ * Implements hook_enable.
+ */
+function permissions_modifier_enable() {
+  
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('name', 'permissions_modifier', '=')
+    ->execute();
+}
+
+/**
+ * Implements hook_permission.
+ */
+function permissions_modifier_permission() {
+  
+  return array(
+    'access colorizer' => array(
+      'title' => t('Access Colorizer'),
+    )
+  );
+}
+
+/**
+ * Implements hook_menu_alter.
+ */
+function permissions_modifier_menu_alter(&$items) {
+  
+  $items['admin/appearance/colorizer']['access callback'] = 'user_access';
+  $items['admin/appearance/colorizer']['access arguments'] = array('access colorizer');
+}
