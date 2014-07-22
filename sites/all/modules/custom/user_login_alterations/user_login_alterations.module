@@ -1,0 +1,117 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_enable.
+ */
+function user_login_alterations_enable() {
+  
+  db_update('system')
+    ->fields(array('weight' => 50))
+    ->condition('name', 'user_login_alterations', '=')
+    ->execute();
+}
+
+/**
+ * Implements hook_form_alter.
+ */
+function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
+
+  switch ($form_id) {
+    case 'user_login':
+      
+      $form['name']['#title'] = t('Email');
+      unset($form['name']['#description']);
+      
+      // Replace a validation handler.
+      $validation_handler = array_search('user_login_final_validate', $form['#validate']);
+      if ($validation_handler !== FALSE) {
+        unset($form['#validate'][$validation_handler]);
+        $form['#validate'][] = 'user_login_alterations_login_final_validate';
+      }
+    break;
+    case 'user_pass':
+      
+      drupal_set_title(t('Email Me Access'));
+      $form['preamble'] = array(
+        '#type' => 'markup',
+        '#markup' =>  t('Please use the form below to email yourself access to the portal.') .
+                      '<br/>' .
+                      t('If you cannot remember your portal email, please email <strong>support@impetushealthcare.com</strong>'),
+        '#weight' => -50,
+      );
+      $form['name']['#title'] = t('My Email Address');
+      $form['name']['#description'] = t('Use your email address that is registered with this portal.') .
+                                      '<br/>' .
+                                      t('Typically it will be in the format "myname@mycompany.com"');
+      $form['actions']['submit']['#value'] = t('Email me Access');
+      
+      // Replace a validation handler.
+      $validation_handler = array_search('user_pass_validate', $form['#validate']);
+      if ($validation_handler !== FALSE) {
+        unset($form['#validate'][$validation_handler]);
+        $form['#validate'][] = 'user_login_alterations_pass_validate';
+      }
+    break;
+  }
+}
+
+
+/**
+ * Validation Handler.
+ * Replaces the default validation handler for user logins. 
+ * It is mostly the core validation handler (user_login_final_validate) found in the user module.
+ */
+function user_login_alterations_login_final_validate($form, &$form_state) {
+  if (empty($form_state['uid'])) {
+    // Always register an IP-based failed login event.
+    flood_register_event('failed_login_attempt_ip', variable_get('user_failed_login_ip_window', 3600));
+    // Register a per-user failed login event.
+    if (isset($form_state['flood_control_user_identifier'])) {
+      flood_register_event('failed_login_attempt_user', variable_get('user_failed_login_user_window', 21600), $form_state['flood_control_user_identifier']);
+    }
+
+    if (isset($form_state['flood_control_triggered'])) {
+      if ($form_state['flood_control_triggered'] == 'user') {
+        form_set_error('name', format_plural(variable_get('user_failed_login_user_limit', 5), 'Sorry, there has been more than one failed login attempt for this account. It is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', 'Sorry, there have been more than @count failed login attempts for this account. It is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+      }
+      else {
+        // We did not find a uid, so the limit is IP-based.
+        form_set_error('name', t('Sorry, too many failed login attempts from your IP address. This IP address is temporarily blocked. Try again later or <a href="@url">request a new password</a>.', array('@url' => url('user/password'))));
+      }
+    }
+    else {
+      form_set_error('name', t('Sorry, it seems that the credentials you provided are incorrect. If you cannot log in then please <a href="@password">follow this link </a> get further help.', array('@password' => url('user/password', array('query' => array('name' => $form_state['values']['name']))))));
+      watchdog('user', 'Login attempt failed for %user.', array('%user' => $form_state['values']['name']));
+    }
+  }
+  elseif (isset($form_state['flood_control_user_identifier'])) {
+    // Clear past failures for this user so as not to block a user who might
+    // log in and out more than once in an hour.
+    flood_clear_event('failed_login_attempt_user', $form_state['flood_control_user_identifier']);
+  }
+}
+
+/**
+ * Validation handler.
+ * Used to replace core handler (user_pass_validate). It's mostly the same code from the user module.
+ */
+function user_login_alterations_pass_validate($form, &$form_state) {
+  $name = trim($form_state['values']['name']);
+  // Try to load by email.
+  $users = user_load_multiple(array(), array('mail' => $name, 'status' => '1'));
+  $account = reset($users);
+  if (!$account) {
+    // No success, try to load by name.
+    $users = user_load_multiple(array(), array('name' => $name, 'status' => '1'));
+    $account = reset($users);
+  }
+  if (isset($account->uid)) {
+    form_set_value(array('#parents' => array('account')), $account, $form_state);
+  }
+  else {
+    form_set_error('name', t('Sorry, @name does not exist in our system. Email <strong>support@impetushealthcare.com</strong> it you need to retrieve your portal email.', array('@name' => $name)));
+  }
+}

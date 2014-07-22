@@ -1,0 +1,6 @@
+name = User Login Alterations
+description = Performs any custom alterations to the user login process.
+dependencies[] = user
+dependencies[] = logintoboggan
+dependencies[] = remember_me
+core = 7.x
