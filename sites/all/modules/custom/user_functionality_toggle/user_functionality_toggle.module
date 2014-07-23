@@ -62,7 +62,7 @@ function user_functionality_toggle_forms($form_id, $args) {
  */
 function user_functionality_toggle_form_alter(&$form, &$form_state, $form_id) {
 
-  if ($form_id == 'user_login' && $form_id == 'user_login_block') {
+  if ($form_id == 'user_login' || $form_id == 'user_login_block') {
     if(variable_get('toggle_remember_me', 1) == 0) {
       unset($form['remember_me']);
     }
