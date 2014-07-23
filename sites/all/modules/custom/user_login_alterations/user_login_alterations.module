@@ -28,12 +28,14 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
     break;
     case 'user_pass':
       
-      drupal_set_title(t('Email Me Access'));
+      drupal_set_title(t('Troubleshoot Access'));
       $form['preamble'] = array(
         '#type' => 'markup',
-        '#markup' =>  t('Please use the form below to email yourself access to the portal.') .
+        '#markup' =>  t('If you believe you are using the correct password, please use the email address used when you received the initial portal invitation. <a href="/user/login">Click here</a> to go back to the login page and use a new email address.') .
                       '<br/>' .
-                      t('If you cannot remember your portal email, please email <strong>support@impetushealthcare.com</strong>'),
+                      t('If you cannot remember your portal email, please email <strong>support@impetushealthcare.com</strong>') .
+                      '<br/><br/>' .
+                      t('If you cannot remember your password but you remember your email, please enter your email below and press "Email me Access".'),
         '#weight' => -50,
       );
       $form['name']['#title'] = t('My Email Address');
@@ -48,6 +50,9 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
         unset($form['#validate'][$validation_handler]);
         $form['#validate'][] = 'user_login_alterations_pass_validate';
       }
+    break;
+    case 'user_profile_form':
+      $form['account']['pass']['#description'] = t('To change the current user password, enter the new password in both fields.<br/><strong>Please record this password for future use.</strong>');
     break;
   }
 }
