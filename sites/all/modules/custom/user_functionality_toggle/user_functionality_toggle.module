@@ -62,17 +62,14 @@ function user_functionality_toggle_forms($form_id, $args) {
  */
 function user_functionality_toggle_form_alter(&$form, &$form_state, $form_id) {
 
-  switch ($form_id) {
-    case 'user_login':
-      
-      if(variable_get('toggle_remember_me', 1) == 0) {
-        unset($form['remember_me']);
-      }
-      
-      if(variable_get('toggle_forgot_password', 1) == 0) {
-        $form['pass']['#description'] = t('The password field is case sensitive.');
-      }
-    break;
+  if ($form_id == 'user_login' && $form_id == 'user_login_block') {
+    if(variable_get('toggle_remember_me', 1) == 0) {
+      unset($form['remember_me']);
+    }
+
+    if(variable_get('toggle_forgot_password', 1) == 0) {
+      $form['pass']['#description'] = t('The password field is case sensitive.');
+    }
   }
 }
 
