@@ -1,0 +1,59 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+ * Implements hook_token_info.
+ */
+function custom_tokens_token_info() {
+  
+  $token_types['custom_tokens'] = array(
+    'name' => t('Custom Tokens'),
+    'description' => t('Some custom from the custom tokens module.'),
+  );
+  
+  $tokens['oa_banner_logo'] = array(
+    'name' => t('OA Banner Logo'),
+    'description' => t("The banner logo uploaded through Open Atrium."),
+  );
+  
+  return array(
+    'types' => $token_types,
+    'tokens' => array(
+      'custom_tokens' => $tokens,
+    ),
+  );
+}
+
+/**
+ * Implements hook_tokens.
+ */
+function custom_tokens_tokens($type, $tokens, $data, $options) {
+  
+  $replacements = array();
+   
+    if ($type == 'custom_tokens') {
+     
+     foreach ($tokens as $name => $original) {
+       
+      switch ($name) {
+        case 'oa_banner_logo':
+          
+          $branding_img = '<img src="/placeholder/photos.png" alt="' . t('Email Logo') . '" />';
+          $fid = variable_get('oa_site_banner_file', '');
+
+          if ($fid['fid'] != '') {
+            $logo_object = file_load($fid['fid']);
+            $logo_url = file_create_url($logo_object->uri);
+            $branding_img = '<img src="' . $logo_url . '" alt="' . t('Email Logo') . '" />';
+          }
+          
+          $replacements[$original] = $branding_img;
+        break;
+      }
+    }
+  }
+  
+  return $replacements;
+}

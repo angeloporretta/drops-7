@@ -1,0 +1,5 @@
+name = Custom Tokens
+description = Provides custom tokens that expose information from other modules.
+dependencies[] = token
+package = custom
+core = 7.x
