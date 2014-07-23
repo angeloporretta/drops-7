@@ -21,16 +21,10 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
 
   switch ($form_id) {
     case 'user_login':
-      
-      $form['name']['#title'] = t('Email');
-      unset($form['name']['#description']);
-      
-      // Replace a validation handler.
-      $validation_handler = array_search('user_login_final_validate', $form['#validate']);
-      if ($validation_handler !== FALSE) {
-        unset($form['#validate'][$validation_handler]);
-        $form['#validate'][] = 'user_login_alterations_login_final_validate';
-      }
+      user_login_alterations_alter_login_form($form);
+    break;
+    case 'user_login_block':
+      user_login_alterations_alter_login_form($form);
     break;
     case 'user_pass':
       
@@ -58,6 +52,22 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+/**
+ * Helper Function.
+ * Alters the login form.
+ */
+function user_login_alterations_alter_login_form(&$form) {
+  
+  $form['name']['#title'] = t('Email');
+  unset($form['name']['#description']);
+
+  // Replace a validation handler.
+  $validation_handler = array_search('user_login_final_validate', $form['#validate']);
+  if ($validation_handler !== FALSE) {
+    unset($form['#validate'][$validation_handler]);
+    $form['#validate'][] = 'user_login_alterations_login_final_validate';
+  }
+}
 
 /**
  * Validation Handler.
