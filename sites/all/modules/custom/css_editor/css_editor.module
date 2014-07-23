@@ -1,0 +1,63 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+ * Implements hook_permission.
+ */
+function css_editor_permission() {
+  
+  return array(
+    'edit css' => array(
+      'title' => t('Edit CSS'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function css_editor_menu() {
+  
+  return array(
+    'admin/appearance/css' => array(
+      'title' => t('Edit CSS'),
+      'description' => t('An inline editor of css.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('css_editor_render_editor_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('edit css'),
+      'file' => 'css_editor.admin.inc',
+      'type' => MENU_LOCAL_TASK,
+    )
+  );
+}
+
+/**
+ * Implements hook_forms.
+ */
+function css_editor_forms($form_id, $args) {
+  
+  return array(
+    'css_editor' => array(
+      'callback' => 'css_editor_render_editor_form',
+    ),
+  );
+}
+
+/**
+ * Implements hook_page_build.
+ */
+function css_editor_page_build(&$page) {
+  
+  drupal_add_css(
+    variable_get('css_editor_css', ''),
+    array(
+      'type' => 'inline',
+      'group' => CSS_DEFAULT,
+      'weight' => 50
+    )
+  );
+}

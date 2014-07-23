@@ -1,0 +1,4 @@
+name = CSS Editor
+description = Allows the addition of custom css in a text area editor.
+package = custom
+core = 7.x
