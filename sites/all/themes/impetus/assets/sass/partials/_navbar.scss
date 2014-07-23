@@ -412,3 +412,8 @@ body.admin-menu #oa-navbar {
     }
   }
 }
+
+/* Selectively Show Navbar */
+body.not-logged-in .pane-oa-navigation {
+  display: none;
+}
