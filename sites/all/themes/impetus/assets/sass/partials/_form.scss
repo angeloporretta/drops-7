@@ -257,3 +257,9 @@ form {
 form#user-pass .form-item-name {
   margin-top: 20px;
 }
+
+/* wysiwygs */
+#edit-comment-body .text-format-wrapper .filter-wrapper .filter-guidelines,
+#edit-comment-body .text-format-wrapper .filter-wrapper .filter-help {
+  display: none;
+}
