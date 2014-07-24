@@ -20,9 +20,6 @@
     <?php if (!empty($oa_banner)): ?>
       <?php print $oa_banner; ?>
     <?php endif; ?>
-    <?php if (!empty($oa_space_menu)): ?>
-      <?php print $oa_space_menu; ?>
-    <?php endif; ?>
   </div>
 <?php else: ?>
   <header id="header" class="header" role="header">
