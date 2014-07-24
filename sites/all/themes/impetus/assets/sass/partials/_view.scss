@@ -4,3 +4,14 @@
 table thead th {
   background-color: #eee;
 }
+.views-exposed-form {
+  .form-item-og-group-ref-target-id-mine,
+  .form-item-og-subspaces-view-all,
+  .form-item-og-subspaces-view-parent {
+    display: none;
+  }
+  .views-submit-button,
+  views-reset-button {
+    margin-right: 15px;
+  }
+}
