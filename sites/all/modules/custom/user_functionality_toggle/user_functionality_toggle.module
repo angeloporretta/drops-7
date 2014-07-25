@@ -76,3 +76,9 @@ function user_functionality_toggle_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
+function user_functionality_toggle_boot() {
+  
+  if (variable_get('toggle_remember_me', 1) == 1) {
+    ini_set('session.cookie_lifetime',  36000);
+  }
+}
