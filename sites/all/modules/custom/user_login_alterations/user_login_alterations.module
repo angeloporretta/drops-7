@@ -31,11 +31,7 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       drupal_set_title(t('Troubleshoot Access'));
       $form['preamble'] = array(
         '#type' => 'markup',
-        '#markup' =>  t('If you believe you are using the correct password, please use the email address used when you received the initial portal invitation. <a href="/user/login">Click here</a> to go back to the login page and use a new email address.') .
-                      '<br/>' .
-                      t('If you cannot remember your portal email, please email <strong>support@impetushealthcare.com</strong>') .
-                      '<br/><br/>' .
-                      t('If you cannot remember your password but you remember your email, please enter your email below and press "Email me Access".'),
+        '#markup' =>  t('If you cannot sign on, but you are using the email registered to this portal – where all email communications are sent - please enter your email below and press "Email me Access".'),
         '#weight' => -50,
       );
       $form['name']['#title'] = t('My Email Address');
@@ -72,6 +68,8 @@ function user_login_alterations_alter_login_form(&$form) {
     unset($form['#validate'][$validation_handler]);
     $form['#validate'][] = 'user_login_alterations_login_final_validate';
   }
+  
+  $form['actions']['submit']['#value'] = t('Sign In');
 }
 
 /**
@@ -98,7 +96,7 @@ function user_login_alterations_login_final_validate($form, &$form_state) {
       }
     }
     else {
-      form_set_error('name', t('Sorry, it seems that the credentials you provided are incorrect. If you cannot log in then please <a href="@password">follow this link </a> get further help.', array('@password' => url('user/password', array('query' => array('name' => $form_state['values']['name']))))));
+      form_set_error('name', t('Sorry, it seems that the credentials you provided are incorrect. Please ensure you are using the email registered to this portal – where all email communications are sent.<br/><br/>If you still cannot sign on, then please <a href="@password">CLICK HERE</a> to get further help.', array('@password' => url('user/password', array('query' => array('name' => $form_state['values']['name']))))));
       watchdog('user', 'Login attempt failed for %user.', array('%user' => $form_state['values']['name']));
     }
   }
@@ -127,6 +125,6 @@ function user_login_alterations_pass_validate($form, &$form_state) {
     form_set_value(array('#parents' => array('account')), $account, $form_state);
   }
   else {
-    form_set_error('name', t('Sorry, @name does not exist in our system. Email <strong>support@impetushealthcare.com</strong> it you need to retrieve your portal email.', array('@name' => $name)));
+    form_set_error('name', t('Sorry, the email address @name does not exist in our system. Please ensure you are using the email registered to this portal – where all email communications are sent.<br/><br/>Please <a href="/user/login">CLICK HERE</a> to go back to the sign on page and use that email address. If you are still experiencing issues, please email <strong>support@impetushealthcare.com</strong>.', array('@name' => $name)));
   }
 }

@@ -68,10 +68,10 @@ function user_functionality_toggle_form_alter(&$form, &$form_state, $form_id) {
     }
 
     if(variable_get('toggle_forgot_password', 1) == 0) {
-      $form['pass']['#description'] = t('The password field is case sensitive and is at least 8 characters.');
+      $form['pass']['#description'] = t('The password field is case sensitive and is at least 6 characters.');
     }
     else {
-      $form['pass']['#description'] = t('The password field is case sensitive and is at least 8 characters.<br/><strong>If you cannot log in, <a href="/user/password">click here</a>.</strong>');
+      $form['pass']['#description'] = t('<strong><a href="/user/password">Forgot your password?</a></strong><br/>The password field is case sensitive and is at least 6 characters.');
     }
   }
 }
