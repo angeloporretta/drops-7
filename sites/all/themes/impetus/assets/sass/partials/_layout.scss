@@ -7,6 +7,9 @@ html, body {
 }
 body.logged-in {
   margin-top: 105px;
+  @include breakpoint('phone') {
+    margin-top: 0px;
+  }
 }
 body {
   padding-top: 60px;
