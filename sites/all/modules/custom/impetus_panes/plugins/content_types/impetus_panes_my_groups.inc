@@ -3,7 +3,7 @@
 $plugin = array(
   'single' => TRUE,
   'title' => t('My Groups'),
-  'description' => t('Links to groups the user is in.'),
+  'description' => t('Links to groups the user is in. This will not appear for administrators and impetus admins.'),
   'category' => t('Impetus'),
   'edit form' => 'impetus_panes_my_groups_custom_pane_edit_form', 
   'render callback' => 'impetus_panes_my_groups_custom_pane_render',
@@ -37,7 +37,7 @@ function impetus_panes_my_groups_custom_pane_render($subtype, $conf, $args, $con
   global $user;
   $block_html = '<ul class="my-groups-token">';
 
-  if (property_exists($user, 'og_user_node')) {
+  if ($user->uid != 1 && !in_array('impetus admin', $user->roles) && !in_array('administrator', $user->roles) && property_exists($user, 'og_user_node')) {
 
     $node_links = array();
     foreach ($user->og_user_node['und'] as $nid) {
