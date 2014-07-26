@@ -28,6 +28,28 @@ z-index: 1000;
   .panel-panel-inner {
     min-height: 0;
   }
+  .pane-impetus-panes-my-groups {
+    display: inline-block;
+    float: left;
+    ul {
+      margin-top: 6px;
+      margin-bottom: 0px;
+      @include breakpoint('tablet') {
+        margin-left: 0px;
+      }
+      @include breakpoint('mini-tablet') {
+        margin-left: 0px;
+      }
+      @include breakpoint('phone') {
+        margin-left: 15px;
+        margin-bottom: 6px;
+      }
+    }
+    ul li {
+      display: inline-block;
+      margin-right: 15px;
+    }
+  }
   .panel-panel {
     @include box-sizing("border-box");
     padding: 0 20px;
@@ -416,4 +438,17 @@ body.admin-menu #oa-navbar {
 /* Selectively Show Navbar */
 body.not-logged-in .pane-oa-navigation {
   display: none;
+}
+.pane-oa-favorites-favorites-button {
+  @include breakpoint('tablet') {
+    display: none;
+  }
+  @include breakpoint('mini-tablet') {
+    display: none;
+  }
+}
+.pane-oa-toolbar-search {
+  @include breakpoint('phone') {
+    display: none;
+  }
 }
