@@ -176,3 +176,17 @@ ul.dropdown-menu,
     }
   }
 }
+
+/* OG Menu */
+.pane-og-menu-single-menu {
+  ul.menu li {
+    margin: 2.5px;
+  }
+  ul.menu li a.active {
+    font-weight: bold;
+    font-size: $baseFontSize + 1px;
+  }
+  .pane-content > ul.menu > .dhtml-folder > a{
+    font-size: 18px;
+  }
+}
