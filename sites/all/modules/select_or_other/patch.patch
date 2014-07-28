@@ -1,0 +1,96 @@
+diff --git a/includes/form_builder.admin.inc b/includes/form_builder.admin.inc
+index 478ec3a..430993a 100644
+--- a/includes/form_builder.admin.inc
++++ b/includes/form_builder.admin.inc
+@@ -343,7 +343,9 @@ function theme_form_builder_wrapper($variables) {
+  */
+ function theme_form_builder_element_wrapper($variables) {
+   $element = $variables['element'];
+-
++  if (!empty($element["#select_type"]) && empty($element["#type"])) {
++    $element["#type"] = $element["#select_type"];
++  }
+   $removable = isset($element['#form_builder']['removable']) ? $element['#form_builder']['removable'] : TRUE;
+   $configurable  = isset($element['#form_builder']['configurable']) ? $element['#form_builder']['configurable'] : TRUE;
+ 
+diff --git a/modules/webform/form_builder_webform.components.inc b/modules/webform/form_builder_webform.components.inc
+index 3466beb..72edbdf 100644
+--- a/modules/webform/form_builder_webform.components.inc
++++ b/modules/webform/form_builder_webform.components.inc
+@@ -738,6 +738,10 @@ function _form_builder_webform_form_builder_map_select() {
+       'key_type_toggled' => array(
+         'storage_parents' => array('extra', 'custom_keys'),
+       ),
++      'other_option' => array(
++        'form_parents' => array('items', 'options', 'option_settings', 'other_option'),
++        'storage_parents' => array('extra', 'other_option'),
++      )
+     ),
+   );
+ }
+@@ -760,6 +764,7 @@ function _form_builder_webform_form_builder_properties_select() {
+ function _form_builder_webform_form_builder_load_select($form_element) {
+   // Properties that are only used by Form Builder and not in the normal form.
+   $form_element['#key_type_toggled'] = !empty($form_element['#webform_component']['extra']['custom_keys']);
++  $form_element['#other_option']     = !empty($form_element['#webform_component']['extra']['other_option']);
+ 
+   return $form_element;
+ }
+@@ -777,7 +782,7 @@ function _form_builder_webform_form_builder_save_select($component, $form_elemen
+   $component['extra']['items'] = $options;
+   $component['extra']['multiple'] = $form_element['#form_builder']['element_type'] == 'checkboxes';
+   $component['extra']['aslist'] = $form_element['#form_builder']['element_type'] == 'select';
+-
++  $component['extra']['other_option'] = !empty($form_element['#other_option']);
+   return $component;
+ }
+ 
+diff --git a/modules/webform/form_builder_webform.module b/modules/webform/form_builder_webform.module
+index 2a7c838..49af924 100644
+--- a/modules/webform/form_builder_webform.module
++++ b/modules/webform/form_builder_webform.module
+@@ -301,6 +301,8 @@ function form_builder_webform_form_builder_load($form_builder_type, $form_builde
+ function form_builder_webform_load_process(&$form, $node, $pid = 0) {
+   module_load_include('inc', 'form_builder_webform', 'form_builder_webform.components');
+ 
++  _form_builder_select_or_other_form_element_pre_render($form);
++
+   foreach (element_children($form) as $key) {
+     $cid = webform_get_cid($node, $key, $pid);
+     $form[$key]['#form_builder'] = array(
+@@ -410,6 +412,25 @@ function _form_builder_remove_conditional_form_element_pre_render(&$form) {
+     _form_builder_remove_conditional_form_element_pre_render($form_element);
+   }
+ }
++/**
++ *  Function that integrates with Select_or_other module.
++ *  Change the render functions and build the #form_builder item, necessary for rendering the element.
++**/
++function _form_builder_select_or_other_form_element_pre_render(&$form) {
++    foreach (element_children($form) as $key) {
++      if (!empty($form[$key]['#process']) && in_array('select_or_other_element_process', $form[$key]['#process'])) {
++      $form[$key]['#form_builder'] = array(
++        'element_id' => 'cid_'.$form[$key]["#webform_component"]["cid"],
++        'parent_id' => 0,
++        'element_type' => $form[$key]["#select_type"],
++        'configurable' => TRUE,
++        'removable' => TRUE
++      );
++      $form[$key]['#type'] = $form[$key]["#select_type"];
++    }
++  }
++}
++
+ 
+ /**
+  * Invoke a form builder callback for a webform component.
+@@ -483,7 +504,7 @@ function _form_builder_webform_property_map($component_type) {
+         'storage_parents' => array('extra', 'private'),
+       );
+     }
+-  
++
+     if (webform_component_feature($component_type, 'required')) {
+       $map['properties']['required'] = array();
+     }
+
