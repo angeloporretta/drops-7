@@ -1,0 +1,30 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_node_access.
+ */
+function per_user_access_node_access($node, $op, $account) {
+  
+  if (property_exists($node, 'field_user_access') && $op == 'view') {
+
+    $users = field_get_items('node', $node, 'field_user_access');
+    if ($users !== FALSE) {
+
+      $user_ids = array();
+      foreach ($users as $uid) {
+        $user_ids[] = $uid['target_id'];
+      }
+
+      if (
+        !in_array('impetus admin', $account->roles) && 
+        !in_array('administrator', $account->roles) && 
+        !in_array($account->uid, $user_ids)
+      ) {
+        return NODE_ACCESS_DENY;
+      }
+    }
+  }
+}
