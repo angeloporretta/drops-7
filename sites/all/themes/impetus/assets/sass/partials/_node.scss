@@ -48,6 +48,14 @@
   padding-bottom: 0;
 }
 
+#block-system-main .content .panel-pane .pane-content {
+  img, iframe, div {
+    max-width: 100% !important;
+  }
+  img {
+    height: auto !important;
+  }
+}
 // News
 // --------------------------------------------------
 .oa-news {
