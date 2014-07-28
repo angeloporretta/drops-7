@@ -263,3 +263,14 @@ form#user-pass .form-item-name {
 .text-format-wrapper .filter-wrapper .filter-help{
   display: none;
 }
+
+/* Webforms */
+.webform-client-form {
+  .webform-component {
+    padding: 10px;
+    border-top: #ccc solid 1px;
+  }
+  .webform-component:first-child {
+    border-top: none;
+  }
+}
