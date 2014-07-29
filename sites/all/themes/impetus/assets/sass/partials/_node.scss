@@ -90,6 +90,10 @@ body.node-type-announcement {
     margin-right: 10px;
     margin-bottom: 10px;
   }
+  .field-name-field-preview-image img {
+    max-width: 150px;
+    height: auto;
+  }
   .pane-node-created .pane-title {
     display: inline-block;
     font-size: $baseFontSize;
