@@ -91,7 +91,7 @@ body.node-type-announcement {
     margin-bottom: 10px;
   }
   #main-wrapper #block-system-main .content .pane-content .field-name-field-preview-image img {
-    max-width: 150px !important;
+    max-width: 175px !important;
     height: auto;
   }
   .pane-node-created .pane-title {
@@ -107,14 +107,14 @@ body.node-type-announcement {
     font-weight: bold;
   }
 }
-.pane-impetus-panes-announcements {
+#main-wrapper #block-system-main .content .pane-impetus-panes-announcements {
   .field-name-field-preview-image {
     float: left;
     margin-right: 10px;
     margin-bottom: 10px;
   }
   .field-name-field-preview-image img {
-    max-width: 125px;
+    max-width: 125px !important;
     height: auto;
   }
   .node-teaser .link-wrapper {
