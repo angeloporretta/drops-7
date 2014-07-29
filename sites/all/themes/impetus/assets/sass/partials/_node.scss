@@ -83,3 +83,44 @@
   }
 }
 
+/* Announcement Nodes */
+body.node-type-announcement {
+  .field-name-field-preview-image {
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  .pane-node-created .pane-title {
+    display: inline-block;
+    font-size: $baseFontSize;
+    margin-right: 0px;
+  }
+  .pane-node-created .pane-title:after {
+    content: " - "
+  }
+  .pane-node-created .pane-content {
+    display: inline-block;
+    font-weight: bold;
+  }
+}
+.pane-impetus-panes-announcements {
+  .field-name-field-preview-image {
+    float: left;
+    margin-right: 10px;
+    margin-bottom: 10px;
+  }
+  .field-name-field-preview-image img {
+    max-width: 125px;
+    height: auto;
+  }
+  .node-teaser .link-wrapper {
+    text-align: right;
+  }
+  .node-teaser {
+    border-top: 1px solid #ccc;
+    padding: 5px 0px;
+  }
+  .node-teaser:first-child {
+    border-top: none;
+  }
+}
