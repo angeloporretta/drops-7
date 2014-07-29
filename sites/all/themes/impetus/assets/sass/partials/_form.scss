@@ -274,3 +274,10 @@ form#user-pass .form-item-name {
     border-top: none;
   }
 }
+
+/* Node Edit Forms */
+.node-form #node-edit {
+  .field-type-entityreference {
+    clear: both;
+  }
+}
