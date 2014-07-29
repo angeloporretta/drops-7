@@ -90,8 +90,8 @@ body.node-type-announcement {
     margin-right: 10px;
     margin-bottom: 10px;
   }
-  .field-name-field-preview-image img {
-    max-width: 150px;
+  #main-wrapper #block-system-main .content .pane-content .field-name-field-preview-image img {
+    max-width: 150px !important;
     height: auto;
   }
   .pane-node-created .pane-title {
