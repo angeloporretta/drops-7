@@ -1,0 +1,107 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_enable.
+ */
+function show_webform_results_enable() {
+  
+  if (!field_info_field('field_show_results_on_page')) {
+
+    $field = array(
+      'field_name' => 'field_show_results_on_page',
+      'type' => 'list_boolean',
+    );
+
+    field_create_field($field);
+
+    $instance = array(
+      'field_name' => 'field_show_results_on_page',
+      'entity_type' => 'node',
+      'label' => 'Show Results on Page',
+      'bundle' => 'webform',
+      'required' => FALSE,
+      'description' => 'Shows all of the webform results next to the webform.<br/><strong>WARNING: If this form contains sensitive or confidential information, do not check this box!</strong>',
+      'settings' => array(
+        'user_register_form' => 1,
+      ),
+      'widget' => array(
+        'type' => 'options_onoff',
+      ),
+    );
+
+    field_create_instance($instance);
+    field_cache_clear();
+  }
+}
+
+/**
+ * Implements theme_preprocess_node.
+ */
+/*function show_webform_results_form_alter(&$form, &$form_state, $form_id) {
+  
+  if (strpos($form_id, 'webform_client_form_') !== FALSE) {
+    
+    preg_match_all('!\d+!', $form_id, $webform_node_ids);
+    
+    
+  }
+}*/
+
+function show_webform_results_preprocess_node(&$vars, $hook) {
+  
+  if($vars['type'] == 'webform' && isset($vars['field_show_results_on_page']) && $vars['field_show_results_on_page']['und'][0]['value'] == 1) {
+    
+    $html = '<div class="webform-public-results"><h2>' . t('Submissions') . '</h2>';
+    $webform_headers = array();
+    
+    foreach ($vars['webform']['components'] as $component) {
+      
+      if ($component['type'] != 'fieldset') {
+        $webform_headers[] = $component['name'];
+      }
+    }
+    
+    $submissions = webform_get_submissions(array('nid' => $vars['nid']));
+    
+    if (!empty($submissions)) {
+      
+      $html .= '<table>';
+      
+      foreach ($webform_headers as $header) {
+        $html .= '<th>' . $header . '</th>';
+      }
+      
+      foreach ($submissions as $submission) {
+        $html .= '<tr>';
+
+        foreach ($submission->data as $data) {
+          
+          $html .= '<td>';
+          $data_items = '';
+          foreach ($data as $data_item) {
+            $data_items .= $data_item . ', ';
+          }
+          $html .= substr($data_items, 0, -2) . '</td>'; 
+        }
+        $html .= '</tr>';
+      }
+      $html .= '</table></div>';
+      
+      $vars['content']['webform']['#form']['submitted']['table_summary'] = array(
+        '#type' => 'markup',
+        '#markup' => $html,
+        '#weight' => 50,
+      );
+    }
+    else {
+      $html .= '<p>' . t('This form does not have any submissions.') . '</p>';
+    }
+    
+    $vars['content']['webform']['#form']['#attached']['js']['show_webform_results'] = drupal_add_js(
+      drupal_get_path('module', 'show_webform_results') . '/show_webform_results.js'
+    );
+  }
+}

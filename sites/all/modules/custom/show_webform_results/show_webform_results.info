@@ -1,0 +1,5 @@
+name = Show Webform Results
+description = Allows users to show webform results alongside the webform via the show_results_on_page field.
+package = custom
+dependencies[] = webform
+core = 7.x
