@@ -50,6 +50,9 @@ function show_webform_results_enable() {
   }
 }*/
 
+/**
+ * Implements hook_preprocess_node.
+ */
 function show_webform_results_preprocess_node(&$vars, $hook) {
   
   if($vars['type'] == 'webform' && isset($vars['field_show_results_on_page']) && $vars['field_show_results_on_page']['und'][0]['value'] == 1) {
