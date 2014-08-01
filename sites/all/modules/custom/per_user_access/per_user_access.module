@@ -4,11 +4,99 @@
  */
 
 /**
+ * Implements hook_enable.
+ */
+function per_user_access_enable() {
+  
+  db_update('system')
+    ->fields(array('weight' => 100))
+    ->condition('name', 'per_user_access', '=')
+    ->execute();
+}
+
+/**
  * Implements hook_node_access.
  */
 function per_user_access_node_access($node, $op, $account) {
   
-  if (property_exists($node, 'field_user_access') && $op == 'view') {
+  if (per_user_access_user_has_access($node, $account) == FALSE) {
+    return NODE_ACCESS_DENY;
+  }
+}
+
+/**
+ * Implements template_preprocess_panels_pane.
+ */
+function per_user_access_preprocess_panels_pane(&$vars) {
+  
+  if ($vars['pane']->type == 'og_menu_single_menu') {
+    
+    global $user;
+    
+    // Recursion is not possible with nested arrays that are passed by reference... this is ugly, but it works.
+    // Parent items are removed, even if people have access to child items. Goes up to 4 levels.
+    foreach ($vars['content'] as $key => $menu_link_data) {
+
+      if (is_numeric($key) && !per_user_access_is_menu_link_stays($menu_link_data, $user)) {
+        unset($vars['content'][$key]);
+      }
+      else if (isset($vars['content'][$key]['#below']) && !empty($vars['content'][$key]['#below'])) {
+        
+        foreach ($vars['content'][$key]['#below'] as $key2 => $menu_link_data2) {
+          if (is_numeric($key2) && per_user_access_is_menu_link_stays($menu_link_data2, $user) == FALSE) {
+            unset($vars['content'][$key]['#below'][$key2]);
+          }
+          else if (isset($vars['content'][$key]['#below'][$key2]['#below']) && !empty($vars['content'][$key]['#below'][$key2]['#below'])) {
+            foreach ($vars['content'][$key]['#below'][$key2]['#below'] as $key3 => $menu_link_data3) {
+              if (is_numeric($key3) && per_user_access_is_menu_link_stays($menu_link_data3, $user) == FALSE) {
+                unset($vars['content'][$key]['#below'][$key2]['#below'][$key3]);
+              }
+              else if (isset($vars['content'][$key]['#below'][$key2]['#below'][$key3]) && !empty($vars['content'][$key]['#below'][$key2]['#below']['#below'][$key3])) {
+                foreach ($vars['content'][$key]['#below'][$key2]['#below'][$key4]['#below'] as $key4 => $menu_link_data4) {
+                  if (is_numeric($key4) && per_user_access_is_menu_link_stays($menu_link_data4, $user) == FALSE) {
+                    unset($vars['content'][$key]['#below'][$key2]['#below'][$key3]['#below'][$key4]);
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Helper Function.
+ * Determines whether or not a menu link should stay in the menu, taking into account the field_user_access field.
+ * @param menu_link_data: A renderable menu link item array.
+ * @user: A user object.
+ * @return: True if the menu link should stay, false otherwise.
+ */
+function per_user_access_is_menu_link_stays($menu_link_data, $user) {
+  
+  $menu_link_stays = TRUE;
+  $menu_item = menu_get_object('node', 1, $menu_link_data['#href']);
+
+  if ($menu_item == NULL && strpos($menu_link_data['#href'], 'node/') !== FALSE) {
+    $menu_link_stays = FALSE;
+  }
+  
+  return $menu_link_stays;
+}
+
+/**
+ * Helper Function.
+ * Determines whether or not a user should have access to the node, taking into account the field_user_access field.
+ * @param node: A node object.
+ * @param account: A user object.
+ * @return: True if the user has access to the node, false otherwise.
+ */
+function per_user_access_user_has_access($node, $account) {
+  
+  $has_access = TRUE;
+  
+  if (property_exists($node, 'field_user_access')) {
 
     $users = field_get_items('node', $node, 'field_user_access');
     if ($users !== FALSE) {
@@ -19,12 +107,15 @@ function per_user_access_node_access($node, $op, $account) {
       }
 
       if (
+        $account->uid != 1 &&
         !in_array('impetus admin', $account->roles) && 
         !in_array('administrator', $account->roles) && 
         !in_array($account->uid, $user_ids)
       ) {
-        return NODE_ACCESS_DENY;
+        $has_access = FALSE;
       }
     }
   }
+  
+  return $has_access;
 }
