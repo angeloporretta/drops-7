@@ -19,8 +19,17 @@ function per_user_access_enable() {
  */
 function per_user_access_node_access($node, $op, $account) {
   
-  if (per_user_access_user_has_access($node, $account) == FALSE) {
-    return NODE_ACCESS_DENY;
+  $users_group_has_access = per_user_access_group_has_access($node, $account);
+  $user_single_has_access = per_user_access_user_has_access($node, $account);
+  
+  if ($users_group_has_access !== NULL || $user_single_has_access !== NULL) {
+
+    if ($users_group_has_access == TRUE || $user_single_has_access == TRUE) {
+      return NODE_ACCESS_ALLOW;
+    }
+    else if ($users_group_has_access == FALSE || $user_single_has_access == FALSE) {
+      return NODE_ACCESS_DENY;
+    }
   }
 }
 
@@ -90,11 +99,11 @@ function per_user_access_is_menu_link_stays($menu_link_data, $user) {
  * Determines whether or not a user should have access to the node, taking into account the field_user_access field.
  * @param node: A node object.
  * @param account: A user object.
- * @return: True if the user has access to the node, false otherwise.
+ * @return: True if the user has access to the node, false if not, NULL if the field_user_access field is not used on the node.
  */
 function per_user_access_user_has_access($node, $account) {
   
-  $has_access = TRUE;
+  $has_access = NULL;
   
   if (property_exists($node, 'field_user_access')) {
 
@@ -114,8 +123,92 @@ function per_user_access_user_has_access($node, $account) {
       ) {
         $has_access = FALSE;
       }
+      else {
+        $has_access = TRUE;
+      }
     }
   }
   
   return $has_access;
+}
+
+/**
+ * Helper Function.
+ * Determines whether or not a user should have access to the node, taking into account the field_group_access field.
+ * @param node: A node object.
+ * @param account: A user object.
+ * @return: True if the user has access to the node, false if not, NULL if the field_group_access field is not used on the node.
+ */
+function per_user_access_group_has_access($node, $account) {
+  
+  $has_access = NULL;
+  
+  if (property_exists($node, 'field_group_access')) {
+    
+    $user = user_load($account->uid);
+    
+    $node_groups = field_get_items('node', $node, 'field_group_access');
+    $user_groups = og_get_groups_by_user($account);
+    
+    if ($node_groups !== FALSE && $user_groups !== FALSE) {
+
+      // Get all the group ids associated with this node. Including all the parents of those groups.
+      $node_group_ids = array();
+      
+      foreach ($node_groups as $group_id) {
+        $node_group_ids[] = $group_id['target_id'];
+      }
+      
+      $hierarchy_ids = array();
+      foreach ($node_group_ids as $node_group_id) {
+        per_user_access_collect_hierarchy_ids($node_group_id, $hierarchy_ids);
+      }
+      
+      $hierarchy_ids = array_unique($hierarchy_ids);
+      $node_group_ids = array_merge($hierarchy_ids, $node_group_ids);
+  
+      // Get all the group ids associated with this user.
+      foreach ($user_groups['node'] as $group_id) {
+        $user_group_ids[] = $group_id;
+      }
+      
+      $user_in_group = array_intersect($node_group_ids, $user_group_ids);
+      
+      if (
+        $account->uid != 1 &&
+        !in_array('impetus admin', $account->roles) && 
+        !in_array('administrator', $account->roles) && 
+        empty($user_in_group)
+      ) {
+        $has_access = FALSE;
+      }
+      else {
+        $has_access = TRUE;
+      }
+
+    }
+    
+  }
+  
+  return $has_access;
+}
+
+/**
+ * Helper function.
+ * Populates all the ancestor groups of a group.
+ * @param node_group_id: The group id at the lowest level (child group id).
+ * @param hierarchy_ids: An empty array. This gets populated with ids of node_group_id's ancestors. 
+ *                       This array may contain duplicates.
+ */
+function per_user_access_collect_hierarchy_ids($node_group_id, &$hierarchy_ids) {
+  
+  $group_node = node_load($node_group_id);
+  $parent_group_ids = field_get_items('node', $group_node, 'oa_parent_space');
+  
+  if ($parent_group_ids !== FALSE) {
+    foreach ($parent_group_ids as $parent_group_id) {
+      $hierarchy_ids[] = $parent_group_id['target_id'];
+      per_user_access_collect_hierarchy_ids($parent_group_id['target_id'], $hierarchy_ids);
+    }
+  }
 }
