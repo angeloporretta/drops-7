@@ -1,5 +1,5 @@
 name = Per User Access
-description = Allows granular access on node on a per user basis. Works in conjunction with the field_user_access field.
+description = Allows granular access on node on a per user basis. Works in conjunction with the field_user_access field and the field_group_access field.
 package = custom
 dependencies[] = og
 core = 7.x
