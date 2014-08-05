@@ -111,7 +111,8 @@
   <div class="container">
     <div class="row">
       <div class="span12">
-        <div class="footer-inner">
+        <?php print render($page['footer']); ?>
+        <div class="footer-inner footer-panels-mini-panels">
           <?php if (!empty($oa_footer_panel)): ?>
             <?php print $oa_footer_panel; ?>
           <?php else: ?>
