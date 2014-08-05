@@ -1,0 +1,25 @@
+/* Css for the impetus panes section dropdown pane */
+.spaces-section-dropdown .nested {
+  background: none repeat scroll 0 0 #FFFFFF;
+  border-radius: 5px;
+  margin: 0;
+  padding: 10px;
+  position: absolute;
+  z-index: 100;
+  top: 40px;
+  border: 1px solid #ccc;
+  min-width: 200px;
+}
+.spaces-section-dropdown .hide {
+  display: none;
+}
+.spaces-section-dropdown .show {
+  display: block;
+}
+.spaces-section-dropdown > li {
+  display: inline-block;
+  margin-right: 15px;
+}
+.spaces-section-dropdown > li > .nested > li {
+  margin-bottom: 5px;
+}

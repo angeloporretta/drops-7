@@ -12,3 +12,20 @@ function impetus_panes_ctools_plugin_directory($owner, $plugin_type) {
     return 'plugins/' . $plugin_type;
   }
 }
+
+/**
+ * Helper function.
+ * Determines if the current user in an administrator.
+ * @return: True if they are an admin, false otherwise.
+ */
+function impetus_panes_is_admin() {
+  
+  $is_admin = FALSE;
+  global $user;
+  
+  if ($user->uid == 1 || in_array('administrator', $user->roles) || in_array('impetus admin', $user->roles)) {
+    $is_admin = TRUE;
+  }
+
+  return $is_admin;
+}
