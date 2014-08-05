@@ -190,3 +190,42 @@ ul.dropdown-menu,
     font-size: 18px;
   }
 }
+
+/* Sections menu */
+#mini-panel-oa_toolbar_panel .pane-impetus-panes-section-dropdown {
+    display: inline-block;
+    float: left;
+    @include breakpoint('phone') {
+      display: block;
+      width: 98%;
+    }  
+    .spaces-section-dropdown {
+      margin-top: 5px;
+      @include breakpoint('mini-tablet') {
+        margin-left: 0px;
+      }
+      @include breakpoint('phone') {
+        margin-left: 0px;
+      } 
+    }
+    li {
+      @include breakpoint('phone') {
+        display: block;
+        margin: 0px 2.5px;
+        text-align: center;
+      } 
+    }
+    .show {
+      @include breakpoint('phone') {
+        display: block;
+        position: static;
+        width: auto;
+      } 
+    }
+    .nested li {
+      margin: 5px 0px !important;
+    }
+    .nested li a {
+      color: $linkColor;
+    }
+}

@@ -156,8 +156,10 @@ background-color: @headerbg;
 #oa-navbar .panel-panel .pane-oa-navigation .dropdown-menu {
 background-color: @headerbg;
 }
-
 #oa-navbar .panel-panel .pane-oa-navigation li > a,
 #oa-navbar .panel-panel .pane-oa-space-banner li > a{
 color: @titleslogan;
+}
+#mini-panel-oa_toolbar_panel .pane-impetus-panes-section-dropdown .spaces-section-dropdown > li > a {
+  color: @toolbartext;
 }
