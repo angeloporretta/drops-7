@@ -280,4 +280,18 @@ form#user-pass .form-item-name {
   .field-type-entityreference {
     clear: both;
   }
+  .group-granular-access,
+  .group-access-sections {
+    background-color: #EBEDFF;
+    border-radius: 5px;
+    padding: 10px;
+  }
+  .group-access-sections {
+    background-color: #DBFFE7;
+  }
+  .group-granular-access > legend,
+  .group-access-sections > legend {
+    position: relative;
+    top: 30px;
+  }
 }
