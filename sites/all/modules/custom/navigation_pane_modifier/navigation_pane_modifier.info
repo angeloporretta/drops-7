@@ -1,0 +1,6 @@
+name = Navigation Pane Modifier
+description = Programatically alters the navigation pane offered by open atrium.
+dependencies[] = panels
+dependencies[] = oa_core
+package = custom
+core = 7.x
