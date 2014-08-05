@@ -7,13 +7,16 @@
  * Implements hook_form_alter.
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
-  
+
   switch ($form_id) {
     case 'panopoly_page_node_form':
       form_modifier_fix_group_ref_verbiage($form);
     break;
     case ('webform_node_form'):
       form_modifier_fix_group_ref_verbiage($form);
+    break;
+    case 'devel_switch_user_form':
+      $form['username']['#description'] = t("Please enter the user's first name or last name");
     break;
   }
 }
