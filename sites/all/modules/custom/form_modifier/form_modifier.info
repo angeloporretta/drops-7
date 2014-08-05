@@ -1,0 +1,4 @@
+name = Form Modifier
+description = Simply modifies general forms throughout the portal.
+package = custom
+core = 7.x

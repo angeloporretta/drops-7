@@ -1,0 +1,34 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_form_alter.
+ */
+function form_modifier_form_alter(&$form, &$form_state, $form_id) {
+  
+  switch ($form_id) {
+    case 'panopoly_page_node_form':
+      form_modifier_fix_group_ref_verbiage($form);
+    break;
+    case ('webform_node_form'):
+      form_modifier_fix_group_ref_verbiage($form);
+    break;
+  }
+}
+
+/**
+ * Helper Function.
+ * Small helper function that changes the labeling of the og_group_ref field.
+ * @param form: A form array.
+ */
+function form_modifier_fix_group_ref_verbiage(&$form) {
+  
+  if (isset($form['og_group_ref'])) {
+    $form['og_group_ref']['und'][0]['default']['#title'] = t('Your Spaces');
+    $form['og_group_ref']['und'][0]['default']['#description'] = t('Associate this content with spaces you belong to.');
+    $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'] = t('Other Spaces');
+    $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#description'] = t('Associate this content with spaces you do not belong to.');
+  } 
+}
