@@ -302,3 +302,13 @@ footer#footer {
     color: #CCC;
   }
 }
+
+/* User Edit Form */
+#user-profile-form {
+  .form-item-htmlmail-plaintext,
+  #edit-mimemail,
+  #edit-timezone,
+  #edit-ckeditor {
+    display: none;
+  }
+}
