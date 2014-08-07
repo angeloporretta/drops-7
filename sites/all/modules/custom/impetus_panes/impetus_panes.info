@@ -2,5 +2,7 @@ name = Impetus Panes
 description = A collection of custom panel panes.
 dependencies[] = panels
 dependencies[] = ctools
+dependencies[] = og_subgroups
+dependencies[] = og_users
 package = custom
 core = 7.x

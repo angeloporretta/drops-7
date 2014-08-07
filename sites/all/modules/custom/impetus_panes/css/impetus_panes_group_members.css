@@ -1,0 +1,19 @@
+/* Styling for the group members pane */
+.impetus-panes-user >img,
+.impetus-panes-user .impetus-panes-user-name {
+  display: inline-block;
+}
+.impetus-panes-user >img {
+  margin-right: 15px;
+  border-radius: 2px;
+}
+.impetus-panes-user .impetus-panes-user-name {
+  font-size: 18px;
+}
+.impetus-panes-user {
+  padding: 10px 0px;
+  border-top: 1px solid #CCC;
+}
+.impetus-panes-user:first-child {
+  border-top: none;
+}
