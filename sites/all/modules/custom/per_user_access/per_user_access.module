@@ -38,7 +38,7 @@ function per_user_access_node_access($node, $op, $account) {
  */
 function per_user_access_preprocess_panels_pane(&$vars) {
   
-  if ($vars['pane']->type == 'og_menu_single_menu') {
+  if ($vars['pane']->type == 'og_menu_single_menu' && is_array($vars['content'])) {
     
     global $user;
     
