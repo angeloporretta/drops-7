@@ -277,7 +277,14 @@ form#user-pass .form-item-name {
 
 /* Node Edit Forms */
 .node-form #node-edit {
-  .field-type-entityreference {
+  .field-type-image {
+    width: 100%;
+    input[type="submit"] {
+      margin: 0px 10px;
+    }
+  }
+  .field-type-entityreference,
+  .group-access-sections {
     clear: both;
   }
   .group-granular-access,
