@@ -4,5 +4,6 @@ dependencies[] = panels
 dependencies[] = ctools
 dependencies[] = og_subgroups
 dependencies[] = oa_users
+dependencies[] = chosen
 package = custom
 core = 7.x

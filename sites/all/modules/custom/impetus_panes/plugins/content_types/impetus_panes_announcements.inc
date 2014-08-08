@@ -15,35 +15,30 @@ $plugin = array(
  */
 function impetus_panes_announcements_custom_pane_edit_form($form, &$form_state) {
   
-  $options = array();
+  $section_options = array();
   
-  $field_query = new EntityFieldQuery();
-  $results = $field_query->entityCondition('entity_type', 'node')
-    ->entityCondition('bundle', 'oa_group')
+  $section_query = new EntityFieldQuery();
+  $section_result = $section_query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', 'oa_section')
     ->propertyCondition('status', 1)
     ->propertyOrderBy('title', 'ASC')
     ->execute();
   
-  $group_nids = array();
-  
-  if (!empty($results)) {
-    foreach ($results['node'] as $result) {
-      $group_nids[] = $result->nid;
+  if (!empty($section_result)) {
+    $section_nodes = node_load_multiple(array_keys($section_result['node']));
+    foreach ($section_nodes as $nid => $section_node) {
+      $section_options[$nid] = $section_node->title;
     }
   }
   
-  $group_nodes = node_load_multiple($group_nids);
-
-  foreach ($group_nodes as $nid => $node) {
-    $options[$nid] = $node->title;
-  }
-  
-  $form['group'] = array(
+  $form['section'] = array(
     '#type' => 'select',
-    '#title' => t('Announcements from which group?'),
-    '#options' => $options,
-    '#default_value' => $form_state['conf']['group'],
+    '#title' => t('Section'),
     '#required' => TRUE,
+    '#prefix' => '<div id="announcements_section_field">',
+    '#suffix' => '</div>',
+    '#default_value' => $form_state['conf']['section'],
+    '#options' => $section_options,
   );
   
   return $form;
@@ -75,7 +70,7 @@ function impetus_panes_announcements_custom_pane_render($subtype, $conf, $args, 
   $results = $field_query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'announcement')
     ->propertyCondition('status', 1)
-    ->fieldCondition('og_group_ref', 'target_id', $conf['group'], '=')
+    ->fieldCondition('oa_section_ref', 'target_id', $conf['section'], '=')
     ->propertyOrderBy('created', 'DESC')
     ->execute();
   
