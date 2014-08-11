@@ -82,6 +82,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
 
       if (property_exists($space_node, 'section_nodes')) {
         $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a><ul class="nested hide">';
+        $block->content .= '<li class="close-button"><button>X</button></li>';
         foreach ($space_node->section_nodes as $section_node) {
           $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $section_node->nid) . '">' . $section_node->title . '</a></li>';
         }

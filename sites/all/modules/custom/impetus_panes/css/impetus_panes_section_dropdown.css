@@ -6,7 +6,7 @@
   padding: 10px;
   position: absolute;
   z-index: 100;
-  top: 40px;
+  top: 50px;
   border: 1px solid #ccc;
   min-width: 200px;
 }
@@ -18,8 +18,27 @@
 }
 .spaces-section-dropdown > li {
   display: inline-block;
-  margin-right: 15px;
+  margin-right: 25px;
 }
 .spaces-section-dropdown > li > .nested > li {
   margin-bottom: 5px;
+}
+.spaces-section-dropdown li.close-button {
+  width: auto;
+  height: auto;
+  display: inline-block;
+  position: absolute;
+  z-index: 10000;
+  top: -15px;
+  left: 208px;
+}
+.spaces-section-dropdown li.close-button button {
+  background: none repeat scroll 0 0 #E5E5E5;
+  border: 1px solid #CCCCCC;
+  border-radius: 10px;
+  font-weight: bold;
+}
+.spaces-section-dropdown li.close-button button:hover,
+.spaces-section-dropdown li.close-button button:focus {
+  background: none repeat scroll 0 0 #EEEEEE;
 }

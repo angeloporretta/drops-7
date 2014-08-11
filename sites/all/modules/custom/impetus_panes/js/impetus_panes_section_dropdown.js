@@ -12,12 +12,9 @@
             $(this).siblings('ul.nested').addClass('show');
           }
         });
-        
-        $('#main-wrapper').click(function(){
-          
-          if ($('.spaces-section-dropdown .show').length > 0) {
-            $('.spaces-section-dropdown .show').addClass('hide').removeClass('show');
-          }
+       
+        $('.spaces-section-dropdown .nested .close-button button').click(function(){
+          $('.spaces-section-dropdown .nested').addClass('hide').removeClass('show');
         });
         
       });
