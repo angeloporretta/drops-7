@@ -84,3 +84,57 @@ body.oa-login div.content {
 body.oa-login #user-login-panel .oa-pane {
   top: 115px;
 }
+
+/* General Styling for Lightboxes and Lightframes */
+#lightbox {
+  #lightboxFrame {
+    min-height: 650px;
+    min-width: 800px;
+  }
+  #outerImageContainer {
+    min-height: 660px !important;
+    min-width: 830px !important;
+  }
+  #imageDataContainer {
+    min-width: 830px !important;
+  }
+  @include breakpoint('tablet') {
+    #lightboxFrame {
+      min-height: 0;
+      min-width: 0;
+    }
+    #outerImageContainer {
+      min-height: 0 !important;
+      min-width: 0 !important;
+    }
+    #imageDataContainer {
+      min-width: 0 !important;
+    }
+  }
+  @include breakpoint('mini-tablet') {
+    #lightboxFrame {
+      min-height: 0;
+      min-width: 0;
+    }
+    #outerImageContainer {
+      min-height: 0 !important;
+      min-width: 0 !important;
+    }
+    #imageDataContainer {
+      min-width: 0 !important;
+    }
+  }
+  @include breakpoint('phone') {
+    #lightboxFrame {
+      min-height: 0;
+      min-width: 0;
+    }
+    #outerImageContainer {
+      min-height: 0 !important;
+      min-width: 0 !important;
+    }
+    #imageDataContainer {
+      min-width: 0 !important;
+    }
+  }
+}
