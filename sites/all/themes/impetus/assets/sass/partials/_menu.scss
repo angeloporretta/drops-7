@@ -229,3 +229,30 @@ ul.dropdown-menu,
       color: $linkColor;
     }
 }
+
+/* Section dropdown menu on side */
+#panels-ipe-regionid-sidebar .spaces-section-dropdown {
+  > li {
+    padding-left: 20px;
+    background: url('../images/menu-arrow-right.png') left 3px no-repeat;
+  }
+  > li.open {
+    background: url('../images/menu-arrow-down.png') left 3px no-repeat;
+  }
+  li {
+    display: block;
+    margin-right: 0px;
+    margin-bottom: 5px;
+  }
+  ul.nested {
+    position: static;
+    margin: 2.5px 0px;
+    border: none;
+  }
+  ul.nested li {
+    margin-left: 5px;
+  }
+  li.close-button {
+    display: none;
+  }
+}

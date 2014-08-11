@@ -29,5 +29,13 @@
         }
       });
     }
+    
+    // Handle dashboard space dropdown menu.
+    $('#panels-ipe-regionid-sidebar .spaces-section-dropdown > li').click(function(){
+      if ($(this).children('.nested').hasClass('show')) {
+        $('#panels-ipe-regionid-sidebar .spaces-section-dropdown > li').removeClass('open');
+        $(this).addClass('open');
+      }
+    });
   });
 })(jQuery);
