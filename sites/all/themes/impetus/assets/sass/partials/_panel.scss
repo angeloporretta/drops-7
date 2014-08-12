@@ -277,3 +277,13 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
     margin-bottom: 3px;
   }
 }
+
+/* Users in group pane */
+.pane-impetus-panes-group-members {
+  .impetus-panes-user > img {
+    vertical-align: top;
+  }
+  .impetus-panes-user-name a.mailto-link {
+    font-size: 12px;
+  }
+}

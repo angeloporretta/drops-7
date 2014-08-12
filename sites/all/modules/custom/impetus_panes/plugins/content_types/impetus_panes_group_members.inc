@@ -112,7 +112,9 @@ function impetus_panes_group_members_custom_pane_render($subtype, $conf, $args, 
     $real_name = (strlen($user->realname) > 0) ? $user->realname : $user->name;
     $block->content .= '<div class="impetus-panes-user">';
     $block->content .= oa_users_picture($user, 'thumbnail');
-    $block->content .= '<div class="impetus-panes-user-name">' . $real_name . '</div>';
+    $block->content .=  '<div class="impetus-panes-user-name">' . $real_name . '<br/>' .
+                        '<a href="mailto:' . $user->mail . '" class="mailto-link">' . t('Email Me') . '</a>' .
+                        '</div>';
     $block->content .= '</div>';
   }
 
