@@ -87,6 +87,9 @@ body.oa-login #user-login-panel .oa-pane {
 
 /* General Styling for Lightboxes and Lightframes */
 #lightbox {
+  iframe {
+    overflow: scroll;
+  }
   #lightboxFrame {
     min-height: 650px;
     min-width: 800px;
