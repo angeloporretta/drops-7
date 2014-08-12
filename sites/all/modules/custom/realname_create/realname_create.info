@@ -1,0 +1,5 @@
+name = Real Name Create
+description = Creates a real name for a user before they even need to log in, as sometimes this may not happen.
+dependencies[] = realname
+package = custom
+core = 7.x

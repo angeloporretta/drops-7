@@ -1,0 +1,11 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_user_insert.
+ */
+function realname_create_user_insert(&$edit, $account, $category) {
+  realname_update($account);
+}
