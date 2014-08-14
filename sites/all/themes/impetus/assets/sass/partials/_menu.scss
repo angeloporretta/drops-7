@@ -256,3 +256,8 @@ ul.dropdown-menu,
     display: none;
   }
 }
+
+/* Active menu items in group menu */
+.content .pane-og-menu-single-menu .pane-content a.active {
+  color: $grayDark;
+}

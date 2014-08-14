@@ -108,6 +108,13 @@ body.node-type-announcement {
   }
 }
 #main-wrapper #block-system-main .content .pane-impetus-panes-announcements {
+  h2 {
+    line-height: 25px;
+  }
+  h2 a {
+    font-size: 20px;
+    line-height: 1px;
+  }
   .field-name-field-preview-image {
     float: left;
     margin-right: 10px;

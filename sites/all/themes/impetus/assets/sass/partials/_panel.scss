@@ -287,3 +287,16 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
     font-size: 12px;
   }
 }
+
+/* Group Menu */
+#panels-ipe-regionid-sidebar .oa-pane {
+  border: none;
+}
+.content #panels-ipe-regionid-sidebar .oa-pane {
+  .pane-title {
+    background: none;
+  }
+  .panel-pane {
+    border-bottom: none;
+  }
+}
