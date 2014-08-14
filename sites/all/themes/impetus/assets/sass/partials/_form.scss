@@ -303,6 +303,13 @@ form#user-pass .form-item-name {
   }
 }
 
+/* Event backend form */
+#oa-event-node-form {
+  #edit-oa-other-spaces-ref {
+    display: none;
+  }
+}
+
 /* Footer forms */
 footer#footer {
   .form-item .description {
