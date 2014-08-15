@@ -46,5 +46,30 @@
         $(this).addClass('open');
       }
     });
+    
+    // Coloring for calendars.
+    addCalendarColors();
+    $('.fc-button').live('click', function(){
+      addCalendarColors();
+    });
+    
+    /**
+     * Helper function.
+     * Adds color coding to fc calendars. This is based on the field_color_code field.
+     */
+    function addCalendarColors() {
+      $('.fullcalendar-content .fullcalendar-event-details').each(function(index, element){
+        var hexColor = $(element).attr('color-style');
+        var calendarElement = $('.fullcalendar .fc-event[href="' + $(element).attr('href') + '"]');
+        $(calendarElement).css({
+          'background-color': hexColor,
+          'border-color': hexColor
+        });
+        $(calendarElement).find('.fc-event-time').css({
+          'background-color': hexColor,
+          'border-color': hexColor
+        });
+      });
+    }
   });
 })(jQuery);

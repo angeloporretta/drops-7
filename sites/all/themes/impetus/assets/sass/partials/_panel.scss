@@ -300,3 +300,23 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
     border-bottom: none;
   }
 }
+
+/* Full Calendar */
+.fullcalendar {
+  .fc-event,
+  .fc-event-time {
+    background-color: #fff;
+    border-color: $grayDark;
+  }
+  .fc-event-title,
+  .fc-event-time {
+    color: $grayDark;
+  }
+}
+
+/* Small events widget */
+.view-display-id-oa_events_upcoming_small {
+  .views-row .colored-event {
+    min-height: 85px;
+  }
+}

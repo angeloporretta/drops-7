@@ -81,3 +81,18 @@ function impetus_preprocess_page(&$vars) {
   }
 }
 
+/**
+ * Implements template_preprocess_fullcalendar.
+ */
+function impetus_preprocess_fullcalendar(&$variables) {
+
+  if (isset($variables['element']['content']['events']) && property_exists($variables['element']['content']['events'][0]['#entity'], 'field_color_code')) {
+    for ($i = 0; $i < count($variables['element']['content']['events']); $i++) {
+      for ($j = 0; $j < count($variables['element']['content']['events'][$i]['#event']); $j++) {
+        if (!empty($variables['element']['content']['events'][$i]['#entity']->field_color_code['und'])) {
+          $variables['element']['content']['events'][$i]['#event'][$j]['#options']['attributes']['color-style'] = $variables['element']['content']['events'][$i]['#entity']->field_color_code['und'][0]['rgb'];
+        }
+      }
+    }
+  }
+}
