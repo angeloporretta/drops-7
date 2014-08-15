@@ -1,0 +1,5 @@
+name = Group Adder
+description = Adds administrators and Impetus administrators to newly created groups
+dependencies[] = og
+package = custom
+core = 7.x
