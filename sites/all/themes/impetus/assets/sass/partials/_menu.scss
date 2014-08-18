@@ -230,6 +230,15 @@ ul.dropdown-menu,
     }
 }
 
+/* Header menu in black bar */
+.spaces-section-dropdown {
+  .close-button {
+    @include breakpoint('phone') {
+      display: none;
+    }
+  }
+}
+
 /* Section dropdown menu on side */
 .content .spaces-section-dropdown {
   > li {
