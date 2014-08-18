@@ -179,6 +179,12 @@ ul.dropdown-menu,
 
 /* OG Menu */
 .pane-og-menu-single-menu {
+  ul.menu > li > a {
+    font-size: 18px;
+  }
+  ul.menu > li > ul li a {
+    font-size: 14px;
+  }
   ul.menu li {
     margin: 2.5px;
   }
