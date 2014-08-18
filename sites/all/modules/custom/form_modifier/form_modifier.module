@@ -7,7 +7,7 @@
  * Implements hook_form_alter.
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
-
+  
   switch ($form_id) {
     case 'panopoly_page_node_form':
       form_modifier_fix_group_ref_verbiage($form);
@@ -17,6 +17,15 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     break;
     case 'devel_switch_user_form':
       $form['username']['#description'] = t("Please enter the user's first name or last name");
+    break;
+    case 'oa_space_node_form':
+      if (isset($form['oa_parent_space'])) {
+        drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
+        $form['oa_parent_space']['und']['#description'] = '';
+      }
+    break;
+    case 'oa_section_node_form':
+      form_modifier_fix_group_ref_verbiage($form);
     break;
   }
 }
