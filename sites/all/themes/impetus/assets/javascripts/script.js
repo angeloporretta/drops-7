@@ -36,8 +36,8 @@
     }
     
     // Other styling for oa group menu.
-    $('.content .pane-og-menu-single-menu ul a.active').siblings('ul').find('a').css('color', '#333');
-    $('.content .pane-og-menu-single-menu ul .expanded a').css('color', '#333');
+    $('.content .pane-og-menu-single-menu ul a.active').siblings('ul').find('a').css('color', '#0071B3');
+    $('.content .pane-og-menu-single-menu ul .expanded a').css('color', '#0071B3');
     
     // Handle dashboard space dropdown menu.
     $('.content .spaces-section-dropdown > li').click(function(){

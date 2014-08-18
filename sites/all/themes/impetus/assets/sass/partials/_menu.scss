@@ -258,6 +258,8 @@ ul.dropdown-menu,
 }
 
 /* Active menu items in group menu */
-.content .pane-og-menu-single-menu .pane-content a.active {
-  color: $grayDark;
-}
+.content .pane-og-menu-single-menu .pane-content ul li {
+  a {
+    color: $grayDark;
+  }
+} 

@@ -141,3 +141,21 @@ body.oa-login #user-login-panel .oa-pane {
     }
   }
 }
+/* General Pages */
+#main {
+  h1, h2, h3 {
+    line-height: 34px;
+  }
+  h2, h3 {
+    font-weight: 400;
+  }
+  h1{
+    font-size: 26px;
+  }
+  h2 {
+    font-size: 22px;
+  }
+  h3 {
+    font-size: 20px;
+  }
+}
