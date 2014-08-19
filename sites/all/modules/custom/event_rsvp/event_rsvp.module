@@ -1,0 +1,234 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+* Implements hook_views_api().
+*
+*/
+function event_rsvp_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'event_rsvp'),
+    'template path' => drupal_get_path('module', 'event_rsvp') . '/templates/views',
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function event_rsvp_menu() {
+  
+  return array(
+    'admin/config/people/rsvps' => array(
+      'title' => t('RSVPs'),
+      'description' => t('Find and filter event RSVPs.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('event_rsvp_render_admin_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('access rsvps'),
+      'file' => 'event_rsvp.admin.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+    'event-rsvp/autocomplete' => array(
+      'title' => 'Event Node autocomplete',
+      'page callback' => 'event_rsvp_node_autocomplete',
+      'access callback' => 'user_access',
+      'access arguments' => array('access rsvps'),
+      'type' => MENU_CALLBACK,
+      'file' => 'event_rsvp.admin.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_permission.
+ */
+function event_rsvp_permission() {
+  return array(
+    'access rsvps' => array(
+      'title' => t('Access RSVPs'),
+      'description' => t('Search for and filter RSVPs in the backend.'),
+    )
+  );
+}
+
+/**
+ * Implements hook_forms.
+ */
+function event_rsvp_forms($form_id, $args) {
+  
+  return array(
+    'event_rsvp_rsvp_form' => array(
+      'callback' => 'event_rsvp_render_form',
+      'callback arguments' => array('nid'),
+    ),
+  );
+}
+
+/**
+ * Form render function.
+ * Renders the RSVP render form.
+ */
+function event_rsvp_render_form($form, &$form_state) {
+  
+  global $user;
+  $nid = $form_state['build_info']['args'][0];
+  $form = array();
+  
+  if (event_rsvp_has_rsvped($nid, $user->uid)) {
+    $form['event_rsvp_submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Cancel RSVP'),
+    );
+    $form['is_cancel_action'] = array(
+      '#type' => 'hidden',
+      '#value' => 1,
+    );
+  }
+  else if (!event_rsvp_has_rsvped($nid, $user->uid) && !event_rsvp_is_full($nid)) {
+    $form['event_rsvp_submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('RSVP'),
+    );
+    $form['is_cancel_action'] = array(
+      '#type' => 'hidden',
+      '#value' => 0,
+    );
+  }
+  else {
+    drupal_set_message(t('Sorry the RSVP list for this event is full. You will not be able to RSVP.'), 'warning');
+  }
+  
+  $form['#validate'] = array('event_rsvp_rsvp_form_validate');
+  $form['#submit'] = array('event_rsvp_rsvp_form_submit');
+  
+  return $form;
+}
+
+/**
+ * Form valdation function.
+ * Validates the RSVP form.
+ */
+function event_rsvp_rsvp_form_validate($form, &$form_state) {
+  
+  $event_node = node_load($form_state['build_info']['args'][0]);
+  $max_rsvp_field = field_get_items('node', $event_node, 'field_rsvp_amount');
+  
+  // We are RSVPing, not cancelling.
+  if ($form_state['values']['is_cancel_action'] == 0) {
+    
+    // Detect if we have the max rsvp field filled in.
+    if ($max_rsvp_field !== FALSE) {
+
+      global $user;
+
+      if (event_rsvp_has_rsvped($form_state['build_info']['args'][0], $user->uid)) {
+        form_set_error('event_rsvp_submit', t('Sorry! You cannot RSVP to this event more than once.'));
+      }
+      else if (event_rsvp_is_full($form_state['build_info']['args'][0])) {
+        form_set_error('event_rsvp_submit', t('Sorry! This event is full and is no longer taking anymore RSVPs.'));
+      }
+    }
+  }
+}
+
+/**
+ * Form submission function.
+ * Submits the RSVP form.
+ */
+function event_rsvp_rsvp_form_submit($form, &$form_state) {
+  
+  global $user;
+  
+  // Add and RSVP.
+  if ($form_state['values']['is_cancel_action'] == 0) {
+    $rsvp_id = db_insert('event_rsvp_rsvps') 
+      ->fields(
+        array(
+          'nid' => $form_state['build_info']['args'][0],
+          'uid' => $user->uid,
+        )
+      )
+      ->execute();
+
+    if ($rsvp_id === FALSE) {
+      drupal_set_message(
+        t('Uh Oh! Something went wrong and we could not save your rsvp.') .
+        '<br/>' .
+        t('Please email support at <a href="mailto:support@impetushealthcare.com">support@impetushealthcare.com</a> to report this issue and have it resolved.'),
+        'error'
+      );
+    }
+    else {
+      drupal_set_message(t('You have successfully RSVPed to this event.'));
+    }
+  }
+  // Cancel and RSVP.
+  else {
+    $rsvp_id = db_delete('event_rsvp_rsvps') 
+      ->condition('nid', $form_state['build_info']['args'][0])
+      ->condition('uid', $user->uid)
+      ->execute();
+    drupal_set_message(t('You have cancelled your RSVP for this event.'));
+  }
+}
+
+/**
+ * Helper Function.
+ * Determines whether someone has RSVPed to an event.
+ * @param nid: The nid of the event.
+ * @param uid: The uid of the user.
+ * @return: True if the person has RSVPed to the event, false otherwise.
+ */
+function event_rsvp_has_rsvped($nid, $uid) {
+  
+  $has_rsvped = FALSE;
+
+  $rsvp_count = db_query(
+    "SELECT COUNT(rsvp_id) AS count FROM {event_rsvp_rsvps} WHERE nid = :nid AND uid = :uid",
+    array(
+      ':nid' => $nid,
+      ':uid' => $uid,
+    )
+  )->fetchAll();
+  
+  if ($rsvp_count[0]->count == '0') {
+    $has_rsvped = FALSE;
+  }
+  else {
+    $has_rsvped = TRUE;
+  }
+  
+  return $has_rsvped;
+}
+
+/**
+ * Helper Function.
+ * Determines if the event is full or not.
+ * @param nid: The nid of the event.
+ * @return: True of the event is full, false otherwise.
+ */
+function event_rsvp_is_full($nid) {
+  $is_full = TRUE;
+  
+  $rsvp_count = db_query(
+    "SELECT COUNT(rsvp_id) AS count FROM {event_rsvp_rsvps} WHERE nid = :nid",
+    array(
+      ':nid' => $nid,
+    )
+  )->fetchAll();
+  
+  $event_node = node_load($nid);
+  $max_rsvp_field = field_get_items('node', $event_node, 'field_rsvp_amount');  
+  
+  if ($rsvp_count[0]->count == '0' || $max_rsvp_field === FALSE) {
+    $is_full = FALSE;
+  }
+  else if (intval($rsvp_count[0]->count) < intval($max_rsvp_field[0]['value'])) {
+    $is_full = FALSE;
+  }
+  
+  return $is_full;
+}

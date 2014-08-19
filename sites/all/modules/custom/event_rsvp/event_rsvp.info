@@ -1,0 +1,7 @@
+name = Event RSVP
+description = Works on the field_rsvp_amount field to provide RSVP functionality to event nodes.
+dependencies[] = oa_core
+dependencies[] = panels
+dependencies[] = realname
+package = custom
+core = 7.x

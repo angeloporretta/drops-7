@@ -1,0 +1,48 @@
+<?php
+/**
+ * @file: Set up constants, schemas, text formats, and other resources that will be used in .module and .inc files.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function event_rsvp_schema() {
+  $schema = array();
+  
+  $schema['event_rsvp_rsvps'] = array(
+    'description' => 'RSVPs for events.',
+    'fields' => array(
+      'rsvp_id' => array(
+        'description' => 'The identifier for an RSVP.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The nid of the event.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The uid of the RSVPed user.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'foreign keys' => array(
+      'node_id' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+      'rsvp_user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('rsvp_id'),
+  );
+  
+  return $schema;
+}
