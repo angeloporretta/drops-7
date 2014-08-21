@@ -97,7 +97,7 @@ function event_rsvp_render_form($form, &$form_state) {
       '#value' => 0,
     );
   }
-  else {
+  else if (node_load($form_state['build_info']['args'][0]) !== FALSE){
     drupal_set_message(t('Sorry the RSVP list for this event is full. You will not be able to RSVP.'), 'warning');
   }
   
@@ -221,13 +221,16 @@ function event_rsvp_is_full($nid) {
   )->fetchAll();
   
   $event_node = node_load($nid);
-  $max_rsvp_field = field_get_items('node', $event_node, 'field_rsvp_amount');  
   
-  if ($rsvp_count[0]->count == '0' || $max_rsvp_field === FALSE) {
-    $is_full = FALSE;
-  }
-  else if (intval($rsvp_count[0]->count) < intval($max_rsvp_field[0]['value'])) {
-    $is_full = FALSE;
+  if ($event_node !== FALSE) {
+    $max_rsvp_field = field_get_items('node', $event_node, 'field_rsvp_amount');  
+
+    if ($rsvp_count[0]->count == '0' || $max_rsvp_field === FALSE) {
+      $is_full = FALSE;
+    }
+    else if (intval($rsvp_count[0]->count) < intval($max_rsvp_field[0]['value'])) {
+      $is_full = FALSE;
+    }
   }
   
   return $is_full;
