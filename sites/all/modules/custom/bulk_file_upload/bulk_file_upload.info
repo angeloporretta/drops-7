@@ -1,0 +1,4 @@
+name = Bulk File Upload
+description = Used in conjunction with the file content time to save several file nodes at once.
+dependencies[] = oa_core
+core = 7.x

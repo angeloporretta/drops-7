@@ -1,0 +1,12 @@
+/*
+ * @file: Any css on the bulk upload files page.
+ */
+#bulk-file-upload-add-files-form .form-type-managed-file {
+  display: none;
+}
+#bulk-file-upload-add-files-form div:first-child > .form-type-managed-file {
+  display: block;
+}
+#edit-add-more {
+  margin-right: 10px;
+}
