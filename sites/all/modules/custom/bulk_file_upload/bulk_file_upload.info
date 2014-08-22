@@ -1,5 +1,7 @@
 name = Bulk File Upload
 description = Used in conjunction with the file content type to save several file nodes at once.
 dependencies[] = oa_core
+dependencies[] = realname
+stylesheets[all][] = /css/bulk_file_upload_taxonomy_page.css
 package = custom
 core = 7.x
