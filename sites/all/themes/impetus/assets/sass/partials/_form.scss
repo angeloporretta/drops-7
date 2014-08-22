@@ -5,6 +5,12 @@
 
 // General form styles
 // --------------------------------------------------
+html.js fieldset.collapsible .fieldset-legend {
+  background-position: 5px 58%;
+}
+html.js fieldset.collapsed .fieldset-legend {
+  background-position: 5px 55%;
+}
 form {
   .form-item {
     margin-top: 0.5em;
@@ -324,5 +330,39 @@ footer#footer {
   #edit-timezone,
   #edit-ckeditor {
     display: none;
+  }
+}
+
+/* Bulk File Uploads Forms */
+#bulk-file-upload-add-files-form {
+  #edit-files .fieldset-legend {
+    background: none;
+    padding-left: 0px;
+  }
+  @include breakpoint('mini-tablet') {
+    #edit-add-more,
+    .form-submit {
+      display: inline-block;
+      margin-top: 15px;
+    }
+    #files-wrapper .form-submit {
+      margin-top: 0px;
+    }
+    #edit-files .fieldset-wrapper > div {
+      margin-bottom: 10px;
+    }
+  }
+  @include breakpoint('phone') {
+    #edit-add-more,
+    .form-submit {
+      display: inline-block;
+      margin-top: 15px;
+    }
+    #files-wrapper .form-submit {
+      margin-top: 5px;
+    }
+    #edit-files .fieldset-wrapper > div {
+      margin-bottom: 10px;
+    }
   }
 }

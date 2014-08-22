@@ -16,26 +16,27 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     drupal_add_css(drupal_get_path('module', 'bulk_file_upload') . '/css/bulk_file_upload_upload_page.css');
     drupal_add_js(drupal_get_path('module', 'bulk_file_upload') . '/js/bulk_file_upload_upload_page.js');
     
-    $form['preamble'] = array(
-      '#type' => 'markup',
-      '#markup' => '<h3>' . t('Upload') . '</h3>',
-      '#weight' => -50,
+    $form['new_upload_fields'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Click to Add New Files'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
     );
 
-    $form['files'] = array(
+    $form['new_upload_fields']['files'] = array(
       '#prefix' => '<div id="files-wrapper">',
       '#suffix' => '</div>',
       '#type' => 'fieldset',
       '#title' => t('Files you want to upload'),
     );
     
-    $form['tid'] = array(
+    $form['new_upload_fields']['tid'] = array(
       '#type' => 'hidden',
       '#value' => $tid,
     );
 
     $folder = taxonomy_term_load($tid);
-    $form['folder_prompt'] = array(
+    $form['new_upload_fields']['folder_prompt'] = array(
       '#type' => 'markup',
       '#markup' => t(
         'You will be uploading these files into the <strong>@folder_name</strong> folder.',
@@ -48,7 +49,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     if (isset($_SESSION['oa_section_id'])){
       $section_node = node_load($_SESSION['oa_section_id']);
 
-      $form['is_private'] = array(
+      $form['new_upload_fields']['is_private'] = array(
         '#type' => 'checkbox',
         '#title' => t('These files are private.'),
         '#description' => t(
@@ -60,7 +61,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
       );
     }
     else {
-      $form['public_prompt'] = array(
+      $form['new_upload_fields']['public_prompt'] = array(
         '#type' => 'markup',
         '#markup' => t('These uploaded files will be publicly accessible'),
         '#weight' => -48,
@@ -70,7 +71,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     $node_upload_field_info = field_info_instance('node', 'field_uploaded_file', 'file');
 
     for ($i = 0; $i < 20; $i++) {
-      $form['files']['file_upload_' . $i] = array(
+      $form['new_upload_fields']['files']['file_upload_' . $i] = array(
         '#type' => 'managed_file',
         '#title' => t('Choose a file'),
         '#upload_location' => 'private://' . $node_upload_field_info['settings']['file_directory'] . '/',
@@ -80,12 +81,12 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
       );
     }
 
-    $form['add_more'] = array(
+    $form['new_upload_fields']['add_more'] = array(
       '#type' => 'button',
       '#value' => t('Add More'),
     );
 
-    $form['submit'] = array(
+    $form['new_upload_fields']['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Upload Files'),
     );
@@ -180,20 +181,27 @@ function bulk_file_upload_add_taxonomy_term_form($form, &$form_state, $parent_ti
       '#value' => $parent_tid,
     );
     
-    $parent_folder = taxonomy_term_load($parent_tid);
-    $form['preamble'] = array(
-      '#type' => 'markup',
-      '#markup' => '<strong>' . t('Add a new folder within @folder_name', array('@folder_name' => $parent_folder->name)) . '</strong>',
+    $form['new_folder_fields'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Click to Add a New Folder'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
     );
     
-    $form['term_name'] = array(
+    $parent_folder = taxonomy_term_load($parent_tid);
+    $form['new_folder_fields']['preamble'] = array(
+      '#type' => 'markup',
+      '#markup' => t('Add a new folder within @folder_name', array('@folder_name' => $parent_folder->name)),
+    );
+    
+    $form['new_folder_fields']['term_name'] = array(
       '#type' => 'textfield',
       '#title' => t('Folder Name'),
       '#default_value' => '',
       '#required' => TRUE,
     );
     
-    $form['submit'] = array(
+    $form['new_folder_fields']['submit'] = array(
       '#type' => 'submit',
       '#value' => t('Add Folder'),
     );
