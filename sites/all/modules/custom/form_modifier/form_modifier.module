@@ -8,6 +8,8 @@
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   
+  drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
+  
   switch ($form_id) {
     case 'panopoly_page_node_form':
       form_modifier_fix_group_ref_verbiage($form);
@@ -20,7 +22,6 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     break;
     case 'oa_space_node_form':
       if (isset($form['oa_parent_space'])) {
-        drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
         $form['oa_parent_space']['und']['#description'] = '';
       }
     break;
