@@ -1,0 +1,109 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the this module.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function file_tracker_schema() {
+  
+  $schema['file_tracker_downloads'] = array(
+    'description' => 'Tracks the downloads of files.',
+    'fields' => array(
+      'download_tracker_id' => array(
+        'description' => 'The primary identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The title of the file node from which they downloaded the file.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The user who downloaded the file.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'filename' => array(
+        'description' => 'The file name of the file they downloaded.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'downloaded_timestamp' => array(
+        'description' => 'The Unix timestamp when the file was downloaded.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('download_tracker_id'),
+  );
+  
+  $schema['file_tracker_views'] = array(
+    'description' => 'Tracks the views of files.',
+    'fields' => array(
+      'view_tracker_id' => array(
+        'description' => 'The primary identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The title of the file node from which was viewed.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The user who viewed the file node.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'filename' => array(
+        'description' => 'The file name of the file they downloaded.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+        'default' => '',
+      ),
+      'viewed_timestamp' => array(
+        'description' => 'The Unix timestamp when the file was viewed.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('view_tracker_id'),
+  );
+  
+  return $schema;
+}

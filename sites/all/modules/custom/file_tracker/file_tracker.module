@@ -1,0 +1,111 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_permission.
+ */
+function file_tracker_permission() {
+  return array(
+    'access file downloads tracker' => array(
+      'title' => t('Access file download tracker'),
+    ),
+    'access file views tracker' => array(
+      'title' => t('Access file views tracker'),
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function file_tracker_menu() {
+  
+  return array(
+    'admin/people/file-download-tracker' => array(
+      'title' => t('File Download Tracker'),
+      'description' => t('Find and filter who downloaded files.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('file_tracker_download_tracker_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('access file downloads tracker'),
+      'file' => 'file_tracker.forms.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+    'admin/people/file-view-tracker' => array(
+      'title' => t('File View Tracker'),
+      'description' => t('Find and filter who viewed files.'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('file_tracker_view_tracker_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('access file views tracker'),
+      'file' => 'file_tracker.forms.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+    'file-tracker/filename-views-autocomplete' => array(
+      'title' => 'File Name Views Autocomplete',
+      'page callback' => 'file_tracker_filename_views_autocomplete',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+      'file' => 'file_tracker.forms.inc',
+    ),
+    'file-tracker/filename-downloads-autocomplete' => array(
+      'title' => 'File Name Downloads Autocomplete',
+      'page callback' => 'file_tracker_filename_downloads_autocomplete',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+      'file' => 'file_tracker.forms.inc',
+    ),
+    'file-tracker/realname-autocomplete' => array(
+      'title' => 'Realname autocomplete',
+      'page callback' => 'file_tracker_realname_autocomplete',
+      'access callback' => TRUE,
+      'type' => MENU_CALLBACK,
+      'file' => 'file_tracker.forms.inc',
+    ),
+  );
+}
+
+/**
+ * Implements hook_node_view.
+ */
+function file_tracker_node_view($node, $view_mode, $langcode) {
+  
+  if ($node->type == 'file') {
+    global $user;
+    
+    $file_fields = field_get_items('node', $node, 'field_uploaded_file');
+    
+    db_insert('file_tracker_views') 
+    ->fields(
+      array(
+        'nid' =>  $node->nid,
+        'uid' => $user->uid,
+        'filename' => $file_fields[0]['filename'],
+        'viewed_timestamp' => time(),
+      )
+    )
+    ->execute();
+  }
+}
+
+/**
+ * Implements hook_file_download_access_alter().
+ */
+function file_tracker_file_download_access_alter(&$grants, $file, $entity_type, $entity) {
+  
+  if ($entity_type == 'node' && $entity->type == 'file') {
+    $time =  REQUEST_TIME;
+    global $user;
+
+    $id = db_insert('file_tracker_downloads')
+    ->fields(array(
+      'filename' => $file['filename'],
+      'uid' => $user->uid,
+      'nid' => $entity->nid,
+      'downloaded_timestamp' => $time,
+    ))
+    ->execute();
+  }
+}
