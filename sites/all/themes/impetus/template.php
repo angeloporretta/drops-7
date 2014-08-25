@@ -12,6 +12,17 @@ require_once dirname(__FILE__) . '/includes/comment.inc';
 require_once dirname(__FILE__) . '/includes/node.inc';
 
 /**
+ * Implements theme_preprocess_html.
+ */
+function impetus_preprocess_html(&$variables) {
+  global $user;
+  
+  if (in_array('administrator', $user->roles) || in_array('impetus admin', $user->roles) || $user->uid == 1) {
+    $variables['classes_array'][] = 'logged-in-admin';
+  }
+}
+
+/**
  * Implements hook_css_alter().
  * Changes the jQuery UI theme to a Bootstrap-like theme
  * from http://addyosmani.github.io/jquery-ui-bootstrap/

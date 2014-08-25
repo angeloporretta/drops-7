@@ -195,9 +195,15 @@ article.node-file {
   }
 }
 body.node-type-file {
+  #main-wrapper #contextual-tabs {
+    display: block;
+  }
   @include breakpoint('mini-tablet') {
     #contextual-tabs {
       margin-top: 0px;
     }
   }
+}
+body.page-node #main-wrapper #contextual-tabs {
+  display: block;
 }

@@ -172,3 +172,13 @@ body.oa-login #user-login-panel .oa-pane {
     border-bottom: none;
   }
 }
+
+/* Node contextual tabs */
+#main-wrapper #contextual-tabs,
+#main-wrapper #contextual-tabs #visibility-dropdown{
+  display: none;
+}
+body.logged-in-admin #main-wrapper #contextual-tabs,
+body.logged-in-admin #main-wrapper #contextual-tabs #visibility-dropdown{
+  display: block;
+}
