@@ -89,7 +89,9 @@
 
   <?php if ($display_submitted): ?>
     <footer class="meta submitted">
-      <?php print $user_picture; ?>
+      <?php if ($user_picture != ''): ?>
+        <?php print $user_picture; ?>
+      <?php endif; ?>
       <div class="submitted-by">
         <?php print $submitted; ?>
       </div>

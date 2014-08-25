@@ -155,12 +155,14 @@ article.node-file {
     .submitted-by {
       display: inline-block;
     }
+    img {
+      margin-right: 35px;
+    }
     .submitted-by {
       display: inline-block;
       font-size: 22px;
       line-height: normal;
       margin-top: 15px;
-      margin-left: 35px;
       vertical-align: top;
       width: 78%;
     }
@@ -181,7 +183,6 @@ article.node-file {
     }
     @include breakpoint('phone') {
       .submitted-by {
-        margin-left: 0px;
         margin-top: 10px;
         display: block;
         width: auto;
