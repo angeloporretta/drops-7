@@ -96,3 +96,28 @@ function impetus_preprocess_fullcalendar(&$variables) {
     }
   }
 }
+
+/**
+ * Implements template_preprocess_node.
+ */
+function impetus_preprocess_node(&$variables) {
+  
+  switch ($variables['type']) {
+    case 'file':
+      $author = user_load($variables['revision_uid']);
+      
+      if (property_exists($author, 'picture') && $author->picture != NULL) {
+        $variables['user_picture'] = theme(
+          'image_style',
+          array(
+            'style_name' => 'thumbnail',
+            'path' => $author->picture->uri,
+          )
+        );
+      }
+      
+      
+      
+    break;
+  }
+}

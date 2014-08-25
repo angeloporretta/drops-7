@@ -135,3 +135,68 @@ body.node-type-announcement {
     border-top: none;
   }
 }
+
+/* File Nodes */
+article.node-file {
+  .field {
+    margin-bottom: 15px;
+  }
+  .field-label {
+    font-size: 18px;
+  }
+  .field-item {
+    font-size: 16px;
+  }
+  .submitted {
+    margin-bottom: 10px;
+    padding-bottom: 10px;
+    border-bottom: $grayLighter 1px solid;
+    img,
+    .submitted-by {
+      display: inline-block;
+    }
+    .submitted-by {
+      display: inline-block;
+      font-size: 22px;
+      line-height: normal;
+      margin-top: 15px;
+      margin-left: 35px;
+      vertical-align: top;
+      width: 78%;
+    }
+    @include breakpoint('tablet') {
+      .submitted-by {
+        margin-top: 0px;
+        width: 73%;
+        width: 65%;
+        font-size: 18px; 
+      }
+    }
+    @include breakpoint('mini-tablet') {
+      .submitted-by {
+        margin-top: 0px;
+        width: 65%;
+        font-size: 18px; 
+      }
+    }
+    @include breakpoint('phone') {
+      .submitted-by {
+        margin-left: 0px;
+        margin-top: 10px;
+        display: block;
+        width: auto;
+      }
+      img {
+        margin: auto;
+        display: block;
+      }
+    }
+  }
+}
+body.node-type-file {
+  @include breakpoint('mini-tablet') {
+    #contextual-tabs {
+      margin-top: 0px;
+    }
+  }
+}
