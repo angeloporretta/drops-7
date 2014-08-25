@@ -116,7 +116,10 @@ function impetus_preprocess_node(&$variables) {
         );
       }
       
-      
+      $variables['submitted'] = t(
+        'Edited by @name on @timestamp', 
+        array('@name' => $author->realname, '@timestamp' => date('F d, Y - g:ia', $variables['changed']))
+      );
       
     break;
   }
