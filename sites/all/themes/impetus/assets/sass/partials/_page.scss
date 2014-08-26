@@ -182,3 +182,10 @@ body.logged-in-admin #main-wrapper #contextual-tabs,
 body.logged-in-admin #main-wrapper #contextual-tabs #visibility-dropdown{
   display: block;
 }
+
+/* Folder Widget */
+.taxonomy-files {
+  #bulk-file-download {
+    margin-bottom: 10px;
+  }
+}
