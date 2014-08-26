@@ -45,9 +45,10 @@ function bulk_file_upload_render_download_page() {
               $file_fields = field_get_items('node', $file_node, 'field_uploaded_file');
               $base_file_path = '.' . str_replace($_SERVER['DOCUMENT_ROOT'], '', drupal_realpath($file_fields[0]['uri']));
               $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
+              watchdog('DEBUG_DOWNLOAD_FILES', 'Basepath: ' . $base_file_path . ' ---- New File Name: ' . $file_fields[0]['filename']);
             }
           }
-
+          
           $zip_archive->close();
           header('Content-Type: application/zip');
           header('Content-disposition: attachment; filename=' . $archive_name);
