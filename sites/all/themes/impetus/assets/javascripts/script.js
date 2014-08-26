@@ -71,5 +71,8 @@
         });
       });
     }
+    
+    // Minor stylistic changes for lock file button.
+    $('#reserve-files-reservation-form .form-submit').removeClass('btn-primary');
   });
 })(jQuery);
