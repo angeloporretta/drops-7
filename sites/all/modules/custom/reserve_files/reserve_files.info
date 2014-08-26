@@ -1,0 +1,5 @@
+name = Reserve Files
+description = Allows users to lock file nodes so nobody else but them can edit.
+dependencies[] = realname
+package = custom
+core = 7.x

@@ -1,0 +1,54 @@
+<?php
+/**
+ * @file
+ * Install, update and uninstall functions for the this module.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function reserve_files_schema() {
+  
+  $schema['reserve_files_reservations'] = array(
+    'description' => 'Keeps track of which file nodes have been reserved and by who.',
+    'fields' => array(
+      'reservation_id' => array(
+        'description' => 'The primary identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The nid of the file node that has been reserved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'uid' => array(
+        'description' => 'The uid of the user who reserved the node.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+      'reservation_timestamp' => array(
+        'description' => 'The Unix timestamp when the file node was reserved.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'foreign keys' => array(
+      'node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+      'user' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('reservation_id'),
+  );
+  
+  return $schema;
+}

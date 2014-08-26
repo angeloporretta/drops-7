@@ -1,0 +1,205 @@
+<?php
+/**
+ * @file: The primary functionality of this module.
+ */
+
+/**
+ * Implements hook_cron.
+ */
+function reserve_files_cron() {
+  db_delete('reserve_files_reservations')->execute();
+}
+
+/**
+ * Implements hook_permission.
+ */
+function reserve_files_permission() {
+  return array(
+    'lock files' => array(
+      'title' => t('Lock files'),
+    ),
+    'release other file locks' => array(
+      'title' => t("Release other people's file locks"),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_preprocess_page.
+ */
+function reserve_files_preprocess_page(&$page) {
+  
+  $page_object = menu_get_object();
+
+  if ($page_object != NULL && property_exists($page_object, 'nid') && $page_object->type == 'file' && node_is_page($page_object) && isset($page['page']['content']['system_main']['main'])) {
+    $reserve_file_form = drupal_get_form('reserve_files_reservation_form', $page_object->nid);
+    $page['page']['content']['system_main']['main']['#markup'] = render($reserve_file_form) . $page['page']['content']['system_main']['main']['#markup'];
+  }
+}
+
+/**
+ * Implements hook_forms.
+ */
+function reserve_files_forms($form_id, $args) {
+  
+  return array(
+    'reserve_files_reservation_form' => array(
+      'callback' => 'reserve_files_get_reservation_form',
+      'callback arguments' => array('nid'),
+    ),
+  );
+}
+
+/**
+ * Helper Function.
+ * Constructs the file lock form.
+ * @return array: A form array.
+ */
+function reserve_files_get_reservation_form($form, &$form_state) {
+  
+  $form = array();
+  global $user;
+  $lock_results = db_query(
+    "
+      SELECT reservation_id, uid
+      FROM {reserve_files_reservations}
+      WHERE nid = :nid
+    ",
+    array(
+      ':nid' => $form_state['build_info']['args'][0]
+    )
+  )->fetchAll();
+  
+  if (
+    (user_access('lock files') && empty($lock_results)) || 
+    (user_access('lock files') && $lock_results[0]->uid == $user->uid) ||
+    user_access('release other file locks')
+  ) {
+    $form['nid'] = array(
+      '#type' => 'hidden',
+      '#value' => $form_state['build_info']['args'][0],
+    );
+
+    $form['submit'] = array(
+      '#prefix' => '<div id="lock-file-button">',
+      '#suffix' => '</div>',
+      '#type' => 'submit',
+      '#value' => (empty($lock_results)) ? t('Lock File') : t('Unlock File'),
+      '#ajax' => array(
+        'callback' => 'reserve_files_ajax_file_lock',
+        'wrapper' => 'lock-file-button'
+      )
+    );
+  }
+  
+  return $form;
+}
+
+/**
+ * Ajax Handler.
+ * Handles the validation and submission of the lock form.
+ */
+function reserve_files_ajax_file_lock($form, &$form_state) {
+  
+  if (user_access('lock files')) {
+    
+    global $user;
+    
+    $lock_results = db_query(
+      "
+        SELECT reservation_id, uid
+        FROM {reserve_files_reservations}
+        WHERE nid = :nid
+      ",
+      array(
+        ':nid' => $form_state['values']['nid']
+      )
+    )->fetchAll();
+    
+    if (empty($lock_results)) {
+      $success = db_insert('reserve_files_reservations')
+        ->fields(
+          array(
+            'nid' => $form_state['values']['nid'],
+            'uid' => $user->uid,
+            'reservation_timestamp' => REQUEST_TIME,
+          )
+        )
+        ->execute();
+      
+      if ($success != NULL) {
+        $form['submit']['#value'] = t('Unlock File');
+        return $form['submit'];
+      }
+      else {
+        $form['error_msg'] = array(
+          '#type' => 'markup',
+          '#markup' => '<p>' . t('Uh Oh! Something went wrong and we could not lock this file for you.') . '</p>'
+        );
+        
+        return $form['error_msg'];
+      }
+    }
+    else if (user_access('release other file locks') || $lock_results[0]->uid == $user->uid){
+      
+      $success = db_delete('reserve_files_reservations')
+        ->condition('nid', $form_state['values']['nid'])
+        ->execute();
+      
+      if ($success != NULL) {
+        $form['submit']['#value'] = t('Lock File');
+        return $form['submit'];
+      }
+      else {
+        $form['error_msg'] = array(
+          '#type' => 'markup',
+          '#markup' => '<p>' . t('Uh Oh! Something went wrong and we could not unlock this file for you.') . '</p>'
+        );
+        
+        return $form['error_msg'];
+      }
+    }
+  }
+  
+  return $form;
+}
+
+/**
+ * Implements hook_form_alter.
+ */
+function reserve_files_form_alter(&$form, &$form_state, $form_id) {
+  
+  switch ($form_id) {
+    case 'file_node_form':    
+      global $user;
+
+      $lock_results = db_query(
+        "
+          SELECT reservation_id, uid, reservation_timestamp
+          FROM {reserve_files_reservations}
+          WHERE nid = :nid
+        ",
+        array(
+          ':nid' => $form['nid']['#value']
+        )
+      )->fetchAll();
+
+      if (!empty($lock_results) && $lock_results[0]->uid != $user->uid) {
+        
+        $user_who_locked = user_load($lock_results[0]->uid);
+   
+        drupal_set_message(
+          t(
+            'Sorry! This file is currently locked by @name and you cannot edit it. This file was locked at @time.',
+            array('@name' => $user_who_locked->realname, '@time' => date('g:ia, d M', $lock_results[0]->reservation_timestamp))
+          ),
+          'warning'
+        );
+        
+        drupal_goto('node/'. $form['nid']['#value'], array(), 307);
+      }
+      
+    break;
+  }
+}
