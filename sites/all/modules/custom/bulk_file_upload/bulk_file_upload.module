@@ -196,7 +196,11 @@ function bulk_file_upload_render_file_table($tid) {
       }
 
       $revision_user = user_load($file_node->revision_uid);
-      $html .= '<td>' . $revision_user->realname . '</td>';
+      
+      if ($revision_user !== FALSE) {
+        $html .= '<td>' . $revision_user->realname . '</td>';
+      }
+      
       $html .= '</tr>';
 
     }
