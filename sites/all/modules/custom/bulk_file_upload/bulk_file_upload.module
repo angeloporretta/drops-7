@@ -55,6 +55,24 @@ function bulk_file_upload_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
+ * Implements hook_menu.
+ */
+function bulk_file_upload_menu() {
+  
+  return array(
+    'bulk-download-files' => array(
+      'title' => t('Bulk Download Files'),
+      'description' => t('Provides the ability to bulk download files as a zip.'),
+      'page callback' => 'bulk_file_upload_render_download_page',
+      'access callback' => 'user_access',
+      'access arguments' => array('bulk download file archive'),
+      'file' => 'bulk_file_upload.pages.inc',
+      'type' => MENU_NORMAL_ITEM,
+    ),
+  );
+}
+
+/**
  * Usort implementation.
  * Meant to the result of the taxonomy_get_children function.
  */
@@ -96,6 +114,9 @@ function bulk_file_upload_permission() {
     ),
     'access folder add form' => array(
       'title' => t('Access the folder add form'),
+    ),
+    'bulk download file archive' => array(
+      'title' => t('Download all files in a folder as zip'),
     ),
   );
 }
@@ -181,6 +202,7 @@ function bulk_file_upload_render_file_table($tid) {
   if (!empty($results)) {
     $html .= '<div class="taxonomy-files">';
     $html .= '<h3>' . t('Files in this folder') . ':</h3>';
+    $html .= '<a href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
     $html .= '<table><tr><th>' . t('File Title') . '</th><th>' . t('Download Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</tr>';
 
     $file_nodes = node_load_multiple(array_keys($results['node']));
