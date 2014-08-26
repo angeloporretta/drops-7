@@ -44,9 +44,14 @@ function bulk_file_upload_render_download_page() {
           foreach ($file_nodes as $file_node) {
             if (node_access('view', $file_node)) {
               $file_fields = field_get_items('node', $file_node, 'field_uploaded_file');
-              //$base_file_path = '.' . str_replace($_SERVER['DOCUMENT_ROOT'], '', drupal_realpath($file_fields[0]['uri']));
               $base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
               $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
+              
+              // If the file tracker module is enabled, then let's keep track of this downloaded file.
+              if (module_exists('file_tracker')) {
+                global $user;
+                file_tracker_insert_download_record(array('nid' => $file_node->nid, 'uid' => $user->uid, 'file_name' => $file_fields[0]['filename']));
+              }
             }
           }
           
