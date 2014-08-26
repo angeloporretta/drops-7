@@ -32,18 +32,20 @@ function bulk_file_upload_render_download_page() {
         ->execute();
       
       if (!empty($node_result)) {
-
+        
+        $file_folder_info = field_info_instance('node', 'field_uploaded_file', 'file');
         $file_nodes = node_load_multiple(array_keys($node_result['node']));
         $archive_file = drupal_tempnam('./temp-download-archives','');
         $archive_name = str_replace(' ', '-', $file_folder->name . '.zip');
         $zip_archive = new ZipArchive();
-
+        
 
         if ($zip_archive->open($archive_file, ZipArchive::CREATE) === TRUE) {
           foreach ($file_nodes as $file_node) {
             if (node_access('view', $file_node)) {
               $file_fields = field_get_items('node', $file_node, 'field_uploaded_file');
-              $base_file_path = '.' . str_replace($_SERVER['DOCUMENT_ROOT'], '', drupal_realpath($file_fields[0]['uri']));
+              //$base_file_path = '.' . str_replace($_SERVER['DOCUMENT_ROOT'], '', drupal_realpath($file_fields[0]['uri']));
+              $base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
               $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
               watchdog('DEBUG_DOWNLOAD_FILES', 'Basepath: ' . $base_file_path . ' ---- New File Name: ' . $file_fields[0]['filename']);
             }
