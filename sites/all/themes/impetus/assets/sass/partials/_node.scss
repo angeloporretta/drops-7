@@ -194,7 +194,14 @@ article.node-file {
     }
   }
 }
+/* File Nodes */
 body.node-type-file {
+  .node-file {
+    clear: both;
+  }
+  #lock-file-button .form-submit {
+    float: right;
+  }
   #main-wrapper #contextual-tabs {
     display: block;
   }
