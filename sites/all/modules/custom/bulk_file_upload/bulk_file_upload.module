@@ -202,7 +202,7 @@ function bulk_file_upload_render_file_table($tid) {
   if (!empty($results)) {
     $html .= '<div class="taxonomy-files">';
     $html .= '<h3>' . t('Files in this folder') . ':</h3>';
-    $html .= '<a href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
+    $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
     $html .= '<table><tr><th>' . t('File Title') . '</th><th>' . t('Download Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</tr>';
 
     $file_nodes = node_load_multiple(array_keys($results['node']));
@@ -213,7 +213,7 @@ function bulk_file_upload_render_file_table($tid) {
 
       $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
       if ($file_downloads != FALSE) {
-        $html .= '<td><a href="' . file_create_url($file_downloads[0]['uri']) . '">' . t('Download This File') . '</a></td>';
+        $html .= '<td><a download href="' . file_create_url($file_downloads[0]['uri']) . '">' . t('Download This File') . '</a></td>';
         $html .= '<td>' . format_size($file_downloads[0]['filesize']) . '</td>';
       }
 
