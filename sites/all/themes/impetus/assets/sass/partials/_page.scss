@@ -189,3 +189,11 @@ body.logged-in-admin #main-wrapper #contextual-tabs #visibility-dropdown{
     margin-bottom: 10px;
   }
 }
+.taxonomy-subfolders {
+  @include breakpoint('mini-tablet') {
+    ul li {
+      display: block;
+      width: auto;
+    }
+  }
+}
