@@ -47,7 +47,6 @@ function bulk_file_upload_render_download_page() {
               //$base_file_path = '.' . str_replace($_SERVER['DOCUMENT_ROOT'], '', drupal_realpath($file_fields[0]['uri']));
               $base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
               $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
-              watchdog('DEBUG_DOWNLOAD_FILES', 'Basepath: ' . $base_file_path . ' ---- New File Name: ' . $file_fields[0]['filename']);
             }
           }
           
