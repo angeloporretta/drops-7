@@ -202,7 +202,11 @@ function bulk_file_upload_render_file_table($tid) {
   if (!empty($results)) {
     $html .= '<div class="taxonomy-files">';
     $html .= '<h3>' . t('Files in this folder') . ':</h3>';
-    $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
+    
+    if (user_access('bulk download file archive')) {
+      $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
+    }
+    
     $html .= '<table><tr><th>' . t('File Title') . '</th><th>' . t('Download Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</tr>';
 
     $file_nodes = node_load_multiple(array_keys($results['node']));
