@@ -86,11 +86,15 @@ function bulk_file_upload_sort_child_folders($a, $b) {
 function bulk_file_upload_preprocess_taxonomy_term(&$variables) {
   
   if ($variables['vocabulary_machine_name'] == 'file_categories') {
-    $variables['content'] = '';
-    $variables['content'] .= bulk_file_upload_render_child_folders($variables['term']->tid);
-    $variables['content'] .= render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $variables['term']->tid));
-    $variables['content'] .= bulk_file_upload_render_file_table($variables['term']->tid);
-    $variables['content'] .= render(drupal_get_form('bulk_file_upload_add_files_form', $variables['term']->tid));
+    $variables['content']['bulk_file_uploads'] = array(
+      '#type' => 'markup',
+      '#markup' => '',
+    );
+    
+    $variables['content']['bulk_file_uploads']['#markup'] .= bulk_file_upload_render_child_folders($variables['term']->tid) .
+      render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $variables['term']->tid)) .
+      bulk_file_upload_render_file_table($variables['term']->tid) .
+      render(drupal_get_form('bulk_file_upload_add_files_form', $variables['term']->tid));
   }
 }
 

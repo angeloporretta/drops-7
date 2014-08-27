@@ -156,7 +156,7 @@ function impetus_preprocess_node(&$variables) {
         
         if (!empty($results)) {
           $files_in_folder_html = '<div class="files-in-folder">';
-          $files_in_folder_html .= '<strong>' . t('Related Files') . ':</strong>';
+          $files_in_folder_html .= '<strong>' . t('Folder Contents') . ':</strong>';
           $files_in_folder_html .= '<ul class="files-in-this-folder-list">';
           $file_nodes = node_load_multiple(array_keys($results['node']));
           
