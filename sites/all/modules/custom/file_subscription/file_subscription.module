@@ -16,7 +16,7 @@ function file_subscription_node_insert($node) {
       $folder_term = taxonomy_term_load($category_fields[0]['tid']);
       $flag_users = file_subscription_get_subscribed_users($folder_term->tid);
       $upload_fields = field_get_items('node', $node, 'field_uploaded_file');
-      $file = file_load($upload_fields[0]);
+      $file = file_load($upload_fields[0]['fid']);
 
       foreach ($flag_users as $flag_user) {        
         drupal_mail(
@@ -51,7 +51,7 @@ function file_subscription_node_update($node) {
       $folder_term = taxonomy_term_load($category_fields[0]['tid']);
       $flag_users = file_subscription_get_subscribed_users($folder_term->tid);
       $upload_fields = field_get_items('node', $node, 'field_uploaded_file');
-      $file = file_load($upload_fields[0]);
+      $file = file_load($upload_fields[0]['fid']);
 
       foreach ($flag_users as $flag_user) {        
         drupal_mail(
