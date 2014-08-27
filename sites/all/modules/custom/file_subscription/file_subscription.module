@@ -16,7 +16,8 @@ function file_subscription_node_insert($node) {
       $folder_term = taxonomy_term_load($category_fields[0]['tid']);
       $flag_users = file_subscription_get_subscribed_users($folder_term->tid);
       $upload_fields = field_get_items('node', $node, 'field_uploaded_file');
-      
+      $file = file_load($upload_fields[0]);
+
       foreach ($flag_users as $flag_user) {        
         drupal_mail(
           'file_subscription', 
@@ -24,10 +25,10 @@ function file_subscription_node_insert($node) {
           $flag_user->mail, 
           user_preferred_language($flag_user), 
           array(
-            '@file_title' => $node->original->title,
+            '@file_title' => $node->title,
             '@file_link' => drupal_get_path_alias('node/' . $node->nid),
             '@folder_name' => $folder_term->name,
-            '@download_link' => file_create_url($upload_fields[0]['uri']),
+            '@download_link' => file_create_url($file->uri),
           ), 
           variable_get('site_mail', 'portal@impetushealthcare.com'), 
           TRUE
@@ -50,7 +51,8 @@ function file_subscription_node_update($node) {
       $folder_term = taxonomy_term_load($category_fields[0]['tid']);
       $flag_users = file_subscription_get_subscribed_users($folder_term->tid);
       $upload_fields = field_get_items('node', $node, 'field_uploaded_file');
-      
+      $file = file_load($upload_fields[0]);
+
       foreach ($flag_users as $flag_user) {        
         drupal_mail(
           'file_subscription', 
@@ -58,10 +60,10 @@ function file_subscription_node_update($node) {
           $flag_user->mail, 
           user_preferred_language($flag_user), 
           array(
-            '@file_title' => $node->title,
+            '@file_title' => $node->original->title,
             '@file_link' => drupal_get_path_alias('node/' . $node->nid),
             '@folder_name' => $folder_term->name,
-            '@download_link' => file_create_url($upload_fields[0]['uri']),
+            '@download_link' => file_create_url($file->uri),
           ), 
           variable_get('site_mail', 'portal@impetushealthcare.com'), 
           TRUE
