@@ -1,0 +1,6 @@
+name = File Subscription
+description = Sends out a variety of emails to people who have subscribed to file folders.
+dependencies[] = bulk_file_upload
+dependencies[] = flag
+package = custom
+core = 7.x

@@ -1,0 +1,70 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+ * Implements hook_node_insert.
+ */
+function file_subscription_node_insert($node) {
+  
+  if ($node->type == 'file') {
+    $category_fields = field_get_items('node', $node, 'field_file_category');
+    
+    if ($category_fields !== FALSE && !empty($category_fields)) {
+      
+      $folder_term = taxonomy_term_load($category_fields[0]['tid']);
+      $flags = flag_get_content_flags('taxonomy_term', $folder_term->tid);
+      $flag_user_ids = array();
+      $flag_users = array();
+      
+      foreach ($flags as $flag) {
+        $flag_user_ids[] = $flag['folder_subscription']->uid;
+      }
+      
+      $flag_users = user_load_multiple($flag_user_ids);
+      
+      foreach ($flag_users as $flag_user) {        
+        drupal_mail(
+          'file_subscription', 
+          'file_subscription_file_created', 
+          $flag_user->mail, 
+          user_preferred_language($flag_user), 
+          array(
+            '@file_title' => $node->title,
+            '@file_link' => drupal_get_path_alias('node/' . $node->nid),
+            '@folder_name' => $folder_term->name,
+          ), 
+          variable_get('site_mail', 'portal@impetushealthcare.com'), 
+          TRUE
+        );
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail.
+ */
+function file_subscription_mail($key, &$message, $params) {
+  
+  $branding_img = '<img src="/placeholder/photos.png" alt="' . t('Email Logo') . '" />';
+  $fid = variable_get('oa_site_banner_file', '');
+
+  if ($fid['fid'] != '') {
+    $logo_object = file_load($fid['fid']);
+    $logo_url = file_create_url($logo_object->uri);
+    $branding_img = '<img src="' . $logo_url . '" alt="' . t('Email Logo') . '" />';
+  }
+  
+  switch ($key) {
+    case 'file_subscription_file_created':
+      $message['subject'] = t('The file @file_title has been created in the folder @folder_name.', $params);
+      $message['body'] = '<p>' . t('The file <strong>@file_title</strong> has been created in the folder @folder_name.', $params) . '</p>';
+      $message['body'] = '<p>' . t('You can find this file by visiting this link @file_link', $params) . '</p>';
+      $message['body'] = '<p>-- ' . t('Impetus Team') . '<br/><br/>' . $branding_img;
+    break;
+  }
+  
+}
+
