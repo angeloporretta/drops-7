@@ -72,7 +72,20 @@
       });
     }
     
-    // Minor stylistic changes for lock file button.
-    $('#reserve-files-reservation-form .form-submit').removeClass('btn-primary');
+    // Changes to file node pages.
+    $('.node-file .field-name-field-uploaded-file span.file a').attr('download', '');
+    $('.files-in-this-folder span.file a').attr('download', '');
+    
+    // Changes to node edit forms.
+    if ($('.regular-user .node-form .pane-node-form-menu').has('h3').get(0) == undefined) {
+      $('.regular-user .node-form .pane-node-form-menu').css('display', 'none');
+    }
+    if ($('.regular-user .node-form .pane-node-form-publishing').has('h3').get(0) == undefined) {
+      $('.regular-user .node-form .pane-node-form-publishing').css('display', 'none');
+    }
+    if ($('.regular-user .node-form .pane-node-form-author').has('h3').get(0) == undefined) {
+      $('.regular-user .node-form .pane-node-form-author').css('display', 'none');
+    }
+    
   });
 })(jQuery);

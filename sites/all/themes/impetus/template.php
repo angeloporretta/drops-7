@@ -16,9 +16,12 @@ require_once dirname(__FILE__) . '/includes/node.inc';
  */
 function impetus_preprocess_html(&$variables) {
   global $user;
-  
+
   if (in_array('administrator', $user->roles) || in_array('impetus admin', $user->roles) || $user->uid == 1) {
     $variables['classes_array'][] = 'logged-in-admin';
+  }
+  else if (count($user->roles) == 1 && in_array('authenticated user', $user->roles)) {
+    $variables['classes_array'][] = 'regular-user';
   }
 }
 
@@ -115,8 +118,9 @@ function impetus_preprocess_node(&$variables) {
   
   switch ($variables['type']) {
     case 'file':
-      $author = user_load($variables['revision_uid']);
       
+      // Modifying the submitted user's picture.
+      $author = user_load($variables['revision_uid']);
       if (property_exists($author, 'picture') && $author->picture != NULL) {
         $variables['user_picture'] = theme(
           'image_style',
@@ -126,10 +130,64 @@ function impetus_preprocess_node(&$variables) {
           )
         );
       }
+      else {
+        $variables['user_picture'] = '';
+      }
       
+      // Modifying submitted information.
       $variables['submitted'] = t(
         'Edited by @name on @timestamp', 
         array('@name' => $author->realname, '@timestamp' => date('F d, Y - g:ia', $variables['changed']))
+      );
+      
+      // Modifying the uploaded file field.
+      if (isset($variables['content']['field_uploaded_file'])) {
+        $variables['content']['field_uploaded_file'][0]['#file']->filename .= ' - ' . t('Click to Download');
+      }
+      
+      // Rendering related files.
+      if (isset($variables['content']['field_file_category'])) {
+        $query = new EntityFieldQuery();
+        $results = $query->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'file')
+          ->propertyCondition('status', 1)
+          ->fieldCondition('field_file_category', 'tid', $variables['content']['field_file_category'][0]['#options']['entity']->tid)
+          ->execute();
+        
+        if (!empty($results)) {
+          $files_in_folder_html = '<div class="files-in-folder">';
+          $files_in_folder_html .= '<strong>' . t('Related Files') . ':</strong>';
+          $files_in_folder_html .= '<ul class="files-in-this-folder-list">';
+          $file_nodes = node_load_multiple(array_keys($results['node']));
+          
+          foreach ($file_nodes as $file_node) {
+            $field_items = field_get_items('node', $file_node, 'field_uploaded_file');
+            $file_object = (object) $field_items[0];
+           
+            $files_in_folder_html .= '<li>' .  
+              theme_file_link(
+                array(
+                  'file' => $file_object,
+                  'icon_directory' => 'modules/file/icons'
+                )
+              ) .
+              '</li>';
+          }
+          
+          $files_in_folder_html .= '</ul>';
+          $files_in_folder_html .= '</div>';
+          
+          $variables['content']['field_file_category'][0]['#suffix'] = $files_in_folder_html;
+        }
+      }
+      
+      // Get version number.
+      $variables['content']['version_number'] = array(
+        '#prefix' => '<div class="file-version-number">',
+        '#suffix' => '</div>',
+        '#type' => 'markup',
+        '#markup' => '<strong>' . t('Version') . ':</strong><br/>' . t('Version') . ' #' . count(node_revision_list($variables['node'])),
+        '#weight' => 50,
       );
       
     break;
