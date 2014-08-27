@@ -126,7 +126,7 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
   $new_file_node->created = strtotime('now');
   $new_file_node->changed = strtotime('now');
   $new_file_node->status = 1;
-  $new_file_node->comment = 1;
+  $new_file_node->comment = 2;
   $new_file_node->promote = 0;
   $new_file_node->moderate = 0;
   $new_file_node->sticky = 0;
