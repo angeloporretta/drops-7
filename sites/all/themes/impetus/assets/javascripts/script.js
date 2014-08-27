@@ -74,7 +74,13 @@
     
     // Changes to file node pages.
     $('.node-file .field-name-field-uploaded-file span.file a').attr('download', '');
-    $('.files-in-this-folder span.file a').attr('download', '');
+    $('.files-in-this-folder-list .file a').attr('download', '');
+
+    $('.files-in-this-folder-list .file a').each(function(index, element){
+      if ($(element).text().length > 22) {
+        $(element).text($(element).text().substring(0, 22) + '...');
+      }
+    });
     
     // Changes to node edit forms.
     if ($('.regular-user .node-form .pane-node-form-menu').has('h3').get(0) == undefined) {

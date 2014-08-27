@@ -229,17 +229,22 @@ body.node-type-file {
     list-style: none;
     margin-right: 20px;
     margin-bottom: 7.5px;
+    width: 45%;
+    vertical-align: top;
+    word-break: break-all;
   }
   @include breakpoint('tablet') {
     ul li {
       display: block;
       margin: 5px 0px;
+      width: auto;
     }
   }
   @include breakpoint('mini-tablet') {
     ul li {
       display: block;
       margin: 5px 0px;
+      width: auto;
     }
   }
 }
