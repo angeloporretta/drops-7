@@ -280,7 +280,7 @@ function file_tracker_ajax_file_downloads_results($form, $form_state) {
                           '<td><a target="_blank" href="/' . drupal_get_path_alias('node/' . $result->nid) . '">' . $result->title . '</a></td>' .
                           '<td>' . $result->filename . '</td>' .
                           '<td>' . $result->realname . '</td>' .
-                          '<td>' . date('d, M Y - g:ia', $result->viewed_timestamp) . '</td>' .
+                          '<td>' . date('d, M Y - g:ia', $result->downloaded_timestamp) . '</td>' .
                         '</tr>';
     }
   }
