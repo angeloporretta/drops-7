@@ -290,8 +290,8 @@ function file_tracker_ajax_file_downloads_results($form, $form_state) {
       '<tr>' .
         '<th>' . t('File Title') . '</th>' .
         '<th>' . t('File Name') . '</th>' .
-        '<th>' . t('User that Viewed File') . '</th>' .
-        '<th>' . t('Time Viewed') . '</th>' .
+        '<th>' . t('User that Downloaded File') . '</th>' .
+        '<th>' . t('Time Downloaded') . '</th>' .
       '</tr>' .
       '<tbody>' .
         $table_results .
