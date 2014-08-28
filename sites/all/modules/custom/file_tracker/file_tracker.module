@@ -75,18 +75,20 @@ function file_tracker_node_view($node, $view_mode, $langcode) {
   if ($node->type == 'file') {
     global $user;
     
-    $file_fields = field_get_items('node', $node, 'field_uploaded_file');
-    
-    db_insert('file_tracker_views') 
-    ->fields(
-      array(
-        'nid' =>  $node->nid,
-        'uid' => $user->uid,
-        'filename' => $file_fields[0]['filename'],
-        'viewed_timestamp' => time(),
+    if ($user->uid != 0) {
+      $file_fields = field_get_items('node', $node, 'field_uploaded_file');
+
+      db_insert('file_tracker_views') 
+      ->fields(
+        array(
+          'nid' =>  $node->nid,
+          'uid' => $user->uid,
+          'filename' => $file_fields[0]['filename'],
+          'viewed_timestamp' => time(),
+        )
       )
-    )
-    ->execute();
+      ->execute();
+    }
   }
 }
 
@@ -98,13 +100,13 @@ function file_tracker_file_download_access_alter(&$grants, $file, $entity_type, 
   if ($entity_type == 'node' && $entity->type == 'file') {
     global $user;
     
-    file_tracker_insert_download_record(
-      array(
-        'file_name' => $file['filename'],
-        'uid' => $user->uid,
-        'nid' => $entity->nid,
-      )
-    );
+      file_tracker_insert_download_record(
+        array(
+          'file_name' => $file['filename'],
+          'uid' => $user->uid,
+          'nid' => $entity->nid,
+        )
+      );
   }
 }
 
