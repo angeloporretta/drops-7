@@ -1,0 +1,11 @@
+/* General styling for all pages */
+.file-breadcrumb {
+  margin-left: 30px;
+  padding: 5px;
+  background-color: #EEEEEE;
+  border-radius: 5px;
+}
+.file-breadcrumb li {
+  display: inline-block;
+  margin: 0px 5px;
+}

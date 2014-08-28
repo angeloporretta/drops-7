@@ -70,6 +70,21 @@ function bulk_file_upload_pane_edit_form_submit(&$form, &$form_state) {
  */
 function bulk_file_upload_pane_render($subtype, $conf, $args, $contexts) {
   
+  if (isset($_SESSION['bulk_file_upload_breadcrumb'])) {
+    unset($_SESSION['bulk_file_upload_breadcrumb']);
+  }
+  
+  $_SESSION['bulk_file_upload_breadcrumb'] = array();
+  
+  array_push($_SESSION['bulk_file_upload_breadcrumb'], 
+    array(
+      'page_title' => drupal_get_title(),
+      'path' => drupal_get_path_alias(current_path()),
+      'tid' => '-1',
+      'type' => 'base',
+    )
+  );
+  
   $block = new stdClass();
   $block->title = ''; 
   $block->content = '';

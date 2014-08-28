@@ -86,6 +86,8 @@ function bulk_file_upload_sort_child_folders($a, $b) {
 function bulk_file_upload_preprocess_taxonomy_term(&$variables) {
   
   if ($variables['vocabulary_machine_name'] == 'file_categories') {
+    
+    // Setting up markup.
     $variables['content']['bulk_file_uploads'] = array(
       '#type' => 'markup',
       '#markup' => '',
@@ -103,8 +105,45 @@ function bulk_file_upload_preprocess_taxonomy_term(&$variables) {
  */
 function bulk_file_upload_page_build(&$page) {
   
-  if (arg(0)=='taxonomy' && arg(1)=='term' && isset($page['content']['system_main']['nodes'])) {
-    unset($page['content']['system_main']['nodes']);
+  drupal_add_css(drupal_get_path('module', 'bulk_file_upload') . '/css/bulk_file_upload_general.css');
+  
+  // Modifying taxonomy term pages for file categories.
+  if (arg(0)=='taxonomy' && arg(1)=='term') {
+    $term = taxonomy_term_load(arg(2));
+    
+    if ($term->vocabulary_machine_name == 'file_categories') {
+      
+      // Setting up content.
+      if (isset($page['content']['system_main']['nodes'])) {
+        unset($page['content']['system_main']['nodes']);
+      }
+      
+      // Setting up breadcrumb.
+      bulk_file_upload_update_breakcrumb_on_taxonomy_page($term);
+      
+      if (!isset($page['content']['#prefix'])) {
+        $page['content']['#prefix'] = bulk_file_upload_render_file_breadcrumb();
+      }
+      else {
+        $page['content']['#prefix'] .= bulk_file_upload_render_file_breadcrumb();
+      }
+    }
+  }
+  // Modifying file nodes.
+  else if (arg(0) == 'node') {
+    $current_node = node_load(arg(1));
+    
+    if ($current_node->type == 'file') {
+      
+      // Setting up breadcrumb.
+      if (!isset($page['content']['#prefix'])) {
+        $page['content']['#prefix'] = bulk_file_upload_render_file_breadcrumb();
+      }
+      else {
+        $page['content']['#prefix'] .= bulk_file_upload_render_file_breadcrumb();
+      }
+    }
+    
   }
 }
 
@@ -160,13 +199,14 @@ function bulk_file_upload_forms($form_id, $args) {
 function bulk_file_upload_render_child_folders($tid) {
   
   $html = '';
+  $folder = taxonomy_term_load($tid);
   $subfolders = taxonomy_get_children($tid);
 
   // Display Subfolders.
   if (!empty($subfolders)) {
 
     $html .= '<div class="taxonomy-subfolders">';
-    $html .= '<h3>' . t('Folders within this folder') . ':</h3>';
+    $html .= '<h3>' . t('Folders within @folder_name', array('@folder_name' => $folder->name)) . ':</h3>';
     $html .= '<ul>';
 
     usort($subfolders, "bulk_file_upload_sort_child_folders");
@@ -195,6 +235,7 @@ function bulk_file_upload_render_file_table($tid) {
   
   $html = '';
   
+  $folder = taxonomy_term_load($tid);
   $query = new EntityFieldQuery();
   $results = $query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'file')
@@ -205,7 +246,7 @@ function bulk_file_upload_render_file_table($tid) {
 
   if (!empty($results)) {
     $html .= '<div class="taxonomy-files">';
-    $html .= '<h3>' . t('Files in this folder') . ':</h3>';
+    $html .= '<h3>' . t('Files in @folder_name', array('@folder_name' => $folder->name)) . ':</h3>';
     
     if (user_access('bulk download file archive')) {
       $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
@@ -240,6 +281,91 @@ function bulk_file_upload_render_file_table($tid) {
   }
   else {
     $html .= '<div class="messages warning">' . t('This folder has no files in it.') . '</div>';
+  }
+  
+  return $html;
+}
+
+/**
+ * Helper Function.
+ * Updates the items of the file breadcrumb.
+ * @param type $term: A term object.
+ */
+function bulk_file_upload_update_breakcrumb_on_taxonomy_page($term) {
+    
+  // Setting up breadcrumb.
+  $child_folders = taxonomy_get_children($term->tid);
+  $ancestor_folders = taxonomy_get_parents_all($term->tid);
+  $ancestor_term_ids = array();
+  foreach ($ancestor_folders as $ancestor_folder) {
+    $ancestor_term_ids[] = $ancestor_folder->tid;
+  }
+  
+  $kept_breadcrumbs = array();
+  foreach ($_SESSION['bulk_file_upload_breadcrumb'] as $breadcrumb_item) {
+    
+    $keep_item = TRUE;
+    
+    if (in_array($breadcrumb_item['tid'], array_keys($child_folders))) {
+      $keep_item = FALSE;
+    }
+    else if ($breadcrumb_item['tid'] == $term->tid) {
+      $keep_item = FALSE;
+    }
+    else if ($breadcrumb_item['tid'] != '-1' && !in_array($breadcrumb_item['tid'], $ancestor_term_ids)) {
+      $keep_item = FALSE;
+    }
+    
+    if ($keep_item == TRUE) {
+      $kept_breadcrumbs[] = $breadcrumb_item;
+    }
+  }
+
+  $_SESSION['bulk_file_upload_breadcrumb'] = $kept_breadcrumbs;
+
+  array_push($_SESSION['bulk_file_upload_breadcrumb'], 
+    array(
+      'page_title' => drupal_get_title(),
+      'path' => drupal_get_path_alias(current_path()),
+      'type' => 'taxonomy',
+      'tid' => $term->tid,
+    )
+  );
+}
+
+/**
+ * Helper Function.
+ * Renders the file breadcrumb.
+ * @return string: The html structure of the breadcrumb.
+ */
+function bulk_file_upload_render_file_breadcrumb() {
+  
+  $html = '';
+  
+  if (isset($_SESSION['bulk_file_upload_breadcrumb'])) {
+    
+    $should_remove_last = FALSE;
+    
+    if (arg(0)=='taxonomy' && arg(1)=='term') {
+      $term = taxonomy_term_load(arg(2));
+    
+      if ($term->vocabulary_machine_name == 'file_categories') {
+        $should_remove_last = TRUE;
+      }
+    }
+    
+    $html .= '<ul class="file-breadcrumb">';
+    $i = 0;
+    
+    foreach($_SESSION['bulk_file_upload_breadcrumb'] as $breadcrumb) {
+      if (($should_remove_last == TRUE && ++$i < count($_SESSION['bulk_file_upload_breadcrumb'])) || $should_remove_last == FALSE) {
+        $html .= '<li><a href="/' . $breadcrumb['path'] . '">' . $breadcrumb['page_title'] . '</a></li>' . ' » ';
+      }
+      
+    }
+    
+    $html = substr($html,0, -3);
+    $html .= '</ul>';
   }
   
   return $html;

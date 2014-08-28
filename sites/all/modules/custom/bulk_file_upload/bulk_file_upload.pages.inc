@@ -17,7 +17,7 @@ function bulk_file_upload_render_upload_page() {
  * Renders the bulk download page.
  */
 function bulk_file_upload_render_download_page() {
-
+  
   if (isset($_GET['tid']) && ctype_digit($_GET['tid'])) {
     
     $file_folder = taxonomy_term_load($_GET['tid']);

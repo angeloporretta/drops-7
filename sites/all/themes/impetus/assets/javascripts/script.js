@@ -82,6 +82,23 @@
       }
     });
     
+    // Changes to file node edit forms.
+    $('body.page-node #contextual-tabs .dropdown-menu a').each(function(index, element){
+      if ($(element).attr('href').indexOf('revisions') > -1) {
+        var revisionItem = $(element).parent();
+        $(revisionItem).remove();
+        $(revisionItem).children('a').addClass('btn btn-small');
+        $('#contextual-tabs').append(revisionItem);
+      }
+    });
+    
+    // Changes to taxonomy pages.
+    if ($('.file-breadcrumb').length > 0) {
+      var breadcrumbHtml = $('.file-breadcrumb');
+      $('.file-breadcrumb').remove();
+      $('#main #content .inner').before($(breadcrumbHtml));
+    }
+    
     // Changes to node edit forms.
     if ($('.regular-user .node-form .pane-node-form-menu').has('h3').get(0) == undefined) {
       $('.regular-user .node-form .pane-node-form-menu').css('display', 'none');
