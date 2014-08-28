@@ -152,6 +152,18 @@ article.node-file {
     margin: 15px 0px;
     padding-bottom: 20px;
   }
+  .field-name-field-uploaded-file {
+    .field-label {
+      font-size: 22px;
+      line-height: normal;
+      font-weight: normal;
+    }
+    .field-item {
+      font-size: 20px;
+      line-height: normal;
+      font-weight: normal;
+    }
+  }
   .submitted {
     margin-bottom: 10px;
     padding-bottom: 10px;
@@ -210,6 +222,10 @@ body.node-type-file {
   #main-wrapper #contextual-tabs {
     display: block;
   }
+  .field-name-field-file-category > .field-label,
+  .field-name-field-file-category .field-items .field-item > a{
+    display: none;
+  }
   @include breakpoint('mini-tablet') {
     #contextual-tabs {
       margin-top: 0px;
@@ -229,7 +245,7 @@ body.node-type-file {
     list-style: none;
     margin-right: 20px;
     margin-bottom: 7.5px;
-    width: 45%;
+    width: 28%;
     vertical-align: top;
     word-break: break-all;
   }
