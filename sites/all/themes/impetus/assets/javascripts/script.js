@@ -92,6 +92,10 @@
       }
     });
     
+    if ($('#file-node-form #edit-field-uploaded-file .file-widget input[type="submit"]').attr('value') == 'Remove') {
+      $('#file-node-form #edit-field-uploaded-file .file-widget input[type="submit"]').attr('value', Drupal.t('Change File'));
+    }
+    
     // Changes to taxonomy pages.
     if ($('.file-breadcrumb').length > 0) {
       var breadcrumbHtml = $('.file-breadcrumb');
