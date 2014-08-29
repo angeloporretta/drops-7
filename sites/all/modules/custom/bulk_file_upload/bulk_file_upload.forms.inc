@@ -8,7 +8,7 @@
  * Renders the add bulk files form. Will return an empty array if the user does not have permission to use the form.
  */
 function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
-  
+  global $user;
   $form = array();
   
   if (user_access('access bulk upload page')) {
@@ -46,25 +46,68 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     );
 
 
-    if (isset($_SESSION['oa_section_id'])){
-      $section_node = node_load($_SESSION['oa_section_id']);
-
-      $form['new_upload_fields']['is_private'] = array(
-        '#type' => 'checkbox',
-        '#title' => t('These files are private.'),
-        '#description' => t(
-          'These files will belong to the section <strong>@section</strong> unless you uncheck this box.',
-          array('@section' => $section_node->title)
-        ),
-        '#default_value' => 1,
+    if (in_array('impetus admin', $user->roles) || in_array('administrator', $user->roles) || $user->uid == 1) {
+      
+      $space_options = array();
+      $section_options = array();
+      
+      $space_query = new EntityFieldQuery();
+      $space_results = $space_query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'oa_space')
+        ->propertyCondition('status', 1)
+        ->propertyOrderBy('title', 'ASC')
+        ->execute();
+      
+      if (!empty($space_results)) {
+        $space_nodes = node_load_multiple(array_keys($space_results['node']));
+        
+        foreach ($space_nodes as $space_node) {
+          $space_options[$space_node->nid] = $space_node->title;
+        }
+      }
+      
+      $form['new_upload_fields']['space'] = array(
+        '#type' => 'select',
+        '#title' => t('Space'),
+        '#required' => TRUE,
+        '#options' => $space_options,
+        '#default_value' => (isset($_SESSION['oa_space_id'])) ? $_SESSION['oa_space_id'] : '',
+        '#empty_option' => '- ' . t('None') . ' -',
         '#weight' => -48,
+        '#ajax' => array(
+          'callback' => 'bulk_file_upload_ajax_sections',
+          'wrapper' => 'section-field-wrapper',
+        )
       );
-    }
-    else {
-      $form['new_upload_fields']['public_prompt'] = array(
-        '#type' => 'markup',
-        '#markup' => t('These uploaded files will be publicly accessible'),
-        '#weight' => -48,
+      
+      if (isset($_SESSION['oa_space_id'])) {
+        $section_query = new EntityFieldQuery();
+        $section_results = $section_query->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'oa_section')
+          ->propertyCondition('status', 1)
+          ->fieldCondition('og_group_ref', 'target_id', $_SESSION['oa_space_id'])
+          ->propertyOrderBy('title', 'ASC')
+          ->execute();
+        
+        if (!empty($section_results)) {
+          $section_nodes = node_load_multiple(array_keys($section_results['node']));
+        
+          foreach ($section_nodes as $section_node) {
+            $section_options[$section_node->nid] = $section_node->title;
+          }
+        }
+      }
+      
+      $form['new_upload_fields']['section'] = array(
+        '#type' => 'select',
+        '#prefix' => '<div id="section-field-wrapper">',
+        '#suffix' => '</div>',
+        '#title' => t('Section'),
+        '#required' => TRUE,
+        '#options' => $section_options,
+        '#default_value' => (isset($_SESSION['oa_section_id'])) ? $_SESSION['oa_section_id'] : '',
+        '#empty_option' => '- ' . t('None') . ' -',
+        '#weight' => -47,
       );
     }
 
@@ -97,6 +140,41 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
   
   return $form;
   
+}
+
+/**
+ * Ajax Callback.
+ * Populates the section field based on the space field for the bulk add files form.
+ */
+function bulk_file_upload_ajax_sections($form, &$form_state) {
+  
+  global $user;
+  
+  if (in_array('impetus admin', $user->roles) || in_array('administrator', $user->roles) || $user->uid == 1) {
+    
+    $section_options = array('' => '- ' . t('None') . ' -');
+    
+    if ($form_state['values']['space'] != '') {
+      $section_query = new EntityFieldQuery();
+      $section_results = $section_query->entityCondition('entity_type', 'node')
+        ->entityCondition('bundle', 'oa_section')
+        ->propertyCondition('status', 1)
+        ->fieldCondition('og_group_ref', 'target_id', $form_state['values']['space'])
+        ->propertyOrderBy('title', 'ASC')
+        ->execute();
+
+      if (!empty($section_results)) {
+        $section_nodes = node_load_multiple(array_keys($section_results['node']));
+
+        foreach ($section_nodes as $section_node) {
+          $section_options[$section_node->nid] = $section_node->title;
+        }
+      }
+    }
+    
+    $form['new_upload_fields']['section']['#options'] = $section_options;
+    return $form['new_upload_fields']['section'];
+  }
 }
 
 /**
@@ -140,14 +218,16 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
    
   foreach ($form_state['values'] as $element_name => $value) {
     if (strpos($element_name, 'file_upload') !== FALSE && $value != 0) {
-      if (isset($form_state['values']['is_private']) && $form_state['values']['is_private'] == 1) {
-        if (isset($_SESSION['oa_space_id'])){
-          $new_file_node->og_group_ref['und'][0]['target_id'] = $_SESSION['oa_space_id'];
-          $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
-        }
-        if (isset($_SESSION['oa_section_id'])){
-          $new_file_node->oa_section_ref['und'][0]['target_id'] = $_SESSION['oa_section_id'];
-        }
+      
+      if (isset($form_state['values']['space']) && isset($form_state['values']['section'])) {
+        $new_file_node->og_group_ref['und'][0]['target_id'] = $form_state['values']['space'];
+        $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
+        $new_file_node->oa_section_ref['und'][0]['target_id'] = $form_state['values']['section'];
+      }
+      else if (isset($_SESSION['oa_space_id']) && isset($_SESSION['oa_section_id'])) {
+        $new_file_node->og_group_ref['und'][0]['target_id'] = $_SESSION['oa_space_id'];
+        $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
+        $new_file_node->oa_section_ref['und'][0]['target_id'] = $_SESSION['oa_section_id'];
       }
 
       $saved_file = file_load($value);
