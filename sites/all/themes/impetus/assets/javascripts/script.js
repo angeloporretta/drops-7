@@ -87,13 +87,13 @@
       if ($(element).attr('href').indexOf('revisions') > -1) {
         var revisionItem = $(element).parent();
         $(revisionItem).remove();
-        $(revisionItem).children('a').addClass('btn btn-small');
+        $(revisionItem).children('a').addClass('btn btn-small').text(Drupal.t('Versions'));
         $('#contextual-tabs').append(revisionItem);
       }
     });
     
     if ($('#file-node-form #edit-field-uploaded-file .file-widget input[type="submit"]').attr('value') == 'Remove') {
-      $('#file-node-form #edit-field-uploaded-file .file-widget input[type="submit"]').attr('value', Drupal.t('Change File'));
+      $('#file-node-form #edit-field-uploaded-file .file-widget input[type="submit"]').attr('value', Drupal.t('Upload New Version'));
     }
     
     // Changes to taxonomy pages.
