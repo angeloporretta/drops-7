@@ -292,45 +292,47 @@ function bulk_file_upload_render_file_table($tid) {
  * @param type $term: A term object.
  */
 function bulk_file_upload_update_breakcrumb_on_taxonomy_page($term) {
-    
-  // Setting up breadcrumb.
-  $child_folders = taxonomy_get_children($term->tid);
-  $ancestor_folders = taxonomy_get_parents_all($term->tid);
-  $ancestor_term_ids = array();
-  foreach ($ancestor_folders as $ancestor_folder) {
-    $ancestor_term_ids[] = $ancestor_folder->tid;
-  }
   
-  $kept_breadcrumbs = array();
-  foreach ($_SESSION['bulk_file_upload_breadcrumb'] as $breadcrumb_item) {
-    
-    $keep_item = TRUE;
-    
-    if (in_array($breadcrumb_item['tid'], array_keys($child_folders))) {
-      $keep_item = FALSE;
+  if (isset($_SESSION['bulk_file_upload_breadcrumb'])) {
+    // Setting up breadcrumb.
+    $child_folders = taxonomy_get_children($term->tid);
+    $ancestor_folders = taxonomy_get_parents_all($term->tid);
+    $ancestor_term_ids = array();
+    foreach ($ancestor_folders as $ancestor_folder) {
+      $ancestor_term_ids[] = $ancestor_folder->tid;
     }
-    else if ($breadcrumb_item['tid'] == $term->tid) {
-      $keep_item = FALSE;
+
+    $kept_breadcrumbs = array();
+    foreach ($_SESSION['bulk_file_upload_breadcrumb'] as $breadcrumb_item) {
+
+      $keep_item = TRUE;
+
+      if (in_array($breadcrumb_item['tid'], array_keys($child_folders))) {
+        $keep_item = FALSE;
+      }
+      else if ($breadcrumb_item['tid'] == $term->tid) {
+        $keep_item = FALSE;
+      }
+      else if ($breadcrumb_item['tid'] != '-1' && !in_array($breadcrumb_item['tid'], $ancestor_term_ids)) {
+        $keep_item = FALSE;
+      }
+
+      if ($keep_item == TRUE) {
+        $kept_breadcrumbs[] = $breadcrumb_item;
+      }
     }
-    else if ($breadcrumb_item['tid'] != '-1' && !in_array($breadcrumb_item['tid'], $ancestor_term_ids)) {
-      $keep_item = FALSE;
-    }
-    
-    if ($keep_item == TRUE) {
-      $kept_breadcrumbs[] = $breadcrumb_item;
-    }
+
+    $_SESSION['bulk_file_upload_breadcrumb'] = $kept_breadcrumbs;
+
+    array_push($_SESSION['bulk_file_upload_breadcrumb'], 
+      array(
+        'page_title' => drupal_get_title(),
+        'path' => drupal_get_path_alias(current_path()),
+        'type' => 'taxonomy',
+        'tid' => $term->tid,
+      )
+    );
   }
-
-  $_SESSION['bulk_file_upload_breadcrumb'] = $kept_breadcrumbs;
-
-  array_push($_SESSION['bulk_file_upload_breadcrumb'], 
-    array(
-      'page_title' => drupal_get_title(),
-      'path' => drupal_get_path_alias(current_path()),
-      'type' => 'taxonomy',
-      'tid' => $term->tid,
-    )
-  );
 }
 
 /**
