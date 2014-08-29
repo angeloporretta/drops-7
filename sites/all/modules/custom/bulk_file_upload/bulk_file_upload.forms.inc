@@ -108,6 +108,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
         '#default_value' => (isset($_SESSION['oa_section_id'])) ? $_SESSION['oa_section_id'] : '',
         '#empty_option' => '- ' . t('None') . ' -',
         '#weight' => -47,
+        '#validated' => TRUE,
       );
     }
 
