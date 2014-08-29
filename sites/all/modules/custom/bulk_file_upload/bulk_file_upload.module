@@ -132,8 +132,8 @@ function bulk_file_upload_page_build(&$page) {
   // Modifying file nodes.
   else if (arg(0) == 'node') {
     $current_node = node_load(arg(1));
-    
-    if ($current_node->type == 'file') {
+
+    if ($current_node !== FALSE && $current_node->type == 'file') {
       
       // Setting up breadcrumb.
       if (!isset($page['content']['#prefix'])) {
