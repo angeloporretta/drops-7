@@ -1,0 +1,46 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_enable()
+ */
+function file_permissions_alterer_enable() {
+    db_update('system')
+    ->fields(array('weight' => 75))
+    ->condition('type', 'module')
+    ->condition('name', 'file_permissions_alterer')
+    ->execute();
+}
+
+/**
+ * Implements hook_file_download.
+ */
+function file_permissions_alterer_file_download($uri) {
+  
+  $file_result = db_query('SELECT fid FROM {file_managed} WHERE uri = :uri', array(':uri' => $uri))->fetchAll();
+  
+  if (!empty($file_result)) {
+    
+    $file_node_query = new EntityFieldQuery();
+    $file_nodes = $file_node_query->entityCondition('entity_type', 'node')
+      ->entityCondition('bundle', 'file')
+      ->propertyCondition('status', 1)
+      ->fieldCondition('field_uploaded_file', 'fid', $file_result[0]->fid, '=')
+      ->addMetaData('account', user_load(1))
+      ->execute();
+
+    if (!empty($file_nodes)) {
+      $nids = array_keys($file_nodes['node']);
+      $file_node = node_load($nids[0]);
+
+      if (node_access('view', $file_node) == FALSE) {
+        drupal_access_denied();
+        exit();
+      }
+    }
+    
+  }
+
+}

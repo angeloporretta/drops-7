@@ -1,0 +1,5 @@
+name = File Permissions Alterer
+description = Alters the way that people have access to files.
+dependencies[] = oa_core
+package = custom
+core = 7.x
