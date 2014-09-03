@@ -191,5 +191,11 @@ function impetus_preprocess_node(&$variables) {
       );
       
     break;
+    case 'oa_worktracker_task':
+      
+      if (isset($variables['content']['oa_worktracker_submitted'])) {
+        $variables['content']['oa_worktracker_submitted']['#markup'] = '<div class="submitted">' . t('This task was created on @date.', array('@date' => $variables['date'])) . '</div>';
+      }
+    break;
   }
 }

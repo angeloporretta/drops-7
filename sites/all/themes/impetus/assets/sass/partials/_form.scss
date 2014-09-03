@@ -412,3 +412,15 @@ footer#footer {
     }
   }
 }
+
+/* Task backend form */
+.group-oa-worktracker-task-info > legend {
+  margin-bottom: 0px;
+  position: static;
+  padding: 0px 5px;
+  border-bottom: none;
+  width: auto;
+}
+.group-oa-worktracker-task-info > legend .fieldset-legend {
+  position: static;
+}

@@ -272,3 +272,15 @@ body.node-type-file {
 body.page-node #main-wrapper #contextual-tabs {
   display: block;
 }
+
+/* Task Nodes */
+.node-oa-worktracker-task {
+  @include breakpoint('mini-tablet') {
+    .group-oa-worktracker-task-info-display {
+      clear: both;
+      float: none;
+      margin: 10px 0px;
+      width: auto;
+    }
+  }
+}
