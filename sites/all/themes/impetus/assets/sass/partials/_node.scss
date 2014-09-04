@@ -83,6 +83,15 @@
   }
 }
 
+/* General Nodes */
+.node {
+  .field-type-video video,
+  .field-type-video object {
+    max-width: 100%;
+    height: auto;
+  }
+}
+
 /* Announcement Nodes */
 body.node-type-announcement {
   .field-name-field-preview-image {
