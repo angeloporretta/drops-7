@@ -114,5 +114,41 @@
       $('.regular-user .node-form .pane-node-form-author').css('display', 'none');
     }
     
+    // Video upload fields.
+    $('.field-type-video input[type="file"]').live('change', function(){
+      $(this).next('input[type="submit"]').mousedown();
+      $('#main-wrapper').append('<div class="video-overlay"></div>');
+      $('.video-overlay').css({
+        'position': 'absolute',
+        'z-index': '1000',
+        'left': '0',
+        'top': '0',
+        'background': '#fff',
+        'height': $(document).height() + 'px',
+        'width': $(document).width() + 'px',
+        'opacity': '0.85',
+        'filter': 'alpha(opacity=85)',
+        'font-size': '16px',
+      }).after('<div class="video-download-prompt"><p>' + Drupal.t('Please wait while your video gets uploaded...') + '<br/>' + Drupal.t('This may take a several minutes depending on your internet connection upload speed.') + '<br/><br/><img src="/sites/all/themes/impetus/assets/images/video-loading.gif" alt="" /></p></div>');
+      $('.video-download-prompt').css({
+        'position': 'fixed',
+        'z-index': '2000',
+        'top': '40%',
+        'left': '0px',
+        'text-align': 'center',
+        'display': 'block',
+        'width': '100%',
+      });
+      setInterval(function(){
+        if ($('.ajax-progress-throbber').length == 0) {
+          $('.video-overlay').remove();
+          $('.video-download-prompt').remove();
+        }
+      }, 
+      3000);
+    });
+    
+    
+    
   });
 })(jQuery);
