@@ -150,7 +150,7 @@ function per_user_access_group_has_access($node, $account) {
     $node_groups = field_get_items('node', $node, 'field_group_access');
     $user_groups = og_get_groups_by_user($account);
     
-    if ($node_groups !== FALSE && $user_groups !== FALSE) {
+    if ($node_groups !== FALSE && $user_groups !== FALSE && $user_groups !== NULL) {
 
       // Get all the group ids associated with this node. Including all the parents of those groups.
       $node_group_ids = array();
