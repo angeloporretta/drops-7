@@ -1,0 +1,20 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_page_build.
+ */
+function new_relic_mods_page_build(&$page) {
+
+  // Ignore new relic tracking for admins.
+  if (function_exists('newrelic_ignore_transaction')) {
+    global $user;
+    
+    if ($user->uid == 1 || property_exists($user, 'roles') && (in_array('administrator', $user->roles) || in_array('impetus admin', $user->roles))) {
+      newrelic_ignore_transaction();
+    }
+  }
+  
+}

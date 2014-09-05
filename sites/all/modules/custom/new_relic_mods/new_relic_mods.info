@@ -1,0 +1,4 @@
+name = New Relic Mods
+description = Makes any modifications to how New Relic operates.
+package = custom
+core = 7.x
