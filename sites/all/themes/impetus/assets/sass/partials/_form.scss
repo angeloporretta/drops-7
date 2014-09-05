@@ -344,6 +344,10 @@ form#user-pass .form-item-name {
   }
   
 }
+/* CKEditor */
+.cke_button__imce_icon {
+  background-image: url("/sites/all/themes/impetus/assets/images/cloud-upload.png") !important;
+}
 
 /* File node edit forms for regular users */
 .regular-user .node-file-form {
