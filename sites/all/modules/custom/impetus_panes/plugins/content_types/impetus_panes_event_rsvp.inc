@@ -30,14 +30,20 @@ function impetus_panes_event_rsvp_custom_pane_edit_form($form, &$form_state) {
     $event_nodes = node_load_multiple(array_keys($results['node']));
     
     foreach ($event_nodes as $event_node) {
-      $options[$event_node->nid] = $event_node->title;
+      if (event_rsvp_event_has_passed($event_node) == FALSE) {
+        $options[$event_node->nid] = $event_node->title;
+      }
     }
   }
   
   $form['event'] = array(
     '#type' => 'select',
     '#title' => t('Event'),
-    '#description' => t('The event whose RSVP you want to allow.'),
+    '#required' => TRUE,
+    '#description' => t('The event whose RSVP you want to allow.') . 
+                      '<br/><strong>'  .
+                      t('Note: You cannot select an event that has already passed.') . 
+                      '</strong>',
     '#default_value' => $form_state['conf']['event'],
     '#empty_option' => '- ' . t('Select an Event') . ' -',
     '#empty_value' => '',

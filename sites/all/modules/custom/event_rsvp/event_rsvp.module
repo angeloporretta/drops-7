@@ -4,6 +4,32 @@
  */
 
 /**
+ * Helper function.
+ * Determines whether or not an event has ended.
+ * @param (object) $event_node: A fully loaded event node.
+ * @return boolean: True if the event has passed, false otherwise.
+ */
+function event_rsvp_event_has_passed($event_node) {
+  $date_fields = FALSE;
+  $event_ended = TRUE;
+  
+  if ($event_node != NULL) {
+    $date_fields = field_get_items('node', $event_node, 'field_oa_date');
+  }
+  
+  // Figure out whether or not the event has ended.
+  if ($date_fields != FALSE) {
+    foreach ($date_fields as $date_field) {
+      if ((int) $date_field['value2'] > time()) {
+        $event_ended = FALSE;
+      }
+    }
+  }
+  
+  return $event_ended;
+}
+
+/**
 * Implements hook_views_api().
 *
 */
@@ -77,15 +103,7 @@ function event_rsvp_render_form($form, &$form_state) {
   $nid = $form_state['build_info']['args'][0];
   $form = array();
   $event_node = node_load($form_state['build_info']['args'][0]);
-  $date_fields = field_get_items('node', $event_node, 'field_oa_date');
-  $event_ended = TRUE;
-  
-  // Figure out whether or not the event has ended.
-  foreach ($date_fields as $date_field) {
-    if ((int) $date_field['value2'] > time()) {
-      $event_ended = FALSE;
-    }
-  }
+  $event_ended = event_rsvp_event_has_passed($event_node);
 
   if ($event_ended == FALSE) {
     if (event_rsvp_has_rsvped($nid, $user->uid)) {
