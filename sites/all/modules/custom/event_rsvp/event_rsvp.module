@@ -76,6 +76,7 @@ function event_rsvp_render_form($form, &$form_state) {
   global $user;
   $nid = $form_state['build_info']['args'][0];
   $form = array();
+  $event_node = node_load($form_state['build_info']['args'][0]);
   
   if (event_rsvp_has_rsvped($nid, $user->uid)) {
     $form['event_rsvp_submit'] = array(
@@ -97,8 +98,11 @@ function event_rsvp_render_form($form, &$form_state) {
       '#value' => 0,
     );
   }
-  else if (node_load($form_state['build_info']['args'][0]) !== FALSE){
-    drupal_set_message(t('Sorry the RSVP list for this event is full. You will not be able to RSVP.'), 'warning');
+  else if ($event_node !== FALSE){
+    drupal_set_message(
+      t('Sorry the RSVP list for @event_title is full.', array('@event_title' => $event_node->title)), 
+      'warning'
+    );
   }
   
   $form['#validate'] = array('event_rsvp_rsvp_form_validate');

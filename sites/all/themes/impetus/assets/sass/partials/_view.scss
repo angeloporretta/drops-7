@@ -15,3 +15,38 @@ table thead th {
     margin-right: 15px;
   }
 }
+
+/* Event views */
+.view-display-id-oa_calendar_month {
+  .views-field-field-oa-date .oa-event-date-wrapper {
+    display: block;
+    float: none;
+    margin: 5px auto;
+  }
+  .views-field-field-oa-date form {
+    display: block;
+    clear: both;
+  }
+  .views-field-field-oa-date form input[type="submit"] {
+    display: block;
+    min-width: 100%;
+  }
+}
+.view-display-id-oa_events_upcoming_small {
+  .views-field-field-oa-date form {
+    position: relative;
+    top: 5px;
+    margin-bottom: 10px;
+  }
+  @include breakpoint('mini-tablet') {
+    .views-field-field-oa-date {
+      float: left;
+    }
+    .colored-event {
+      min-height: 125px !important;
+    }
+    .views-field-field-oa-date form input[type="submit"] {
+      margin-left: 5px;
+    }
+  }
+}
