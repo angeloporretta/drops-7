@@ -101,7 +101,8 @@ function event_rsvp_render_form($form, &$form_state) {
   else if ($event_node !== FALSE){
     drupal_set_message(
       t('Sorry the RSVP list for @event_title is full.', array('@event_title' => $event_node->title)), 
-      'warning'
+      'warning',
+      FALSE
     );
   }
   
