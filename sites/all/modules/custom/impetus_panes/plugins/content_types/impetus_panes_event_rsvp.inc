@@ -75,7 +75,12 @@ function impetus_panes_event_rsvp_custom_pane_render($subtype, $conf, $args, $co
   
     if ($event_node !== FALSE && $event_node->status != 0 && node_access('view', $event_node)) {
       $rsvp_form = drupal_get_form('event_rsvp_rsvp_form', $event_node->nid);
-      $rsvp_form['event_rsvp_submit']['#value'] = $rsvp_form['event_rsvp_submit']['#value'] . ' ' . t('for @event_title', array('@event_title' => $event_node->title));
+      
+      if (isset($rsvp_form['event_rsvp_submit'])) {
+        $rsvp_form['event_rsvp_submit']['#value'] = 
+        $rsvp_form['event_rsvp_submit']['#value'] . ' ' . t('for @event_title', array('@event_title' => $event_node->title));
+      }
+      
       $block->content = render($rsvp_form);
     }
   }
