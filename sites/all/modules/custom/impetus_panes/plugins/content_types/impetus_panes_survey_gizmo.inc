@@ -24,6 +24,12 @@ function impetus_panes_survey_gizmo_custom_pane_edit_form($form, &$form_state) {
     '#default_value' => $form_state['conf']['embed_code'],
   );
   
+  $form['prefills_hidden'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Hide Prefilled Fields'),
+    '#default_value' => 1,
+  );
+  
   return $form;
 }
 
@@ -55,6 +61,7 @@ function impetus_panes_survey_gizmo_custom_pane_render($subtype, $conf, $args, $
     drupal_add_js(
       array(
         'impetusPanes' => array(
+          'prefillsHidden' => $conf['prefills_hidden'],
           'firstName' => $first_name[0]['safe_value'],
           'lastName' => $last_name[0]['safe_value'],
           'email' => $loaded_user->mail,
