@@ -97,9 +97,11 @@ body.oa-login #user-login-panel .oa-pane {
   #outerImageContainer {
     min-height: 660px !important;
     min-width: 830px !important;
+    max-width: 85% !important;
   }
   #imageDataContainer {
     min-width: 830px !important;
+    max-width: 85% !important;
   }
   @include breakpoint('tablet') {
     #lightboxFrame {
@@ -138,6 +140,28 @@ body.oa-login #user-login-panel .oa-pane {
     }
     #imageDataContainer {
       min-width: 0 !important;
+    }
+  }
+  #modalContainer {
+    width: 95% !important;
+    margin-top: 60px;
+    @include breakpoint('tablet') {
+      
+    }
+    @include breakpoint('mini-tablet') {
+      width: 85% !important;
+      overflow: hidden;
+    }
+    #main-wrapper > #main,
+    .span12 {
+      width: 100% !important;
+    }
+    footer#footer,
+    #contextual-tabs {
+      display: none;
+    }
+    iframe {
+      overflow: hidden;
     }
   }
 }
