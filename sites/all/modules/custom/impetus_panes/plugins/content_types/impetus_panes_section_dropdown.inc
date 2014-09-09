@@ -36,8 +36,8 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block = new stdClass();
   $block->title = ''; 
   $block->content = '';
-  
-  if (!impetus_panes_is_admin()) {
+
+  //if (!impetus_panes_is_admin()) {
     // Get the spaces this user has access to.
     $query = new EntityFieldQuery();
     $result = $query->entityCondition('entity_type', 'node')
@@ -48,7 +48,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     $space_nodes = node_load_multiple(array_keys($result['node']));
     $allowed_space_nodes = array();
 
-    foreach ($space_nodes as $nid => $space_node) {
+    foreach ($space_nodes as $space_node) {
       if (node_access('view', $space_node) == TRUE) {
         $allowed_space_nodes[] = $space_node;
       }
@@ -58,18 +58,15 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     if (!empty($allowed_space_nodes)) {
 
       for ($i = 0; $i < count($allowed_space_nodes); $i++) {
-        $query = new EntityFieldQuery();
-        $result = $query->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', 'oa_section')
-          ->propertyCondition('status', 1)
-          ->fieldCondition('og_group_ref', 'target_id', array($allowed_space_nodes[$i]->nid), 'IN')
-          ->execute();
-
-        if (!empty($result)) {
-          $section_nodes = node_load_multiple(array_keys($result['node']));
-          foreach ($section_nodes as $nid => $section_node) {
-            if (node_access('view', $section_node) == TRUE) {
-              $allowed_space_nodes[$i]->section_nodes[$nid] = $section_node;
+        $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', 'node/' . $allowed_space_nodes[$i]->nid);
+        $allowed_space_nodes[$i]->section_nodes = array();
+       
+        if (!empty($submenu_items)) {
+          foreach ($submenu_items as $submenu_item) {
+            $section_node = menu_get_object('node', 1, $submenu_item['link']['link_path']);
+            
+            if ($section_node != '' && node_access('view', $section_node)) {
+              $allowed_space_nodes[$i]->section_nodes[] = $section_node;
             }
           }
         }
@@ -79,7 +76,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     // Create html structure.
     $block->content .= '<ul class="spaces-section-dropdown">';
     foreach ($allowed_space_nodes as $space_node) {
-
+      
       if (property_exists($space_node, 'section_nodes')) {
         $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a><ul class="nested hide">';
         $block->content .= '<li class="close-button"><button>X</button></li>';
@@ -94,7 +91,29 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     }
 
     $block->content .= '</ul>';
-  }
+  //}
   
   return $block;
+}
+
+/**
+ * Helper Function.
+ * Gets the 2nd level children (the one below root) of a menu.
+ * @param string $menu_name: The name of the menu whose children you want, for example "footer-menu".
+ * @param string $link_path: The link path of the parent item whose children you want, for example "node/43".
+ * @return array: An array structure of the child menu item or an empty array if the parent item has no children.
+ */
+function impetus_panes_submenu_tree_all_data($menu_name, $link_path) {
+  
+  $tree = menu_tree_all_data($menu_name);
+  $child_tree = array();
+  
+  foreach ($tree as $branch){
+    if ($branch['link']['link_path'] == $link_path){
+      $child_tree = $branch['below'];
+      break;
+    }
+  }
+  
+  return $child_tree;
 }
