@@ -61,6 +61,17 @@ function impetus_module_implements_alter(&$implementations, $hook) {
  * Implements template_preprocess_page().
  */
 function impetus_preprocess_page(&$vars) {
+  
+  // Taxonomy pages.
+  if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
+    $term = taxonomy_term_load(arg(2));
+    
+    // Removing pagers from file taxonomy pages.
+    if ($term->vocabulary_machine_name == 'file_categories' && isset($vars['page']['content']['system_main']['pager'])) {
+      unset($vars['page']['content']['system_main']['pager']);
+    }
+  }
+  
   // Rework search_form to our liking.
   $vars['search_form'] = '';
   if (module_exists('search') && user_access('search content')) {
