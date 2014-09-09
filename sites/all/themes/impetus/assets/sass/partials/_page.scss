@@ -85,6 +85,27 @@ body.oa-login #user-login-panel .oa-pane {
   top: 115px;
 }
 
+/* General Pages */
+body.page-node #main-wrapper #main #contextual-tabs,
+body.page-node #main-wrapper #main #contextual-tabs .btn-group {
+  display: none;
+}
+#panels-ipe-control-container {
+  display: none !important;
+}
+body.logged-in-admin,
+body.node-type-file {
+  #main-wrapper #main #contextual-tabs{
+    display: block;
+  }
+  #panels-ipe-control-container {
+    display: block !important;
+  }
+}
+body.logged-in-admin #main-wrapper #main #contextual-tabs .btn-group {
+  display: inline-block;
+}
+
 /* General Styling for Lightboxes and Lightframes */
 #lightbox {
   iframe {
