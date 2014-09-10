@@ -6,9 +6,9 @@ html, body {
   height: 100%;
 }
 body.logged-in {
-  margin-top: 105px;
-  @include breakpoint('phone') {
-    margin-top: 0px;
+  margin-top: 50px;
+  @include breakpoint('mini-tablet') {
+    margin-top: 20px;
   }
 }
 body {
@@ -22,7 +22,7 @@ body {
     padding-right: 0;
   }
   @include breakpoint('phone') {
-    padding-top: 0;
+    padding-top: 50px !important;
   }
   #main-wrapper {
     min-height: 100%;
@@ -57,4 +57,16 @@ body {
       @include box-sizing("border-box");
     }
   }
+}
+body.logged-in-admin {
+  margin-top: 105px;
+  @include breakpoint('tablet') {
+    margin-top: 80px;
+  }
+  @include breakpoint('mini-tablet') {
+    margin-top: 80px;
+  }
+  @include breakpoint('phone') {
+    margin-top: 0px;
+  }  
 }
