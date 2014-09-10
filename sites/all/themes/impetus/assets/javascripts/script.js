@@ -38,6 +38,11 @@
 
       var nestedFormItem = $('.pane-og-menu-single-menu ul li ul').find('a.active');
       if (nestedFormItem.length > 0) {
+       
+        if ($(nestedFormItem).parent('li.dhtml-menu').hasClass('collapsed')) {
+          $(nestedFormItem).children('a.dhtml-menu-icon').click();
+        }
+        
         var menuToggleButtons = $(nestedFormItem).parents('ul.menu').siblings('a').children('.dhtml-menu-icon');
         $(menuToggleButtons).each(function(){
           if ($(this).parent('a').parent('li').hasClass('collapsed')) {
