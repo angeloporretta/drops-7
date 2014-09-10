@@ -1,5 +1,20 @@
 (function ($) {
   $(document).ready(function() {
+    
+    // Adding a body class if the site goes mobile.
+    if ($(window).width() < 980) {
+      $('body').addClass('mobile');
+    }
+    
+    $(window).resize(function() {
+      if ($(window).width() < 980) {
+        $('body').addClass('mobile');
+      }
+      else {
+        $('body').removeClass('mobile');
+      }
+    });
+    
     // Handle toolbar collapse.
     $('.oa-navigation .btn-navbar-menu').click(function(e) {
       e.preventDefault();
@@ -38,6 +53,33 @@
     // Other styling for oa group menu.
     $('.content .pane-og-menu-single-menu ul a.active').siblings('ul').find('a').css('color', '#0071B3');
     $('.content .pane-og-menu-single-menu ul .expanded a').css('color', '#0071B3');
+    
+    // Handle space menu in top bar.
+    if ($('body.mobile').length === 0) {
+      $('#mini-panel-oa_toolbar_panel .spaces-section-dropdown > li > a').hover(function(){
+        
+        $('#mini-panel-oa_toolbar_panel .spaces-section-dropdown .nested').addClass('hide').removeClass('show');
+        var nestedMenu = $(this).siblings('ul.nested');
+        $(nestedMenu).removeClass('hide').addClass('show');
+      },
+      function(){
+        var nestedMenu = $(this).siblings('ul.nested');
+        var hideTimeout = setTimeout(function(){
+          $(nestedMenu).addClass('hide').removeClass('show');
+        }, 1000);
+        
+        $(nestedMenu).hover(
+          function(){
+            clearTimeout(hideTimeout);
+          },
+          function(){
+            setTimeout(function(){
+              $(nestedMenu).addClass('hide').removeClass('show');
+            }, 500);
+          }
+        );
+      });
+    } 
     
     // Handle dashboard space dropdown menu.
     $('.content .spaces-section-dropdown > li').click(function(){
