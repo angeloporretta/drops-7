@@ -321,6 +321,18 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
   }
 }
 
+/* User Profile Pane */
+.pane-impetus-panes-profile-form {
+  padding: 10px;
+  background-color: #f1f1f1;
+  .form-actions {
+    background-color: #f1f1f1;
+  }
+  .manualcrop-preview-cropped img {
+    margin: 0px !important;
+  }
+}
+
 /* Folder Widget Panes */
 /*.pane-content .view-folder-files {
   .subfolder-container,
