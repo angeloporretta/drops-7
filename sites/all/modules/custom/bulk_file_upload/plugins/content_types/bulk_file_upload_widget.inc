@@ -31,11 +31,14 @@ function bulk_file_upload_pane_edit_form($form, &$form_state) {
     '#required' => TRUE,
   );
   
+  /*
   $form['show_subfolders'] = array(
     '#type' => 'checkbox',
     '#title' => t('Show Subfolders'),
     '#default_value' => (isset($form_state['conf']['show_subfolders'])) ? $form_state['conf']['show_subfolders'] : 1,
   );
+   * 
+   */
   
   $form['show_add_subfolders'] = array(
     '#type' => 'checkbox',
