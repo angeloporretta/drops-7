@@ -62,6 +62,13 @@ function impetus_module_implements_alter(&$implementations, $hook) {
  */
 function impetus_preprocess_page(&$vars) {
   
+  // General node edit pages.
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == 'edit') {
+    if (module_exists('chosen')) {
+      drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/menu-parent-searcher.js');
+    } 
+  }
+  
   // Taxonomy pages.
   if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
     $term = taxonomy_term_load(arg(2));
@@ -210,3 +217,4 @@ function impetus_preprocess_node(&$variables) {
     break;
   }
 }
+
