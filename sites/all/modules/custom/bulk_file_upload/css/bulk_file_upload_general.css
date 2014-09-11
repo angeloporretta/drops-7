@@ -9,3 +9,14 @@
   display: inline-block;
   margin: 0px 5px;
 }
+.taxonomy-files td img.bulk-upload-folder-icon {
+  height: auto;
+  margin-right: 5px;
+  vertical-align: middle;
+}
+.taxonomy-files td img.file-icon {
+  margin-right: 5px;
+}
+.taxonomy-files tr.folder-section {
+  background-color: #F5FAFF;
+}

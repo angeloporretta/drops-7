@@ -89,15 +89,15 @@ function bulk_file_upload_pane_render($subtype, $conf, $args, $contexts) {
   $block->title = ''; 
   $block->content = '';
 
-  if ($conf['show_subfolders'] == 1) {
-    $block->content .= bulk_file_upload_render_child_folders($conf['file_category']);
-  }
+  //if ($conf['show_subfolders'] == 1) {
+  //  $block->content .= bulk_file_upload_render_child_folders($conf['file_category']);
+  //}
+  
+  $block->content .= bulk_file_upload_render_file_table($conf['file_category']);
   
   if ($conf['show_add_subfolders'] == 1) {
     $block->content .= render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $conf['file_category']));
   }
-  
-  $block->content .= bulk_file_upload_render_file_table($conf['file_category']);
   
   if ($conf['show_add_files'] == 1) {
     $block->content .= render(drupal_get_form('bulk_file_upload_add_files_form', $conf['file_category']));

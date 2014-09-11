@@ -93,9 +93,9 @@ function bulk_file_upload_preprocess_taxonomy_term(&$variables) {
       '#markup' => '',
     );
     
-    $variables['content']['bulk_file_uploads']['#markup'] .= bulk_file_upload_render_child_folders($variables['term']->tid) .
-      render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $variables['term']->tid)) .
+    $variables['content']['bulk_file_uploads']['#markup'] .= //bulk_file_upload_render_child_folders($variables['term']->tid) .
       bulk_file_upload_render_file_table($variables['term']->tid) .
+      render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $variables['term']->tid)) .
       render(drupal_get_form('bulk_file_upload_add_files_form', $variables['term']->tid));
   }
 }
@@ -236,51 +236,74 @@ function bulk_file_upload_render_file_table($tid) {
   $html = '';
   
   $folder = taxonomy_term_load($tid);
-  $query = new EntityFieldQuery();
-  $results = $query->entityCondition('entity_type', 'node')
+  $file_query = new EntityFieldQuery();
+  $file_results = $file_query->entityCondition('entity_type', 'node')
     ->entityCondition('bundle', 'file')
     ->propertyCondition('status', 1)
     ->fieldCondition('field_file_category', 'tid', $tid)
     ->propertyOrderBy('title')
     ->execute();
-
-  if (!empty($results)) {
+  
+  $subfolders = taxonomy_get_children($tid);
+  
+  if (!empty($file_results) || !empty($subfolders)) {
     $html .= '<div class="taxonomy-files">';
-    $html .= '<h3>' . t('Files in @folder_name', array('@folder_name' => $folder->name)) . ':</h3>';
+    $html .= '<h3>' . t('Files and folders in @folder_name', array('@folder_name' => $folder->name)) . ':</h3>';
     
     if (user_access('bulk download file archive')) {
       $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
     }
     
-    $html .= '<table><tr><th>' . t('File Title') . '</th><th>' . t('Download Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</tr>';
+    $html .= '<table><tr><th>' . t('Title') . '</th><th>' . t('Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</tr>';
 
-    $file_nodes = node_load_multiple(array_keys($results['node']));
+    foreach ($subfolders as $subfolder) {
+      $html .= '<tr class="folder-section">';
+      $html .= '<td>' .
+                 '<a href="/' . drupal_lookup_path('alias', 'taxonomy/term/' .$subfolder->tid) . '">' . 
+                   '<img class="bulk-upload-folder-icon" src="/' . drupal_get_path('module', 'bulk_file_upload') . '/img/folder-open.png" />' .
+                   $subfolder->name . 
+                 '</a>' .
+               '</td>';
+      $html .= '<td></td><td></td><td></td>';
+      $html .= '</tr>';
+    }
+    
+    $file_nodes = node_load_multiple(array_keys($file_results['node']));
 
     foreach ($file_nodes as $file_node) {
-      $html .= '<tr>';
-      $html .= '<td><a href="/' . drupal_get_path_alias('node/' . $file_node->nid) . '">' . $file_node->title . '</a></td>';
-
+      
       $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
+      
       if ($file_downloads != FALSE) {
+        $html .= '<tr>';
+        $html .= '<td>' .
+                    '<a href="/' . drupal_get_path_alias('node/' . $file_node->nid) . '">' .
+                      theme_file_icon(
+                        array(
+                          'file' => file_load($file_downloads[0]['fid']),
+                          'icon_directory' => drupal_get_path('module', 'file') . '/icons',
+                        )
+                      ) .
+                      $file_node->title . 
+                    '</a>' .
+                  '</td>';
         $html .= '<td><a download href="' . file_create_url($file_downloads[0]['uri']) . '">' . t('Download This File') . '</a></td>';
         $html .= '<td>' . format_size($file_downloads[0]['filesize']) . '</td>';
-      }
-
-      $revision_user = user_load($file_node->revision_uid);
+        $revision_user = user_load($file_node->revision_uid);
       
-      if ($revision_user !== FALSE) {
-        $html .= '<td>' . $revision_user->realname . '</td>';
-      }
-      
-      $html .= '</tr>';
+        if ($revision_user !== FALSE) {
+          $html .= '<td>' . $revision_user->realname . '</td>';
+        }
 
+        $html .= '</tr>';
+      }
     }
 
     $html .= '</table>';
     $html .= '</div>';
   }
   else {
-    $html .= '<div class="messages warning">' . t('This folder has no files in it.') . '</div>';
+    $html .= '<div class="messages warning">' . t('This folder has no files or folders in it.') . '</div>';
   }
   
   return $html;
