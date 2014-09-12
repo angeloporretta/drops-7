@@ -325,11 +325,43 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
 .pane-impetus-panes-profile-form {
   padding: 10px;
   background-color: #f1f1f1;
+  .form-wrapper {
+    margin-top: 10px; 
+  }
+  .fieldset-wrapper > .form-wrapper:first-child {
+    margin-top: 0px;
+  }
   .form-actions {
     background-color: #f1f1f1;
   }
-  .manualcrop-preview-cropped img {
+  .manualcrop-preview-cropped {
+    height: auto !important;
+    width: auto !important;
+  }
+  .manualcrop-preview-cropped img,
+  .manualcrop-preview img {
     margin: 0px !important;
+    width: 100% !important;
+  }
+  .form-item-field-user-picture-und-0-alt {
+    display: none; 
+  }
+  .password-strength {
+    display: none;
+  }
+  .form-item-pass-pass2 {
+    margin-top: -15px;
+  }
+  .form-item-pass-pass2 > div.password-confirm {
+    display: block;
+    width: 100%;
+    margin-top: 0px;
+  }
+  .password-suggestions {
+    width: auto !important;
+  }
+  label[for="edit-pass--2"] {
+    font-weight: bold;
   }
 }
 

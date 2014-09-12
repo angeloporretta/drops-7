@@ -47,9 +47,10 @@ function impetus_panes_profile_form_custom_pane_render($subtype, $conf, $args, $
       )
     ) {
       
-      $form_state['build_info']['args'] = array($user_page_user, 'user-info');
-      form_load_include($form_state, 'inc', 'user', 'user.pages');
-      $user_form = drupal_build_form('user_profile_form', $form_state);
+      $user_form_form_state['build_info']['args'] = array($user_page_user, 'user-info');
+      form_load_include($user_form_form_state, 'inc', 'user', 'user.pages');
+      $user_form = drupal_build_form('user_profile_form', $user_form_form_state);
+      $user_form['actions']['submit']['#value'] = t('Save My Info');
       
       if (isset($user_form['field_first_name'])) {
         unset($user_form['field_first_name']);
@@ -61,7 +62,7 @@ function impetus_panes_profile_form_custom_pane_render($subtype, $conf, $args, $
         unset($user_form['field_user_picture']['und'][0]['alt']);
       }
       
-      $block->content = render($user_form);
+      $block->content = render(drupal_get_form('impetus_panes_change_password', $user_page_user)) . render($user_form);
     }
     
   }

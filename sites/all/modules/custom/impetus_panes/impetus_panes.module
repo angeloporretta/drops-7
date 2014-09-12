@@ -14,6 +14,80 @@ function impetus_panes_ctools_plugin_directory($owner, $plugin_type) {
 }
 
 /**
+ * Implements hook_forms.
+ */
+function impetus_panes_forms($form_id, $args) {
+  
+  return array(
+    'impetus_panes_change_password' => array(
+      'callback' => 'impetus_panes_get_change_password_form',
+      'callback arguments' => array('user'),
+    ),
+  );
+}
+
+/**
+ * Form render function.
+ * Renders the change password form.
+ */
+function impetus_panes_get_change_password_form($form, &$form_state, $user) {
+  
+  $form = array();
+  
+  $form['pass'] = array(
+    '#type' => 'password_confirm',
+    '#title' => t('Change Password'),
+    '#size' => 25,
+  );
+  
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Change Password'),
+  );
+  
+  $form['#validate'][] = 'impetus_panes_password_form_validate';
+  $form['#submit'][] = 'impetus_panes_password_form_submit';
+  
+  return $form;
+}
+
+/**
+ * Form validation handler.
+ * Validates the change password form.
+ */
+function impetus_panes_password_form_validate($form, &$form_state) {
+  
+  global $user;
+  $user_page_user = $form_state['build_info']['args'][0];
+
+  if (
+    $user_page_user !== FALSE && 
+    (
+      $user->uid == $user_page_user->uid || 
+      $user->uid == 1 ||
+      (property_exists($user, 'roles') && in_array('administrator', $user->roles) || in_array('impetus admin', $user->roles))
+    )
+  ) {}
+  else {
+    form_set_error('pass', t('Sorry, you do not have the correct permissions to change the password'));
+  }
+}
+
+/**
+ * Form submission handler.
+ * Handles the submission of the change password form.
+ */
+function impetus_panes_password_form_submit($form, &$form_state) {
+  
+  user_save(
+    $form_state['build_info']['args'][0],
+    array('pass' => $form_state['values']['pass'])
+  );
+  
+  drupal_set_message(t('You have successfully changed your password.'));
+}
+
+/**
  * Helper function.
  * Determines if the current user in an administrator.
  * @return: True if they are an admin, false otherwise.
