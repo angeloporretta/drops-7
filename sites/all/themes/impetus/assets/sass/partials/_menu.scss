@@ -208,6 +208,7 @@ ul.dropdown-menu,
       margin-top: 5px;
       @include breakpoint('mini-tablet') {
         margin-left: 0px;
+        width: 400px;
         > li {
           margin-bottom: 10px;
           vertical-align: top;
@@ -216,6 +217,7 @@ ul.dropdown-menu,
       }
       @include breakpoint('phone') {
         margin-left: 0px;
+        width: auto;
         > li {
           width: auto;
         }
@@ -287,6 +289,7 @@ ul.dropdown-menu,
 
 /* Section dropdown menu on side */
 .content .spaces-section-dropdown {
+  margin-left: 0px;
   > li {
     padding-left: 20px;
     background: url('../images/menu-arrow-right.png') left 3px no-repeat;
