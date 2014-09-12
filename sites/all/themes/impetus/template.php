@@ -218,3 +218,17 @@ function impetus_preprocess_node(&$variables) {
   }
 }
 
+/**
+ * Implements theme_form_alter.
+ * ...Unfortunately this hook should only be fired in modules instead of themes but there's no other way
+ * to alter the "user info" profile form that's generated from open atrium.
+ */
+function impetus_form_alter(&$form, &$form_state, $form_id) {
+  switch ($form_id) {
+    case 'user_profile_form':
+      if (module_exists('user_login_alterations') && !user_access('change job title') && isset($form['field_job_title'])) {
+        unset($form['field_job_title']);
+      }
+    break;
+  }
+}

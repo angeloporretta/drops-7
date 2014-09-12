@@ -15,6 +15,18 @@ function user_login_alterations_enable() {
 }
 
 /**
+ * Implement hook_permission.
+ */
+function user_login_alterations_permission() {
+  return array(
+    'change job title' => array(
+      'title' => t('Change Job Title'),
+      'description' => t('Allows people to have access to the job title field on user entities.'),
+    ),
+  );
+}
+
+/**
  * Implements hook_form_alter.
  */
 function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
@@ -48,6 +60,9 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       }
     break;
     case 'user_profile_form':
+      if (isset($form['field_job_title']) && !user_access('change job title')) {
+        unset($form['field_job_title']);
+      }
       $form['account']['pass']['#description'] = t('To change the current user password, enter the new password in both fields.<br/><strong>Please record this password for future use.</strong>');
     break;
   }
