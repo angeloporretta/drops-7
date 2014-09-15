@@ -62,11 +62,9 @@ function impetus_module_implements_alter(&$implementations, $hook) {
  */
 function impetus_preprocess_page(&$vars) {
   
-  // General node edit pages.
-  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == 'edit') {
-    if (module_exists('chosen')) {
-      drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/menu-parent-searcher.js');
-    } 
+  // General pages.
+  if (module_exists('chosen')) {
+    drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/select-searcher.js');
   }
   
   // Taxonomy pages.
