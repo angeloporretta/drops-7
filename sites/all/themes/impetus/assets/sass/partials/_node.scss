@@ -172,6 +172,22 @@ article.node-file {
       line-height: normal;
       font-weight: normal;
     }
+    #document-preview {
+      background-color: #E5E5E5;
+      margin-top: 15px;
+      text-align: center;
+      iframe {
+        @include breakpoint('tablet') { 
+          height: 550px;
+        }
+        @include breakpoint('mini-tablet') { 
+          height: 500px;
+        }
+        @include breakpoint('phone') { 
+          height: 450;
+        }
+      }
+    }
   }
   .submitted {
     margin-bottom: 10px;
