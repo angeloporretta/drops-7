@@ -1,0 +1,38 @@
+<?php
+/**
+ * @file: Set up constants, schemas, text formats, and other resources that will be used in .module and .inc files.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function file_preview_schema() {
+  $schema = array();
+  
+  $schema['file_preview_preview_guids'] = array(
+    'description' => 'Groupdocs file GUIDs for files stored in Drupal.',
+    'fields' => array(
+      'groupdocs_guid' => array(
+        'description' => 'A GUID from the groupdocs system.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'fid' => array(
+        'description' => 'The fid of the file from the Drupal system.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'foreign keys' => array(
+      'fid' => array(
+        'table' => 'file_managed',
+        'columns' => array('fid' => 'fid'),
+      ),
+    ),
+    'primary key' => array('groupdocs_guid'),
+  );
+  
+  return $schema;
+}

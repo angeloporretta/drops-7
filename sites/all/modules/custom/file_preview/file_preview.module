@@ -1,0 +1,245 @@
+<?php
+/**
+ * @file: Main functionality of the module.
+ */
+
+/**
+ * Implements hook_permission.
+ */
+function file_preview_permission() {
+  return array(
+    'file preview settings' => array(
+      'title' => t('Access file preview settings'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function file_preview_menu() {
+  return array(
+    'admin/config/file-preview' => array(
+      'title' => t('File Preview Settings'),
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('file_preview_get_settings_form'),
+      'access arguments' => array('file preview settings'),
+      'file' => 'file_preview.admin.inc',
+      'type' => MENU_NORMAL_ITEM,
+    )
+  );
+}
+
+/**
+ * Implements hook_node_insert.
+ */
+function file_preview_node_insert($node) {
+  
+  if ($node->type == 'file') {
+    $files = field_get_items('node', $node, 'field_uploaded_file');
+    $saved_file = NULL;
+
+    if ($files == FALSE) {
+      drupal_set_message(t('A file preview could not be created for @file_title because no file was found', array('@file_title' => $node->title)), 'error');
+    }
+    else {
+      file_preview_send_file_to_groupdocs($files);
+    }
+  }
+}
+
+/**
+ * Implements hook_node_update.
+ */
+function file_preview_node_update($node) {
+  
+  if ($node->type == 'file') {
+    $old_files = field_get_items('node', $node->original, 'field_uploaded_file');
+    $new_files = field_get_items('node', $node, 'field_uploaded_file');
+
+    if ($old_files != FALSE && $new_files != FALSE && $old_files[0]['fid'] != $new_files[0]['fid']) {
+      file_preview_send_file_to_groupdocs($new_files);
+    }
+  }
+}
+
+function file_preview_node_delete($node) {
+  
+  if ($node->type == 'file') {
+
+    // Include required libraries.
+    $groupdocsphp_path = libraries_get_path('groupdocs-php');
+    require_once $groupdocsphp_path . '/APIClient.php';
+    require_once $groupdocsphp_path . '/StorageApi.php';
+    require_once $groupdocsphp_path . '/GroupDocsRequestSigner.php';
+    require_once $groupdocsphp_path . '/FileStream.php';
+
+    $base_path = 'https://api.groupdocs.com/v2.0';
+    $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
+    @$api_client = new APIClient($signer);
+    $shared = new SharedApi($api_client);
+    $shared->setBasePath($base_path);
+    $result = "";
+    $user_data = $shared->LoginUser(
+      variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
+      variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
+    );
+
+    if ($user_data->status == 'Ok') {
+      $result = $user_data->result->user;
+      $user_id = $result->guid;
+      $api_storage = new StorageApi($api_client);
+      $node_revision_ids = array_keys(node_revision_list($node));
+
+      foreach ($node_revision_ids as $node_revision_id) {
+        $file_node = node_load($node->nid, $node_revision_id);
+        $file_field = field_get_items('node', $file_node, 'field_uploaded_file');
+        
+        $guid_result = db_select('file_preview_preview_guids', 'g')
+          ->fields('g', array('groupdocs_guid'))
+          ->condition('fid', $file_field[0]['fid'], '=')
+          ->execute()
+          ->fetchAll();
+        
+        if (!empty($guid_result)) {
+          $result = $api_storage->Delete($user_id, $guid_result[0]->groupdocs_guid);
+        }
+        else {
+          drupal_set_message(
+            t('We could not find the preview GUID for the file @node_title with the version id @vid', array('@node_title' => $file_node->title, '@vid' => $file_node->vid)), 
+            'error'
+          );
+        }
+      }
+
+    } 
+    else {
+      drupal_set_message(t('A file preview could not be created for @file_title.' . $user_data->error_message, array('@file_title' => $node->title)), 'error');
+    }
+  }
+}
+
+/**
+ * Helper function.
+ * Sends a file to be stored in groupdocs.
+ * @param array $file_field:  A file field array. This should be the result of field_get_items. 
+ *                            This assumes that there is only ONE file attached in this field per node.
+ */
+function file_preview_send_file_to_groupdocs($file_field) {
+      
+  // Include required libraries.
+  $groupdocsphp_path = libraries_get_path('groupdocs-php');
+  require_once $groupdocsphp_path . '/APIClient.php';
+  require_once $groupdocsphp_path . '/StorageApi.php';
+  require_once $groupdocsphp_path . '/GroupDocsRequestSigner.php';
+  require_once $groupdocsphp_path . '/FileStream.php';
+
+  $base_path = 'https://api.groupdocs.com/v2.0';
+  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
+  @$api_client = new APIClient($signer);
+  $shared = new SharedApi($api_client);
+  $shared->setBasePath($base_path);
+  $result = "";
+  $user_data = $shared->LoginUser(
+    variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
+    variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
+  );
+
+  if ($user_data->status == 'Ok') {
+    $result = $user_data->result->user;
+    $user_id = $result->guid;
+
+    $saved_file = file_load($file_field[0]['fid']);
+    $file_path = drupal_realpath($saved_file->uri);
+    $name = $_SERVER['HTTP_HOST'] . '/' . substr($saved_file->uri, strrpos($saved_file->uri, '/') + 1);
+
+    $file_stream = FileStream::fromFile($file_path);
+    $api_storage = new StorageApi($api_client);
+    $result = $api_storage->Upload(
+      variable_get('file_preview_groupdocs_client_id', NULL), 
+      $name, 
+      'uploaded', 
+      NULL, 
+      $file_stream
+    );
+    
+    if ($result->status != 'Ok') {
+      drupal_set_message(t('A file preview could not be created for @file_title.' . $result->error_message, array('@file_title' => $node->title)), 'error');
+    }
+    else {
+      $guid_result = db_select('file_preview_preview_guids', 'g')
+        ->fields('g', array('groupdocs_guid'))
+        ->condition('groupdocs_guid', $result->result->guid, '=')
+        ->execute()
+        ->fetchAll();
+      
+      if (empty($guid_result)) {
+        $guid = db_insert('file_preview_preview_guids')
+        ->fields(
+          array(
+            'groupdocs_guid' => $result->result->guid,
+            'fid' => $file_field[0]['fid'],
+          )
+        )
+        ->execute();
+        if ($guid === NULL) {
+          drupal_set_message(t('A file preview could not be created for @file_title. The GUID could not be saved in our database.'), 'error');
+        }
+      }
+    }
+    
+  } 
+  else {
+    drupal_set_message(t('A file preview could not be created for @file_title.' . $user_data->error_message, array('@file_title' => $node->title)), 'error');
+  }
+}
+
+/**
+ * Implements hook_preprocess_field.
+ */
+function file_preview_preprocess_field(&$variables) {
+
+  if (
+    $variables['element']['#entity_type'] == 'node' &&
+    $variables['element']['#object']->type == 'file' &&
+    $variables['element']['#field_name'] == 'field_uploaded_file' && 
+    !empty($variables['items']) && 
+    isset($variables['items'][0]['#file'])
+  ) {
+    $guid_result = db_select('file_preview_preview_guids', 'g')
+      ->fields('g', array('groupdocs_guid'))
+      ->condition('fid', $variables['items'][0]['#file']->fid, '=')
+      ->execute()
+      ->fetchAll();
+
+    if (!empty($guid_result)) {
+
+      $groupdocsphp_path = libraries_get_path('groupdocs-php');
+      require_once $groupdocsphp_path . '/APIClient.php';
+      require_once $groupdocsphp_path . '/StorageApi.php';
+      require_once $groupdocsphp_path . '/GroupDocsRequestSigner.php';
+      require_once $groupdocsphp_path . '/DocApi.php';
+
+      $base_path = 'https://api.groupdocs.com/v2.0';
+      $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
+      @$api_client = new APIClient($signer);
+      //$docsClient = new DocApi($api_client);
+      $shared = new SharedApi($api_client);
+      $shared->setBasePath($base_path);
+      $username = variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com');
+      $password = variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7');
+      $user_data = $shared->LoginUser($username, $password);
+
+      $url = 'https://apps.groupdocs.com/document-viewer/embed/' . $guid_result[0]->groupdocs_guid . '?referer=impetus-healthcare';
+      $url = $signer->signUrl($url);
+
+      $variables['items'][]['preview'] = array(
+        '#type' => 'markup',
+        '#prefix' => '<div id="document-preview">',
+        '#suffix' => '</div>',
+        '#markup' => '<iframe src="' . $url . '" frameborder="0" width="800" height="650"></iframe>',
+      );
+    }
+  }
+}

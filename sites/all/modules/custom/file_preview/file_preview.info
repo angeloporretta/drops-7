@@ -1,0 +1,5 @@
+name = File Preview
+description = Uses Group Docs to preview microsoft office files and images for file nodes.
+dependencies[] = libraries
+package = custom
+core = 7.x
