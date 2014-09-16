@@ -113,7 +113,7 @@ function impetus_panes_group_members_custom_pane_render($subtype, $conf, $args, 
     $block->content .= '<div class="impetus-panes-user">';
     $block->content .= oa_users_picture($user, 'thumbnail');
     $block->content .=  '<div class="impetus-panes-user-name">' . $real_name . '<br/>' .
-                        '<a href="mailto:' . $user->mail . '" class="mailto-link">' . t('Email Me') . '</a>' .
+                        '<a href="/messages/new?preset-message-uid=' . $user->uid . '&form-mod-redirection='. drupal_get_path_alias(current_path()) . '" rel="lightmodal[|height: 600px;]" class="mailto-link">' . t('Message Me') . '</a>' .
                         '</div>';
     $block->content .= '</div>';
   }

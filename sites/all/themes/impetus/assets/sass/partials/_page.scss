@@ -116,9 +116,9 @@ body.logged-in-admin #main-wrapper #main #contextual-tabs .btn-group {
     min-width: 800px;
   }
   #outerImageContainer {
-    min-height: 660px !important;
     min-width: 830px !important;
     max-width: 85% !important;
+    margin-top: 60px;
   }
   #imageDataContainer {
     min-width: 830px !important;
@@ -164,8 +164,8 @@ body.logged-in-admin #main-wrapper #main #contextual-tabs .btn-group {
     }
   }
   #modalContainer {
+    text-align: left;
     width: 95% !important;
-    margin-top: 60px;
     @include breakpoint('tablet') {
       
     }
@@ -248,5 +248,56 @@ body.logged-in-admin #main-wrapper #contextual-tabs #visibility-dropdown{
   }
   @include breakpoint('mini-tablet') {
     margin-left: 0px;
+  }
+}
+
+/* Private Message */
+#privatemsg-new {
+  #edit-recipient {
+    width: 285px;
+    @include breakpoint('mini-tablet') {
+      width: 94%;
+    }
+  }
+  #edit-body-format {
+    display: none;
+  }
+}
+.privatemsg-message {
+  margin-bottom: 10px;
+  max-width: none;
+}
+.privatemsg-message-column,
+.privatemsg-author-avatar {
+  display: inline-block;
+  vertical-align: top;
+}
+.privatemsg-message-column {
+  width: auto;
+  float: none;
+  width: 85%;
+  margin-left: 15px;
+  @include breakpoint('tablet') {
+    width: 600px;
+  }
+  @include breakpoint('mini-tablet') {
+    width: 65%;
+  }
+  @include breakpoint('phone') {
+    width: 50%;
+    margin-left: 5px;
+  }
+}
+.privatemsg-author-avatar {
+  width: 100px;
+  min-height: 100px;
+  float: none;
+  img {
+    border-radius: 5px;
+  }
+}
+#modalContainer {
+  #edit-body-value {
+    width: 95%;
   }
 }

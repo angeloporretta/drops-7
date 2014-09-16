@@ -230,3 +230,55 @@ function impetus_form_alter(&$form, &$form_state, $form_id) {
     break;
   }
 }
+
+/**
+ * Implements theme_preprocess_privatemsg_view.
+ */
+function impetus_preprocess_privatemsg_view(&$variables) {
+ 
+  // Changing author's pic.
+  if ($variables['message']->author->picture != NULL) {
+    $variables['author_picture'] = theme(
+      'image_style', 
+      array(
+        'style_name' => 'thumbnail', 
+        'path' => $variables['message']->author->picture->uri,
+      )
+    );
+  }
+  else {
+    $variables['author_picture'] = '<img src="/' . drupal_get_path('module', 'oa_users') . '/oa-user.png' . '" />';
+  }
+}
+
+/**
+ * Implements theme_preprocess_privatemsg_recipients
+ */
+function impetus_preprocess_privatemsg_recipients(&$variables) {
+  
+  global $user;
+  $variables['participants'] = t('Conversation between') . ' ';
+  $participant_count = count($variables['thread']['participants']);
+  $i = 0;
+  
+  foreach ($variables['thread']['participants'] as $participant) {
+    $i++;
+    $suffix = '';
+    
+    if ($i == $participant_count - 1) {
+      $suffix = t(' and ');
+    }
+    else {
+      $suffix = ', ';
+    }
+    
+    if ($participant->uid == $user->uid) {
+      $variables['participants'] .= t('You') . $suffix;
+    }
+    else {
+      $variables['participants'] .= $participant->realname . $suffix;
+    }
+  }
+  
+  $variables['participants'] = substr($variables['participants'], 0, strlen($variables['participants']) - 2);
+}

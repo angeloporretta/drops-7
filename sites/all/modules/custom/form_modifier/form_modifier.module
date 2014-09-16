@@ -9,7 +9,7 @@
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   
   drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
-  
+
   switch ($form_id) {
     case 'panopoly_page_node_form':
       form_modifier_fix_group_ref_verbiage($form);
@@ -28,6 +28,35 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     case 'oa_section_node_form':
       form_modifier_fix_group_ref_verbiage($form);
     break;
+    case 'privatemsg_new':
+      
+      drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.privatemsg.js');
+      
+      if (isset($_GET['preset-message-uid'])) {
+        
+        $preset_user = user_load($_GET['preset-message-uid']);
+        
+        if ($preset_user !== FALSE) {
+          $form['recipient']['#default_value'] = $preset_user->realname . ', ';
+        }
+      }
+      
+      $form['recipient']['#description'] = t('Enter the recipient, separate recipients with commas.');
+      $form['subject']['#required'] = TRUE;
+      $form['subject']['#maxlength'] = 256;
+      $form['subject']['#size'] = 128;
+      $form['body']['#required'] = TRUE;
+      $form['body']['#format'] = 'plain_text';
+      $form['body']['#resizable'] = FALSE;
+      unset($form['actions']['cancel']);
+      
+      $form['redirection'] = array(
+        '#type' => 'hidden',
+        '#value' => (isset($_GET['form-mod-redirection'])) ? $_GET['form-mod-redirection'] : '',
+      );
+      
+      $form['#submit'][] = 'form_modifier_privatemsg_new_submit';
+    break;
   }
 }
 
@@ -44,4 +73,10 @@ function form_modifier_fix_group_ref_verbiage(&$form) {
     $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'] = t('Other Spaces');
     $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#description'] = t('Associate this content with spaces you do not belong to.');
   } 
+}
+
+function form_modifier_privatemsg_new_submit($form, &$form_state) {
+  if ($form_state['values']['redirection'] != '') {
+    $form_state['redirect'] = $form_state['values']['redirection'];
+  }
 }
