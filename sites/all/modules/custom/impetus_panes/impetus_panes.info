@@ -7,5 +7,6 @@ dependencies[] = oa_users
 dependencies[] = chosen
 dependencies[] = event_rsvp
 dependencies[] = lightbox2
+dependencies[] = privatemsg
 package = custom
 core = 7.x
