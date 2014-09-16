@@ -75,6 +75,10 @@ function form_modifier_fix_group_ref_verbiage(&$form) {
   } 
 }
 
+/**
+ * Form submit function.
+ * Performs an appropriate page redirect after the private message creation for is filled out.
+ */
 function form_modifier_privatemsg_new_submit($form, &$form_state) {
   if ($form_state['values']['redirection'] != '') {
     $form_state['redirect'] = $form_state['values']['redirection'];
