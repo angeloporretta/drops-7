@@ -243,3 +243,193 @@ function file_preview_preprocess_field(&$variables) {
     }
   }
 }
+
+/**
+ * Implements hook_cron.
+ */
+function file_preview_cron() {
+  
+  $groupdocsphp_path = libraries_get_path('groupdocs-php');
+  include_once $groupdocsphp_path . '/APIClient.php';
+  include_once $groupdocsphp_path . '/SystemApi.php';
+  
+  
+  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
+  @$api_client = new APIClient($signer);
+  $system_api = new SystemApi($api_client);
+  $plan_usage_response = $system_api->GetSubscriptionPlanUsage(variable_get('file_preview_groupdocs_client_id', NULL));
+
+  // Sending token limit emails.
+  $monthly_token_limit = $plan_usage_response->result->subscription_plan->document_tokens;
+  $monthly_token_usage = $plan_usage_response->result->usage->document_tokens;
+  $token_notification_email_key = 'file_preview_token_limit_notification';
+  $token_overage_email_key = 'file_preview_token_limit_overage';
+  $token_notification_result = db_select('file_preview_cron_email_notifications', 'c')
+    ->fields('c', array('email_key'))
+    ->condition('email_key', $token_notification_email_key, '=')
+    ->condition('timestamp', strtotime('first day of this month'), '>')
+    ->condition('timestamp', strtotime('last day of this month'), '<')
+    ->execute()
+    ->fetchAll();
+  $token_overage_result = db_select('file_preview_cron_email_notifications', 'c')
+    ->fields('c', array('email_key'))
+    ->condition('email_key', $token_overage_email_key, '=')
+    ->condition('timestamp', strtotime('first day of this month'), '>')
+    ->condition('timestamp', strtotime('last day of this month'), '<')
+    ->execute()
+    ->fetchAll(); 
+  
+  if ($monthly_token_usage > $monthly_token_limit - 50 && $monthly_token_usage <= $monthly_token_limit && empty($token_notification_result)) {
+    
+    file_preview_insert_cron_notification_record($token_notification_email_key);
+    
+    drupal_mail(
+      'file_preview', 
+      $token_notification_email_key, 
+      'support@impetushealthcare.com', 
+      user_preferred_language(user_load(1)), 
+      array(
+        'limit' => $monthly_token_limit,
+        'usage' => $monthly_token_usage,
+      ), 
+      variable_get('site_mail', 'portal@impetushealthcare.com'), 
+      TRUE
+    );
+  }
+  else if ($monthly_token_usage > $monthly_token_limit && empty($token_overage_result)) {
+    
+    file_preview_insert_cron_notification_record($token_overage_email_key);
+    
+    drupal_mail(
+      'file_preview', 
+      $token_overage_email_key, 
+      'support@impetushealthcare.com', 
+      user_preferred_language(user_load(1)), 
+      array(
+        'limit' => $monthly_token_limit,
+        'usage' => $monthly_token_usage,
+      ), 
+      variable_get('site_mail', 'portal@impetushealthcare.com'), 
+      TRUE
+    );
+  }
+  
+  // Sending views limit emails.
+  $monthly_view_limit = $plan_usage_response->result->subscription_plan->viewer;
+  $monthly_view_usage = $plan_usage_response->result->usage->viewer;
+  $views_notification_email_key = 'file_preview_view_limit_notification';
+  $views_overage_email_key = 'file_preview_view_limit_overage';
+  $views_notification_result = db_select('file_preview_cron_email_notifications', 'c')
+    ->fields('c', array('email_key'))
+    ->condition('email_key', $views_notification_email_key, '=')
+    ->condition('timestamp', strtotime('first day of this month'), '>')
+    ->condition('timestamp', strtotime('last day of this month'), '<')
+    ->execute()
+    ->fetchAll();
+  $views_overage_result = db_select('file_preview_cron_email_notifications', 'c')
+    ->fields('c', array('email_key'))
+    ->condition('email_key', $views_overage_email_key, '=')
+    ->condition('timestamp', strtotime('first day of this month'), '>')
+    ->condition('timestamp', strtotime('last day of this month'), '<')
+    ->execute()
+    ->fetchAll(); 
+  
+  if ($monthly_view_limit != 0 && $monthly_view_usage > $monthly_view_limit - 75 && $monthly_view_usage <= $monthly_view_limit && empty($views_notification_result)) {
+    
+    file_preview_insert_cron_notification_record($views_notification_email_key);
+    
+    drupal_mail(
+      'file_preview', 
+      $views_notification_email_key, 
+      'support@impetushealthcare.com', 
+      user_preferred_language(user_load(1)), 
+      array(
+        'limit' => $monthly_view_limit,
+        'usage' => $monthly_view_usage,
+      ), 
+      variable_get('site_mail', 'portal@impetushealthcare.com'), 
+      TRUE
+    );
+  }
+  else if ($monthly_view_limit != 0 && $monthly_view_usage > $monthly_view_limit && empty($views_overage_result)) {
+    
+    file_preview_insert_cron_notification_record($views_overage_email_key);
+    
+    drupal_mail(
+      'file_preview', 
+      $views_overage_email_key, 
+      'support@impetushealthcare.com', 
+      user_preferred_language(user_load(1)), 
+      array(
+        'limit' => $monthly_view_limit,
+        'usage' => $monthly_view_usage,
+      ), 
+      variable_get('site_mail', 'portal@impetushealthcare.com'), 
+      TRUE
+    );
+  }
+}
+
+/**
+ * Implements hook_mail.
+ */
+function file_preview_mail($key, &$message, $params) {
+  
+  switch ($key) {
+    case 'file_preview_token_limit_notification':
+      $message = array(
+        'to' => 'support@impetushealthcare.com',
+        'subject' => t('Reaching limit of available GroupDocs document tokens.'),
+        'body' => t(
+          'The document tokens for this month (@date) are reaching its limit. We are allowed @limit and we are currently using @usage document tokens.',
+          array('@limit' => $params['limit'], '@usage' => $params['usage'], '@date' => date('F Y'))
+        ),
+      );
+    break;
+    case 'file_preview_token_limit_overage':
+      $message = array(
+        'to' => 'support@impetushealthcare.com',
+        'subject' => t('Reached limit of available GroupDocs document tokens!'),
+        'body' => t(
+          'The document tokens for this month (@date) have reached its limit. We are allowed @limit and we are currently using @usage document tokens.',
+          array('@limit' => $params['limit'], '@usage' => $params['usage'], '@date' => date('F Y'))
+        ),
+      );
+    break;
+    case 'file_preview_view_limit_notification':
+      $message = array(
+        'to' => 'support@impetushealthcare.com',
+        'subject' => t('Reaching limit of available GroupDocs views.'),
+        'body' => t(
+          'The groupdocs views for this month (@date) is reaching its limit. We are allowed @limit and we are currently using @usage document views.',
+          array('@limit' => $params['limit'], '@usage' => $params['usage'], '@date' => date('F Y'))
+        ),
+      );
+    break;
+    case 'file_preview_view_limit_overage':
+      $message = array(
+        'to' => 'support@impetushealthcare.com',
+        'subject' => t('Reached limit of available GroupDocs document tokens!'),
+        'body' => t(
+          'The groupdocs views for this month (@date) have reached its limit. We are allowed @limit and we are currently using @usage document views.',
+          array('@limit' => $params['limit'], '@usage' => $params['usage'], '@date' => date('F Y'))
+        ),
+      );
+    break;
+  }
+  
+}
+
+/**
+ * Helper Function.
+ * Creates a record in the file_preview_cron_email_notifications table.
+ * @param string $email_key: An email key used to send off a notification email.
+ */
+function file_preview_insert_cron_notification_record($email_key) {
+  db_insert('file_preview_cron_email_notifications')
+  ->fields(array(
+    'email_key' => $email_key,
+    'timestamp' => REQUEST_TIME,
+  ))
+  ->execute();
+}

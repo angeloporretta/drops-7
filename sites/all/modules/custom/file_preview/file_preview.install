@@ -34,5 +34,39 @@ function file_preview_schema() {
     'primary key' => array('groupdocs_guid'),
   );
   
+  $schema['file_preview_cron_email_notifications'] = array(
+    'description' => 'Tracker for notification emails that have been fired to internal Impetus email addresses. E.G. Notifications for overages.',
+    'fields' => array(
+      'email_key' => array(
+        'description' => 'A key that is used by hook_mail to identify the email.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'timestamp' => array(
+        'description' => 'The Unix timestamp when this record was created.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      ),
+    ),
+    'primary key' => array('email_key', 'timestamp'),
+  );
+
+  
   return $schema;
+}
+
+/**
+ * Creation of a table that tracks if administrative emails for GroupDocs overages have been sent.
+ */
+function file_preview_update_7100() {
+  
+  if (!db_table_exists('file_preview_cron_email_notifications')) {
+    db_create_table(
+      'file_preview_cron_email_notifications', 
+      drupal_get_schema_unprocessed('file_preview', 'file_preview_cron_email_notifications')
+    );
+  }
+  
 }
