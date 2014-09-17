@@ -234,7 +234,7 @@ function bulk_group_actions_remove_from_space_submit($form, &$form_state) {
     
     if (!empty($space_node->oa_parent_space)) {
       
-    $group_count = count($space_node->oa_parent_space[LANGUAGE_NONE]);
+      $group_count = count($space_node->oa_parent_space[LANGUAGE_NONE]);
 
       for ($i = 0; $i < $group_count; $i++) {
         if (in_array($space_node->oa_parent_space[LANGUAGE_NONE][$i]['target_id'], $form_state['values']['groups'])) {
