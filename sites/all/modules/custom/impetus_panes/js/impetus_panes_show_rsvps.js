@@ -1,4 +1,4 @@
-/* Functionality of the survey gizmo embed pane */
+/* Functionality of the RSVP display widget. */
 (function ($) {  
   Drupal.behaviors.showRSVPs = {
     attach: function (context, settings) {
