@@ -358,7 +358,7 @@ function bulk_group_actions_get_remove_from_section_form() {
   
   $form['container']['sections'] = array(
     '#type' => 'select',
-    '#title' => t('Spaces'),
+    '#title' => t('Sections'),
     '#description' => t('Select the sections you want sections to be removed from.'),
     '#multiple' => TRUE,
     '#options' => bulk_group_actions_get_options('oa_section'),
