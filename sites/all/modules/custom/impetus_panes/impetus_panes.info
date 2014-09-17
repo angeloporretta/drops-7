@@ -8,5 +8,6 @@ dependencies[] = chosen
 dependencies[] = event_rsvp
 dependencies[] = lightbox2
 dependencies[] = privatemsg
+dependencies[] = realname
 package = custom
 core = 7.x
