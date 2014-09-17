@@ -1,0 +1,407 @@
+<?php
+/**
+ * @file: Main functionality of this module.
+ */
+
+/**
+ * Implements hook_permission.
+ */
+function bulk_group_actions_permission() {
+  
+  return array(
+    'access bulk space page' => array(
+      'title' => t('Access bulk groups space page'),
+      'description' => t('Allows people to bulk add or remove groups from spaces.'),
+      'restrict access' => TRUE,
+    ),
+    'access bulk section page' => array(
+      'title' => t('Access bulk groups section page'),
+      'description' => t('Allows people to bulk add or remove groups from sections.'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function bulk_group_actions_menu() {
+  
+  $pages = array();
+  
+  $pages['admin/content/bulk-add-remove-groups-from-space'] = array(
+    'title' => t('Bulk add/remove groups from spaces'),
+    'description' => 'Allows people to add or remove several groups from several spaces',
+    'access arguments' => array('access bulk space page'),
+    'page callback' => 'bulk_group_actions_render_space_page',
+    'file' => 'bulk_group_actions.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  $pages['admin/content/bulk-add-remove-groups-from-section'] = array(
+    'title' => t('Bulk add/remove groups from sections'),
+    'description' => 'Allows people to add or remove several groups from several sections',
+    'access arguments' => array('access bulk section page'),
+    'page callback' => 'bulk_group_actions_render_section_page',
+    'file' => 'bulk_group_actions.pages.inc',
+    'type' => MENU_NORMAL_ITEM,
+  );
+  
+  return $pages;
+}
+
+/**
+ * Implements hook_forms.
+ */
+function bulk_group_actions_forms($form_id, $args) {
+  
+  return array(
+    'bulk_group_actions_add_to_space_form' => array(
+      'callback' => 'bulk_group_actions_get_add_to_space_form',
+    ),
+    'bulk_group_actions_remove_from_space_form' => array(
+      'callback' => 'bulk_group_actions_get_remove_from_space_form',
+    ),
+    'bulk_group_actions_add_to_section_form' => array(
+      'callback' => 'bulk_group_actions_get_add_to_section_form',
+    ),
+    'bulk_group_actions_remove_from_section_form' => array(
+      'callback' => 'bulk_group_actions_get_remove_from_section_form',
+    ),
+  );
+}
+
+/**
+ * Helper function.
+ * Formats select options from a node type.
+ * @param string $content_type: The machine name of the node type, for instance 'oa_space'.
+ * @return array: An array of formatted select options in the format nid => title.
+ */
+function bulk_group_actions_get_options($content_type) {
+  
+  $options = array();
+  $query = new EntityFieldQuery();
+  $result = $query->entityCondition('entity_type', 'node')
+    ->entityCondition('bundle', $content_type)
+    ->propertyCondition('status', 1)
+    ->propertyOrderBy('title')
+    ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT')
+    ->execute();
+  
+  if (!empty($result)) {
+    
+    $nodes = node_load_multiple(array_keys($result['node']));
+    foreach ($nodes as $node) {
+      $options[$node->nid] = $node->title;
+    }
+  }
+  
+  return $options;
+}
+
+/**
+ * Form creation function.
+ * Generates the render stucture for the add groups to spaces form.
+ */
+function bulk_group_actions_get_add_to_space_form() {
+  
+  $form = array();
+  
+  $form['container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add groups to spaces'),
+    '#collapsible' => TRUE,
+  );
+  
+  $form['container']['groups'] = array(
+    '#type' => 'select',
+    '#title' => t('Groups'),
+    '#description' => t('Select the groups you want to add to the spaces.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_group'),
+    '#empty_option' => ' - ' . t('Select Some Groups') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['spaces'] = array(
+    '#type' => 'select',
+    '#title' => t('Spaces'),
+    '#description' => t('Select the spaces you want groups to be added to.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_space'),
+    '#empty_option' => ' - ' . t('Select Some Spaces') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add groups to spaces'),
+  );
+  
+  $form['#submit'][] = 'bulk_group_actions_add_to_space_submit';
+  
+  return $form;
+}
+
+/**
+ * Form submission function.
+ * Handles the submission of the form that bulk adds groups to spaces.
+ */
+function bulk_group_actions_add_to_space_submit($form, &$form_state) {
+
+  $space_nodes = node_load_multiple(array_keys($form_state['values']['spaces']));
+
+  foreach ($space_nodes as $space_node) {
+    
+    $target_ids = array();
+    
+    if (!empty($space_node->oa_parent_space)) {
+      foreach ($space_node->oa_parent_space[LANGUAGE_NONE] as $target_id) {
+        $target_ids[] = $target_id['target_id'];
+      }
+    }
+    
+    $intersection = array_intersect($target_ids, $form_state['values']['groups']);
+    $added_values = array_diff($form_state['values']['groups'], $intersection);
+
+    foreach ($added_values as $added_value) {
+      $space_node->oa_parent_space[LANGUAGE_NONE][] = array('target_id' => $added_value);
+    }
+    
+    node_object_prepare($space_node);
+    node_save($space_node);
+    
+    if ($space_node->nid != NULL) {
+      drupal_set_message(t('Successfully added groups to space @space_name.', array('@space_name' => $space_node->title)));
+      unset($space_node->nid);
+    }
+  }
+}
+
+/**
+ * Form creation function.
+ * Generates the render stucture for the remove groups from spaces form.
+ */
+function bulk_group_actions_get_remove_from_space_form() {
+  
+  $form = array();
+  
+  $form['container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Remove groups from spaces'),
+    '#collapsible' => TRUE,
+  );
+  
+  $form['container']['groups'] = array(
+    '#type' => 'select',
+    '#title' => t('Groups'),
+    '#description' => t('Select the groups you want to remove from the spaces.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_group'),
+    '#empty_option' => ' - ' . t('Select Some Groups') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['spaces'] = array(
+    '#type' => 'select',
+    '#title' => t('Spaces'),
+    '#description' => t('Select the spaces you want groups to be removed from.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_space'),
+    '#empty_option' => ' - ' . t('Select Some Spaces') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Remove groups from spaces'),
+  );
+  
+  $form['#submit'][] = 'bulk_group_actions_remove_from_space_submit';
+  
+  return $form;
+}
+
+/**
+ * Form submission function.
+ * Handles the submission of the form that bulk removes groups from spaces.
+ */
+function bulk_group_actions_remove_from_space_submit($form, &$form_state) {
+
+  $space_nodes = node_load_multiple(array_keys($form_state['values']['spaces']));
+
+  foreach ($space_nodes as $space_node) {
+    
+    if (!empty($space_node->oa_parent_space)) {
+      
+    $group_count = count($space_node->oa_parent_space[LANGUAGE_NONE]);
+
+      for ($i = 0; $i < $group_count; $i++) {
+        if (in_array($space_node->oa_parent_space[LANGUAGE_NONE][$i]['target_id'], $form_state['values']['groups'])) {
+          unset($space_node->oa_parent_space[LANGUAGE_NONE][$i]);
+        }
+      }
+    }
+    
+    node_object_prepare($space_node);
+    node_save($space_node);
+    
+    if ($space_node->nid != NULL) {
+      drupal_set_message(t('Successfully removed groups from space @space_name.', array('@space_name' => $space_node->title)));
+      unset($space_node->nid);
+    }
+  }
+}
+
+/**
+ * Form creation function.
+ * Generates the render stucture for the add groups to spaces form.
+ */
+function bulk_group_actions_get_add_to_section_form() {
+  
+  $form = array();
+  
+  $form['container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Add groups to sections'),
+    '#collapsible' => TRUE,
+  );
+  
+  $form['container']['groups'] = array(
+    '#type' => 'select',
+    '#title' => t('Groups'),
+    '#description' => t('Select the groups you want to add to the sections.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_group'),
+    '#empty_option' => ' - ' . t('Select Some Groups') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['sections'] = array(
+    '#type' => 'select',
+    '#title' => t('Sections'),
+    '#description' => t('Select the sections you want groups to be added to.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_section'),
+    '#empty_option' => ' - ' . t('Select Some Sections') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Add groups to sections'),
+  );
+  
+  $form['#submit'][] = 'bulk_group_actions_add_to_section_submit';
+  
+  return $form;
+}
+
+/**
+ * Form submission function.
+ * Handles the submission of the form that bulk adds groups to spaces.
+ */
+function bulk_group_actions_add_to_section_submit($form, &$form_state) {
+
+  $section_nodes = node_load_multiple(array_keys($form_state['values']['sections']));
+
+  foreach ($section_nodes as $section_node) {
+    
+    $target_ids = array();
+    
+    if (!empty($section_node->field_oa_group_ref)) {
+      foreach ($section_node->field_oa_group_ref[LANGUAGE_NONE] as $target_id) {
+        $target_ids[] = $target_id['target_id'];
+      }
+    }
+    
+    $intersection = array_intersect($target_ids, $form_state['values']['groups']);
+    $added_values = array_diff($form_state['values']['groups'], $intersection);
+
+    foreach ($added_values as $added_value) {
+      $section_node->field_oa_group_ref[LANGUAGE_NONE][] = array('target_id' => $added_value);
+    }
+    
+    node_object_prepare($section_node);
+    node_save($section_node);
+    
+    if ($section_node->nid != NULL) {
+      drupal_set_message(t('Successfully added groups to section @section_name.', array('@section_name' => $section_node->title)));
+      unset($section_node->nid);
+    }
+  }
+}
+
+/**
+ * Form creation function.
+ * Generates the render stucture for the remove groups from spaces form.
+ */
+function bulk_group_actions_get_remove_from_section_form() {
+  
+  $form = array();
+  
+  $form['container'] = array(
+    '#type' => 'fieldset',
+    '#title' => t('Remove groups from sections'),
+    '#collapsible' => TRUE,
+  );
+  
+  $form['container']['groups'] = array(
+    '#type' => 'select',
+    '#title' => t('Groups'),
+    '#description' => t('Select the groups you want to remove from the sections.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_group'),
+    '#empty_option' => ' - ' . t('Select Some Groups') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['sections'] = array(
+    '#type' => 'select',
+    '#title' => t('Spaces'),
+    '#description' => t('Select the sections you want sections to be removed from.'),
+    '#multiple' => TRUE,
+    '#options' => bulk_group_actions_get_options('oa_section'),
+    '#empty_option' => ' - ' . t('Select Some Sections') . ' - ',
+    '#required' => TRUE,
+  );
+  
+  $form['container']['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Remove groups from sections'),
+  );
+  
+  $form['#submit'][] = 'bulk_group_actions_remove_from_section_submit';
+  
+  return $form;
+}
+
+/**
+ * Form submission function.
+ * Handles the submission of the form that bulk removes groups from spaces.
+ */
+function bulk_group_actions_remove_from_section_submit($form, &$form_state) {
+
+  $section_nodes = node_load_multiple(array_keys($form_state['values']['sections']));
+
+  foreach ($section_nodes as $section_node) {
+    
+    if (!empty($section_node->field_oa_group_ref)) {
+      $group_count = count($section_node->field_oa_group_ref[LANGUAGE_NONE]);
+
+      for ($i = 0; $i < $group_count; $i++) {
+        if (in_array($section_node->field_oa_group_ref[LANGUAGE_NONE][$i]['target_id'], $form_state['values']['groups'])) {
+          unset($section_node->field_oa_group_ref[LANGUAGE_NONE][$i]);
+        }
+      }
+    }
+    
+    node_object_prepare($section_node);
+    node_save($section_node);
+    
+    if ($section_node->nid != NULL) {
+      drupal_set_message(t('Successfully removed groups from space @space_name.', array('@space_name' => $section_node->title)));
+      unset($section_node->nid);
+    }
+  }
+}

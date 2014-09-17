@@ -1,0 +1,7 @@
+name = Bulk Group Actions
+description = Allows the ability to bulk add or remove groups to space and section nodes.
+dependencies[] = oa_core
+dependencies[] = oa_access
+dependencies[] = og
+package = custom
+core = 7.x
