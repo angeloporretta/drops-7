@@ -26,5 +26,9 @@
       
     }
     
+    if ($('div.view-admin-views-user').length > 0) {
+      $('div.view-admin-views-user form #edit-og-user-node-target-id').chosen({'width': '250px'});
+    }
+    
   });
 })(jQuery);

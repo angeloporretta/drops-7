@@ -11,6 +11,39 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
 
   switch ($form_id) {
+    case 'views_exposed_form':
+      
+      if (strpos($form['#id'], 'views-exposed-form-admin-views-user-system') !== FALSE && 
+          isset($form['og_user_node_target_id'])
+      ) {
+        
+        $query = new EntityFieldQuery();
+        $result = $query->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'oa_group')
+          ->propertyCondition('status', 1)
+          ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT')
+          ->propertyOrderBy('title', 'ASC')
+          ->execute();
+        
+        $options = array();
+        
+        if (!empty($result)) {
+          $group_nodes = node_load_multiple(array_keys($result['node']));
+          
+          foreach ($group_nodes as $group_node) {
+            $options[$group_node->nid] = $group_node->title;
+          }
+        }
+        
+        $form['og_user_node_target_id'] = array(
+          '#type' => 'select',
+          '#multiple' => FALSE,
+          '#options' => $options,
+          '#validated' => TRUE,
+          '#empty_option' => ' - ' . t('Please select a group') . ' - ',
+        );
+      }
+    break;
     case 'panopoly_page_node_form':
       form_modifier_fix_group_ref_verbiage($form);
     break;
