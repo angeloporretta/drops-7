@@ -309,3 +309,29 @@ body.page-node #main-wrapper #contextual-tabs {
     }
   }
 }
+
+/* Group Nodes */
+.node-type-oa-group {
+  .pane-oa-core-members-widget {
+    .members .dropdown,
+    .members .user-badge {
+      display: inline-block;
+      float: none;
+      margin-right: 27px;
+      text-align: left;
+      width: 215px;
+      vertical-align: top;
+    }
+    .members .dropdown a,
+    .members .user-badge a {
+      vertical-align: top;
+    }
+    .members .dropdown img,
+    .members .user-badge img {
+      border-radius: 5px;
+    }
+    .members > .pull-left img {
+      margin-left: 13px;
+    }
+  }
+}
