@@ -64,6 +64,9 @@ function file_preview_node_update($node) {
   }
 }
 
+/**
+ * Implements hook_node_delete.
+ */
 function file_preview_node_delete($node) {
   
   if ($node->type == 'file') {
@@ -118,6 +121,15 @@ function file_preview_node_delete($node) {
       drupal_set_message(t('A file preview could not be created for @file_title.' . $user_data->error_message, array('@file_title' => $node->title)), 'error');
     }
   }
+}
+
+/**
+ * Implements hook_file_delete.
+ */
+function file_preview_file_delete($file) {
+  db_delete('file_preview_preview_guids')
+    ->condition('fid', $file->fid)
+    ->execute();
 }
 
 /**
