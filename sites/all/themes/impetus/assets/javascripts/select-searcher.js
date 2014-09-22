@@ -30,5 +30,9 @@
       $('div.view-admin-views-user form #edit-og-user-node-target-id').chosen({'width': '250px'});
     }
     
+    if ($('#menu-overview-form').length > 0) {
+      $('.form-item-drill-down-parents select').chosen({'width': '250px'});
+    }
+    
   });
 })(jQuery);

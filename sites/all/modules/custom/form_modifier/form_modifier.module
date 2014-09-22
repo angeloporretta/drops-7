@@ -8,9 +8,40 @@
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   
-  drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.js');
-
+  drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.js');
+  
   switch ($form_id) {
+    case 'menu_edit_menu':
+      
+      if ($form['menu_name']['#default_value'] == 'og-menu-single') {
+        
+        drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.menuedit.js');
+        
+        $options = array();
+        $parent_menu_items = menu_tree_all_data($form['menu_name']['#default_value'], NULL, 1);
+        
+        foreach ($parent_menu_items as $parent_menu_item) {
+          $options[$parent_menu_item['link']['link_title']] = $parent_menu_item['link']['link_title'];
+        }
+        
+        $form['drill_down_parents'] = array(
+          '#type' => 'select',
+          '#title' => t('Search Menu Item'),
+          '#multiple' => FALSE,
+          '#options' => $options,
+          '#empty_option' => ' - ' . t('Select a Parent Menu Item') . ' - ',
+          '#weight' => -50,
+        );
+
+        foreach ($form as $key => $form_item) {
+          if (strpos($key, 'mlid') !== FALSE) {
+            $form[$key]['#attributes']['title'] = $form[$key]['#item']['title'];
+          }
+        }
+        
+      }
+      
+    break;
     case 'views_exposed_form':
       
       if (strpos($form['#id'], 'views-exposed-form-admin-views-user-system') !== FALSE && 
@@ -63,7 +94,7 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     break;
     case 'privatemsg_new':
 
-      drupal_add_js(drupal_get_path('module', 'form_modifier') . '/form_modifier.privatemsg.js');
+      drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.privatemsg.js');
       
       if (isset($_GET['preset-message-uid'])) {
         
