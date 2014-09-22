@@ -129,3 +129,18 @@ function file_tracker_insert_download_record($args) {
   
   return $id;
 }
+
+/**
+ * Implements hook_node_delete.
+ */
+function file_tracker_node_delete($node) {
+  
+  if ($node->type == 'file') {
+    db_delete('file_tracker_views')
+      ->condition('nid', $node->nid)
+      ->execute();
+    db_delete('file_tracker_downloads')
+      ->condition('nid', $node->nid)
+      ->execute();
+  }
+}
