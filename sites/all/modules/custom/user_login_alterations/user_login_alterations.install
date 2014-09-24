@@ -96,3 +96,13 @@ function user_login_alterations_update_7100() {
   $filter_format = (object) $filter_format;
   filter_format_save($filter_format);
 }
+
+/**
+ * Removal of temporary custom messages table. Found a much better way of temporarily storing custom messages.
+ */
+function user_login_alterations_update_7101() {
+  
+  if (db_table_exists('user_login_alterations_custom_creation_messages')) {
+    db_drop_table('user_login_alterations_custom_creation_messages');
+  }
+}

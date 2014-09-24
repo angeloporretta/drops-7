@@ -100,23 +100,18 @@ function user_login_alterations_ajax_custom_email_message($form, $form_state) {
 }
 
 function user_login_alterations_save_custom_email_message($form, &$form_state) {
-  watchdog('debug_entering_message_handler', 'entering');
+
   if (
     $form_state['values']['notify'] == 1 &&
     isset($form_state['values']['custom_email_message']) && 
     $form_state['values']['custom_email_message']['value'] != ''
   ) {
-    $last_uid = db_query('SELECT MAX(uid) FROM {users}')->fetchField();
-    watchdog('debug_new_message_uid', $last_uid + 1);
-    db_insert('user_login_alterations_custom_creation_messages')
-      ->fields(
-        array(
-          'uid' => $last_uid + 1,
-          'message' => $form_state['values']['custom_email_message']['value'],
-          'message_text_format' => $form_state['values']['custom_email_message']['format'],
-        )
-      )
-      ->execute();
+    variable_set('user_login_alterations_custom_creation_message', $form_state['values']['custom_email_message']['value']);
+    variable_set('user_login_alterations_custom_creation_message_format', $form_state['values']['custom_email_message']['format']);
+  }
+  else {
+    variable_set('user_login_alterations_custom_creation_message', '');
+    variable_set('user_login_alterations_custom_creation_message_format', 'plain_text');
   }
 }
 
@@ -199,40 +194,19 @@ function user_login_alterations_pass_validate($form, &$form_state) {
 function user_login_alterations_mail_alter(&$message) {
   
   if ($message['id'] == 'user_register_admin_created') {
-    $query = db_query(
-      '
-        SELECT m.message_id, m.message, m.message_text_format
-        FROM {user_login_alterations_custom_creation_messages} m
-        WHERE m.uid = :uid
-      ', 
-      array(':uid' => $message['params']['account']->uid)
+    
+    $admin_message = check_markup(
+      variable_get('user_login_alterations_custom_creation_message', ''),
+      variable_get('user_login_alterations_custom_creation_message_format', 'plain_text')
     );
-
-    $result = $query->fetchAll();
-    watchdog('debug_uid', $message['params']['account']->uid);
     
-    if (!empty($result)) {
-      watchdog('debug_result', 'not empty');
-      $extra_message = check_markup($result[0]->message, $result[0]->message_text_format);
-      $message['body'][0] = str_replace(
-        'user_login_alterations:custom_user_created_message',
-        $extra_message,
-        $message['body'][0]
-      );
-
-      db_delete('user_login_alterations_custom_creation_messages')
-        ->condition('message_id', $result[0]->message_id)
-        ->execute();
-    }
-    else {
-      watchdog('debug_result', 'is empty');
-      $message['body'][0] = str_replace(
-        'user_login_alterations:custom_user_created_message',
-        '',
-        $message['body'][0]
-      );
-    }
+    $message['body'][0] = str_replace(
+      'user_login_alterations:custom_user_created_message',
+      $admin_message,
+      $message['body'][0]
+    );
     
-    watchdog('debug_message', $message['body'][0]);
+    variable_set('user_login_alterations_custom_creation_message', '');
+    variable_set('user_login_alterations_custom_creation_message_format', 'plain_text');
   }
 }
