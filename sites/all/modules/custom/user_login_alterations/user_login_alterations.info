@@ -1,5 +1,5 @@
 name = User Login Alterations
-description = Performs any custom alterations to the user login process.
+description = Performs any custom alterations to the user login process and account creation process.
 dependencies[] = user
 dependencies[] = logintoboggan
 dependencies[] = remember_me

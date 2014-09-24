@@ -1,0 +1,98 @@
+<?php
+/**
+ * @file: Sets up all database schemas, text formats, etc... that is used by this module.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function user_login_alterations_schema() {
+  $schema = array();
+  
+  $schema['user_login_alterations_custom_creation_messages'] = array(
+    'description' => 'Temporarily stores user creation messages embedded into user creation emails.',
+    'fields' => array(
+      'message_id' => array(
+        'description' => 'A unique identifier for this message.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'uid' => array(
+        'description' => 'The uid of the user receiving the custom email message.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'message' => array(
+        'description' => 'The custom message that will be embedded into the new user welcome email',
+        'type' => 'text',
+        'size' => 'big',
+        'not null' => TRUE,
+      ),
+      'message_text_format' => array(
+        'description' => 'The text format of the message',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      )
+    ),
+    'foreign keys' => array(
+      'uid' => array(
+        'table' => 'users',
+        'columns' => array('uid' => 'uid'),
+      ),
+    ),
+    'primary key' => array('message_id'),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Creation of a table that allows for custom messages to be embedded into welcome emails and creation of custom text format.
+ */
+function user_login_alterations_update_7100() {
+  
+  if (!db_table_exists('user_login_alterations_custom_creation_messages')) {
+    db_create_table(
+      'user_login_alterations_custom_creation_messages', 
+      drupal_get_schema_unprocessed('user_login_alterations', 'user_login_alterations_custom_creation_messages')
+    );
+  }
+  
+  // Create a new filter format for custom emails.
+  $filter_name = 'custom_email_html';
+  
+  $filter_format = array(
+    'format' => $filter_name,
+    'name' => st('Custom Email HTML'),
+    'status' => 1,
+    'filters' => array(
+      $filter_name => array(
+        'weight' => 0,
+        'status' => 1,
+      ),
+      'filter_autop' => array(
+        'format' => $filter_name,
+        'status' => 0
+      ),
+      'filter_htmlcorrector' => array(
+        'format' => $filter_name,
+        'status' => 1
+      ),
+      'filter_html' => array(
+        'format' => $filter_name,
+        'status' => 1,
+        'settings' => array(
+          'allowed_html' => '<p> <a> <em> <strong> <h2> <h3> <h4> <h5> <h6> <ul> <ol> <li> <dl> <dt> <dd>',
+          'filter_html_help' => 0,
+          'filter_html_nofollow' => 0,
+        )
+      )
+    )
+  );
+  
+  $filter_format = (object) $filter_format;
+  filter_format_save($filter_format);
+}

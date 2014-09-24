@@ -65,6 +65,58 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       }
       $form['account']['pass']['#description'] = t('To change the current user password, enter the new password in both fields.<br/><strong>Please record this password for future use.</strong>');
     break;
+    case 'user_register_form':
+      
+      $form['account']['notify']['#ajax'] = array(
+        'callback' => 'user_login_alterations_ajax_custom_email_message',
+        'wrapper' => 'user-email-notify-wrapper',
+      );
+      
+      $form['account']['custom_email_message'] = array(
+        '#prefix' => '<div id="user-email-notify-wrapper" style="display: none;">',
+        '#suffix' => '</div>',
+        '#type' => 'text_format',
+        '#title' => t('Custom message in email'),
+        '#default_value' => '',
+        '#format' => 'custom_email_html',
+      );
+      
+      array_unshift($form['#submit'], 'user_login_alterations_save_custom_email_message');
+
+    break;
+  }
+}
+
+function user_login_alterations_ajax_custom_email_message($form, $form_state) {
+  
+  if ($form_state['values']['notify'] == 1) {    
+    $form['account']['custom_email_message']['#prefix'] = '<div id="user-email-notify-wrapper">';
+  }
+  else {
+    $form['account']['custom_email_message']['#prefix'] = '<div id="user-email-notify-wrapper" style="display: none;">';
+  }
+  
+  return $form['account']['custom_email_message'];
+}
+
+function user_login_alterations_save_custom_email_message($form, &$form_state) {
+
+  if (
+    $form_state['values']['notify'] == 1 &&
+    isset($form_state['values']['custom_email_message']) && 
+    $form_state['values']['custom_email_message']['value'] != ''
+  ) {
+    $last_uid = db_query('SELECT MAX(uid) FROM {users}')->fetchField();
+
+    db_insert('user_login_alterations_custom_creation_messages')
+      ->fields(
+        array(
+          'uid' => $last_uid + 1,
+          'message' => $form_state['values']['custom_email_message']['value'],
+          'message_text_format' => $form_state['values']['custom_email_message']['format'],
+        )
+      )
+      ->execute();
   }
 }
 
@@ -141,5 +193,41 @@ function user_login_alterations_pass_validate($form, &$form_state) {
   }
   else {
     form_set_error('name', t('Sorry, the email address @name does not exist in our system. Please ensure you are using the email registered to this portal – where all email communications are sent.<br/><br/>Please <a href="/user/login">CLICK HERE</a> to go back to the sign on page and use that email address. If you are still experiencing issues, please email <strong>support@impetushealthcare.com</strong>.', array('@name' => $name)));
+  }
+}
+
+function user_login_alterations_mail_alter(&$message) {
+  
+  if ($message['id'] == 'user_register_admin_created') {
+    $query = db_query(
+      '
+        SELECT m.message_id, m.message, m.message_text_format
+        FROM {user_login_alterations_custom_creation_messages} m
+        WHERE m.uid = :uid
+      ', 
+      array(':uid' => $message['params']['account']->uid)
+    );
+
+    $result = $query->fetchAll();
+
+    if (!empty($result)) {
+      $extra_message = check_markup($result[0]->message, $result[0]->message_text_format);
+      $message['body'][0] = str_replace(
+        'user_login_alterations:custom_user_created_message',
+        $extra_message,
+        $message['body'][0]
+      );
+
+      db_delete('user_login_alterations_custom_creation_messages')
+        ->condition('message_id', $result[0]->message_id)
+        ->execute();
+    }
+    else {
+      $message['body'][0] = str_replace(
+        'user_login_alterations:custom_user_created_message',
+        '',
+        $message['body'][0]
+      );
+    }
   }
 }
