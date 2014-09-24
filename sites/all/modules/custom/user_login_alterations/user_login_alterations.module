@@ -229,5 +229,7 @@ function user_login_alterations_mail_alter(&$message) {
         $message['body'][0]
       );
     }
+    kpr($message);
+    exit();
   }
 }
