@@ -22,8 +22,8 @@
          */
         function drillDownMenuItems(parentItemName) {
           if (parentItemName != '') {
-            $('#menu-overview tr').css('display', 'none');
-            var highLevelTableItem = $('#menu-overview tr[title="' + parentItemName + '"]');
+            $('#menu-overview tbody tr').css('display', 'none');
+            var highLevelTableItem = $('#menu-overview tbody tr[title="' + parentItemName + '"]');
             $(highLevelTableItem).css('display', 'table-row');
             
             var parentHasChildren = $(highLevelTableItem).next().find('.indentation').length;
@@ -40,7 +40,7 @@
             }
           }
           else {
-            $('#menu-overview tr').css('display', 'table-row');
+            $('#menu-overview tbody tr').css('display', 'table-row');
           }
         }
       });

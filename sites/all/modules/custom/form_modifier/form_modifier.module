@@ -18,10 +18,18 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
         drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.menuedit.js');
         
         $options = array();
-        $parent_menu_items = menu_tree_all_data($form['menu_name']['#default_value'], NULL, 1);
+        $space_query = new EntityFieldQuery();
+        $space_result = $space_query->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'oa_space')
+          ->propertyCondition('status', 1)
+          ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT')
+          ->execute();
         
-        foreach ($parent_menu_items as $parent_menu_item) {
-          $options[$parent_menu_item['link']['link_title']] = $parent_menu_item['link']['link_title'];
+        if (!empty($space_result)) {
+          $space_nodes = node_load_multiple(array_keys($space_result['node']));
+          foreach ($space_nodes as $space_node) {
+            $options[$space_node->title] = $space_node->title;
+          }
         }
         
         $form['drill_down_parents'] = array(
@@ -39,8 +47,31 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
           }
         }
         
+        // Changing listing of menu items.
+        $group_query = new EntityFieldQuery();
+        $group_result = $group_query->entityCondition('entity_type', 'node')
+          ->entityCondition('bundle', 'oa_group')
+          ->addTag('DANGEROUS_ACCESS_CHECK_OPT_OUT')
+          ->execute();
+        
+        if (!empty($group_result)) {
+          $group_paths = array_keys($group_result['node']);
+
+          for ($i = 0; $i < count($group_paths); $i++) {
+            $group_paths[$i] = 'node/' . $group_paths[$i];
+          }
+
+          foreach ($form as $key => $form_item) {
+            if (
+              strpos($key, 'mlid:') !== FALSE && 
+              isset($form_item['#item']) && 
+              in_array($form_item['#item']['link_path'], $group_paths)
+            ) {
+              unset($form[$key]);
+            }
+          }
+        }
       }
-      
     break;
     case 'views_exposed_form':
       
