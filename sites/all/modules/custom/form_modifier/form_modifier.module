@@ -153,6 +153,11 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
       
       $form['#submit'][] = 'form_modifier_privatemsg_new_submit';
     break;
+    case 'block_admin_configure':
+      if ($form['delta']['#value'] == '1') {
+        drupal_add_css(drupal_get_path('module', 'form_modifier') . '/css/form_modifier.block.css');
+      }
+    break;
   }
 }
 

@@ -1,0 +1,6 @@
+form[action="/admin/structure/block/manage/block/1/configure"] .form-item-title,
+form[action="/admin/structure/block/manage/block/1/configure"] #edit-regions,
+form[action="/admin/structure/block/manage/block/1/configure"] #edit-visibility-title,
+form[action="/admin/structure/block/manage/block/1/configure"] .vertical-tabs{
+  display: none;
+}
