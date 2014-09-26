@@ -70,3 +70,11 @@ body.logged-in-admin {
     margin-top: 0px;
   }  
 }
+footer#footer {
+  @include breakpoint('mini-tablet') {
+    padding: 5px 30px;
+    > .container {
+      height: auto;
+    }
+  }  
+}
