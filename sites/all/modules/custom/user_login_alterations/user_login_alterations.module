@@ -23,14 +23,44 @@ function user_login_alterations_permission() {
       'title' => t('Change Job Title'),
       'description' => t('Allows people to have access to the job title field on user entities.'),
     ),
+    'change external unique identifier' => array(
+      'title' => t('Change External Unique Identifier'),
+      'description' => t('Allows a user access to the external unique identifier field for user creation and edit forms.'),
+    ),
   );
+}
+
+/**
+ * Implements hook_module_implements_alter.
+ */
+function user_login_alterations_module_implements_alter(&$implementations, $hook) {
+  switch ($hook) {
+    case 'form_alter':
+      user_login_alterations_change_form_hook_order($implementations);
+    break;
+    case 'form_user_profile_form_alter':
+      user_login_alterations_change_form_hook_order($implementations);
+    break;
+  }
+}
+
+/**
+ * Helper function.
+ * Reorders this module's implementation to the end of the hook firing list.
+ */
+function user_login_alterations_change_form_hook_order(&$implementations) {
+  if (isset($implementations['user_login_alterations'])) {
+    $group = $implementations['user_login_alterations'];
+    unset($implementations['user_login_alterations']);
+    $implementations['user_login_alterations'] = $group; 
+  }
 }
 
 /**
  * Implements hook_form_alter.
  */
 function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
-
+  
   switch ($form_id) {
     case 'user_login':
       user_login_alterations_alter_login_form($form);
@@ -63,6 +93,9 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       if (isset($form['field_job_title']) && !user_access('change job title')) {
         unset($form['field_job_title']);
       }
+      if (isset($form['field_external_unique_identifier']) && !user_access('change external unique identifier')) {
+        unset($form['field_external_unique_identifier']);
+      }
       $form['account']['pass']['#description'] = t('To change the current user password, enter the new password in both fields.<br/><strong>Please record this password for future use.</strong>');
     break;
     case 'user_register_form':
@@ -80,6 +113,10 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
         '#default_value' => '',
         '#format' => 'custom_email_html',
       );
+      
+      if (isset($form['field_external_unique_identifier']) && !user_access('change external unique identifier')) {
+        unset($form['field_external_unique_identifier']);
+      }
       
       array_unshift($form['#submit'], 'user_login_alterations_save_custom_email_message');
 
