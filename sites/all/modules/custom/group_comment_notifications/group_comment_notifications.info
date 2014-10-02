@@ -4,6 +4,5 @@ dependencies[] = node
 dependencies[] = comment
 dependencies[] = htmlmail
 dependencies[] = custom_tokens
-dependencies[] = tokens
 package = custom
 core = 7.x
