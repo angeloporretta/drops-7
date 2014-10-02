@@ -76,7 +76,7 @@ function group_comment_notifications_comment_insert($comment) {
         $users = user_load_multiple(array_keys($user_result['user']));
         
         foreach ($users as $uid => $loaded_user) {
-          if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $user->uid == 1) {
+          if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
             unset($users[$uid]);
           }
         }
@@ -92,7 +92,7 @@ function group_comment_notifications_comment_insert($comment) {
           drupal_mail(
             'group_comment_notifications',
             'group_comment_notifications_comment_notify',
-            $user->mail,
+            $emailed_user->mail,
             user_preferred_language($emailed_user),
             array(
               'comment_author' => $author->realname,
@@ -115,7 +115,9 @@ function group_comment_notifications_comment_insert($comment) {
 function group_comment_notifications_mail($key, &$message, $params) {
   
   switch ($key) {
-    case 'group_comment_notifications_comment_notify':
+    case 'group_comment_notifications_group_comment_notifications_comment_notify':
+      //kpr($message);
+      //exit();
       $message = array(
         'subject' => t(
           '@author posted a comment in @node_title.', 
