@@ -97,7 +97,7 @@ function group_comment_notifications_comment_insert($comment) {
             array(
               'comment_author' => $author->realname,
               'node_title' => $commented_node->title,
-              'node_url' => /*'http://' . $_SERVER['HTTP_HOST'] . */'/' . drupal_get_path_alias('node/' . $commented_node->nid),
+              'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
               'comment_body' => strip_tags($comment->comment_body[LANGUAGE_NONE][0]['value'], '<p><a><em><strong><h2><h3><h4><h5><h6><ul><ol><li><dl><dt><dd>'),
             ),
             variable_get('site_mail', 'portal@impetushealthcare.com'), 
@@ -144,7 +144,7 @@ function group_comment_notifications_mail($key, &$message, $params) {
                     </tr>
                     <tr>
                       <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
-                        <p style="font-size: 13px;"><a href="' . $params['node_url'] . '" target="_blank">' . t('View this post') . ' »</a></p>
+                        <p style="font-size: 13px;">'. t('View this post at') . ':<br/>' . $params['node_url'] . '</p>
                       </td>
                     </tr>
                   </tbody>
