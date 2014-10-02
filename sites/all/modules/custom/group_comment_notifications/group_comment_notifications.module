@@ -1,0 +1,162 @@
+<?php
+/**
+ * @file: Functionality of this module.
+ */
+
+/**
+ * Implements hook_permission.
+ */
+function group_comment_notifications() {
+  return array(
+    'configure comment notifications' => array(
+      'title' => t('Configure Comment Notifications'),
+      'restrict access' => TRUE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function group_comment_notifications_menu() {
+  
+  return array(
+    'node/%node/comment-subscriptions' => array(
+      'title' => 'Set Comment Notification Settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('group_comment_notifications_notification_settings_page', 1),
+      'access callback' => 'user_access',
+      'access arguments' => array('configure comment notifications'),
+      'file' => 'group_comment_notifications.pages.inc',
+      'weight' => 5,
+      'type' => MENU_LOCAL_TASK,
+      'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
+    ),
+  );
+}
+
+/**
+ * Implements hook_node_delete.
+ */
+function group_comment_notifications_node_delete($node) {
+  
+  if ($node->type == 'oa_group') {
+    db_delete('group_comment_notifications_node_notifications_settings')
+      ->condition('group_nid', $node->nid)
+      ->execute();
+  }
+  
+  db_delete('group_comment_notifications_node_notifications_settings')
+    ->condition('content_nid', $node->nid)
+    ->execute();
+}
+
+/**
+ * Implements hook_comment_insert.
+ */
+function group_comment_notifications_comment_insert($comment) {
+  
+  if ($comment->status == 1) {
+    
+    $emailed_users = array();
+    $group_results = db_select('group_comment_notifications_node_notifications_settings', 'n')
+      ->fields('n', array('group_nid', 'notification_setting_id'))
+      ->condition('content_nid', $comment->nid, '=')
+      ->execute()
+      ->fetchAllKeyed(0,1);
+    
+    if (!empty($group_results)) {
+      $user_query = new EntityFieldQuery();
+      $user_result = $user_query->entityCondition('entity_type', 'user')
+        ->propertyCondition('status', 1)
+        ->fieldCondition('og_user_node', 'target_id', array_keys($group_results), 'IN')
+        ->execute();
+      
+      if (!empty($user_result)) {
+        $users = user_load_multiple(array_keys($user_result['user']));
+        
+        foreach ($users as $uid => $loaded_user) {
+          if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $user->uid == 1) {
+            unset($users[$uid]);
+          }
+        }
+        
+        $emailed_users = $users;
+      }
+      
+      $commented_node = node_load($comment->nid);
+      $author = user_load($comment->uid);
+      
+      if (!empty($emailed_users)) {
+        foreach ($emailed_users as $emailed_user) {
+          drupal_mail(
+            'group_comment_notifications',
+            'group_comment_notifications_comment_notify',
+            $user->mail,
+            user_preferred_language($emailed_user),
+            array(
+              'comment_author' => $author->realname,
+              'node_title' => $commented_node->title,
+              'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
+              'comment_body' => strip_tags($comment->comment_body[LANGUAGE_NONE][0]['value'], '<p><a><em><strong><h2><h3><h4><h5><h6><ul><ol><li><dl><dt><dd>'),
+            ),
+            variable_get('site_mail', 'portal@impetushealthcare.com'), 
+            TRUE
+          );
+        }
+      }
+    }
+  }
+}
+
+/**
+ * Implements hook_mail.
+ */
+function group_comment_notifications_mail($key, &$message, $params) {
+  
+  switch ($key) {
+    case 'group_comment_notifications_comment_notify':
+      $message = array(
+        'subject' => t(
+          '@author posted a comment in @node_title.', 
+          array(
+            '@author' => $params['comment_author'],
+            '@node_title' => $params['node_title'],
+          )
+        ),
+        'body' => '
+          <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="background:#ffffff">
+            <tbody>
+              <tr>
+                <td>
+                  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #dde1e6; width: 600px;">
+                    <tbody>
+                      <tr>
+                        <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                          <h1 style="text-decoration: none; font-size: 20px; font-weight: 300">' . t('@author wrote a post.', array('@author' => $params['comment_author'])) . '</h1>
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="padding: 15px 20px; border-bottom: 1px solid #dde1e6;">
+                          <p style="font-size: 14px;"><strong>' . t('@author posted,', array('@author' => $params['comment_author'])) . '</strong></p>
+                          ' . $params['comment_body'] . '
+                        </td>
+                      </tr>
+                      <tr>
+                        <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                          <p style="font-size: 13px;"><a href="' . $params['node_url'] . '" target="_blank">' . t('View this post') . '»</a></p>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                  <p>' . token_replace('[custom_tokens:oa_banner_logo]') . '</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        ',
+      );
+    break;
+  }
+  
+}

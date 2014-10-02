@@ -1,0 +1,9 @@
+name = Group Comment Notifications
+description = Allows administrators to allow notifications for comments per node and per group.
+dependencies[] = node
+dependencies[] = comment
+dependencies[] = htmlmail
+dependencies[] = custom_tokens
+dependencies[] = tokens
+package = custom
+core = 7.x

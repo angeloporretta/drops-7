@@ -1,0 +1,55 @@
+<?php
+/**
+ * @file: Set up constants, schemas, text formats, and other resources that will be used in .module and .inc files.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function group_comment_notifications_schema() {
+  
+  $schema = array();
+  
+  $schema['group_comment_notifications_node_notifications_settings'] = array(
+    'description' => 'Stores group and node notifications settings for the Group Comment Notifications module.',
+    'fields' => array(
+      'notification_setting_id' => array(
+        'description' => 'A simple unique identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'content_nid' => array(
+        'description' => 'The nid of the content node that this setting belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'group_nid' => array(
+        'description' => 'The nid of the group node that this setting belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,  
+      ),
+      'frequency' => array(
+        'description' => 'The frequency of how often comment notifications are sent out.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      )
+    ),
+    'foreign keys' => array(
+      'content_nid' => array(
+        'table' => 'node',
+        'columns' => array('content_nid' => 'nid'),
+      ),
+      'group_nid' => array(
+        'table' => 'node',
+        'columns' => array('group_nid' => 'nid'),
+      ),
+    ),
+    'primary key' => array('notification_setting_id'),
+  );
+
+  return $schema;
+}
