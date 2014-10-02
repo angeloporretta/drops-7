@@ -116,8 +116,6 @@ function group_comment_notifications_mail($key, &$message, $params) {
   
   switch ($key) {
     case 'group_comment_notifications_group_comment_notifications_comment_notify':
-      //kpr($message);
-      //exit();
       $message = array(
         'subject' => t(
           '@author posted a comment in @node_title.', 
