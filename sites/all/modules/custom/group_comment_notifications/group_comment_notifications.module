@@ -113,49 +113,48 @@ function group_comment_notifications_comment_insert($comment) {
  * Implements hook_mail.
  */
 function group_comment_notifications_mail($key, &$message, $params) {
-  
+
   switch ($key) {
-    case 'group_comment_notifications_group_comment_notifications_comment_notify':
-      $message = array(
-        'subject' => t(
+    case 'group_comment_notifications_comment_notify':
+      $message['subject'] = t(
           '@author posted a comment in @node_title.', 
           array(
             '@author' => $params['comment_author'],
             '@node_title' => $params['node_title'],
           )
-        ),
-        'body' => '
-          <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="background:#ffffff">
-            <tbody>
-              <tr>
-                <td>
-                  <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #dde1e6; width: 600px;">
-                    <tbody>
-                      <tr>
-                        <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
-                          <h1 style="text-decoration: none; font-size: 20px; font-weight: 300">' . t('@author wrote a post.', array('@author' => $params['comment_author'])) . '</h1>
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="padding: 15px 20px; border-bottom: 1px solid #dde1e6;">
-                          <p style="font-size: 14px;"><strong>' . t('@author posted,', array('@author' => $params['comment_author'])) . '</strong></p>
-                          ' . $params['comment_body'] . '
-                        </td>
-                      </tr>
-                      <tr>
-                        <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
-                          <p style="font-size: 13px;"><a href="' . $params['node_url'] . '" target="_blank">' . t('View this post') . '»</a></p>
-                        </td>
-                      </tr>
-                    </tbody>
-                  </table>
-                  <p>' . token_replace('[custom_tokens:oa_banner_logo]') . '</p>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        ',
-      );
+        );
+        
+      $message['body'] = '
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="background:#ffffff">
+          <tbody>
+            <tr>
+              <td>
+                <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #dde1e6; width: 600px;">
+                  <tbody>
+                    <tr>
+                      <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                        <h1 style="text-decoration: none; font-size: 20px; font-weight: 300">' . t('@author wrote a post.', array('@author' => $params['comment_author'])) . '</h1>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding: 15px 20px; border-bottom: 1px solid #dde1e6;">
+                        <p style="font-size: 14px;"><strong>' . t('@author posted,', array('@author' => $params['comment_author'])) . '</strong></p>
+                        ' . $params['comment_body'] . '
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                        <p style="font-size: 13px;"><a href="' . $params['node_url'] . '" target="_blank">' . t('View this post') . '»</a></p>
+                      </td>
+                    </tr>
+                  </tbody>
+                </table>
+                <p>' . token_replace('[custom_tokens:oa_banner_logo]') . '</p>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      ';
     break;
   }
   
