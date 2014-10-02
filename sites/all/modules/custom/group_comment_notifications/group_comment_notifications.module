@@ -6,7 +6,7 @@
 /**
  * Implements hook_permission.
  */
-function group_comment_notifications() {
+function group_comment_notifications_permission() {
   return array(
     'configure comment notifications' => array(
       'title' => t('Configure Comment Notifications'),
