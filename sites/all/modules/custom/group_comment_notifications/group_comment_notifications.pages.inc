@@ -3,6 +3,25 @@
  * @file: Includes page render functions for several pages that this module produces.
  */
 
+
+/**
+ * Form generation function.
+ * Generates the test settings form of this module.
+ */
+function group_content_notifications_test_settings_page() {
+  $form = array();
+  
+  $form['group_comment_notifications_testing_mode'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Test Mode Enabled'),
+    '#description' => t('NOTE: DO NOT USE ON LIVE SITES!'),
+    '#default_value' => variable_get('group_comment_notifications_testing_mode', 0),
+  );
+  
+  $form = system_settings_form($form);
+  return $form;
+}
+
 /**
  * Form generation function.
  * In charge of rendering the form that saves comment notification settings per node.
@@ -52,6 +71,8 @@ function group_comment_notifications_notification_settings_page($form, $form_sta
       '#required' => TRUE,
       '#options' => array(
         'immediately' => t('Immediately'),
+        'daily' => t('Daily'),
+        'weekly' => t('Weekly'),
       ),
       '#default_value' => (!empty($default_options)) ? reset($default_options) : '',
       '#empty_option' => ' - ' . t('Select a Frequency') . ' - ',

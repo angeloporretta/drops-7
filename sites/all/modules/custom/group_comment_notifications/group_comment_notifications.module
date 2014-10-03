@@ -4,6 +4,123 @@
  */
 
 /**
+ * Implements hook_cron.
+ */
+function group_comment_notifications_cron() {
+
+  $queue_result = db_query(
+    '
+      SELECT q.queue_id, q.cid, s.group_nid, s.content_nid
+      FROM group_comment_notifications_queued_emails q 
+      INNER JOIN group_comment_notifications_node_notifications_settings s ON s.notification_setting_id = q.notification_setting_id
+      WHERE q.send_out_timestamp < unix_timestamp(now())
+      ORDER BY q.queue_id ASC
+    '
+  )
+  ->fetchAll();
+  
+  if (!empty($queue_result)) {
+    
+    global $user;
+    $user = user_load(1);
+    $queue_ids = array();
+    $emailed_users = array();
+    $queue = DrupalQueue::get('group_comment_notifications_queued_emails');
+    
+    foreach ($queue_result as $index => $queue_record) {
+      
+      $queue_ids[] = $queue_record->queue_id;
+      
+      $user_query = new EntityFieldQuery();
+      $user_result = $user_query->entityCondition('entity_type', 'user')
+        ->propertyCondition('status', 1)
+        ->fieldCondition('og_user_node', 'target_id', $queue_record->group_nid, '=')
+        ->execute();
+
+      if (!empty($user_result)) {
+        
+        $users = user_load_multiple(array_keys($user_result['user']));
+
+        foreach ($users as $uid => $loaded_user) {
+          if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
+            unset($users[$uid]);
+          }
+          else {
+            $all_node_comments = comment_get_thread(node_load($queue_record->content_nid), COMMENT_MODE_FLAT, 10000);
+
+            $loaded_user->emails[$queue_record->content_nid] = db_select('group_comment_notifications_queued_emails', 'q')
+              ->fields('q', array('cid'))
+              ->condition('q.cid', $all_node_comments, 'IN')
+              ->groupBy('q.cid')
+              ->execute()
+              ->fetchAll();
+            
+            $emailed_users[$uid] = $loaded_user;
+          }
+        }
+      }
+    }
+    
+    if (!empty($emailed_users)) {
+      $queue->createItem(
+        array(
+          'emailed_users' => $emailed_users,
+          'queue_ids' => $queue_ids
+        )
+      );
+    }
+  }
+}
+
+/**
+ * Implements hook_cron_queue_info.
+ */
+function group_comment_notifications_cron_queue_info() {
+  return array(
+    'group_comment_notifications_queued_emails' => array(
+      'worker callback' => 'group_comment_notifications_send_queued_emails',
+      'time' => 30,
+    ),
+  );
+}
+
+function group_comment_notifications_send_queued_emails($data) {
+  
+  foreach ($data['emailed_users'] as $emailed_user) {
+    foreach ($emailed_user->emails as $comment_node_nid => $cids) {
+      
+      $comment_node = node_load($comment_node_nid);
+      $comment_ids = array();
+
+      foreach ($cids as $cid) {
+        $comment_ids[] = $cid->cid;
+      }
+      
+      drupal_mail(
+        'group_comment_notifications',
+        'group_comment_notifications_comment_notify_queued_email',
+        $emailed_user->mail,
+        user_preferred_language($emailed_user),
+        array(
+          'node_title' => $comment_node->title,
+          'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
+          'comments' => comment_load_multiple($comment_ids),
+        ),
+        variable_get('site_mail', 'portal@impetushealthcare.com'),
+        TRUE
+      );
+    }
+  }
+  
+  if (!empty($data['queue_ids'])) {
+    db_delete('group_comment_notifications_queued_emails')
+      ->condition('queue_id', $data['queue_ids'], 'IN')
+      ->execute();
+  }
+}
+
+
+/**
  * Implements hook_permission.
  */
 function group_comment_notifications_permission() {
@@ -12,6 +129,10 @@ function group_comment_notifications_permission() {
       'title' => t('Configure Comment Notifications'),
       'restrict access' => TRUE,
     ),
+    'configure comment notifications test settings' => array(
+      'title' => t('Access Comment Notification Test Settings'),
+      'restrict access' => TRUE,
+    )
   );
 }
 
@@ -32,6 +153,15 @@ function group_comment_notifications_menu() {
       'type' => MENU_LOCAL_TASK,
       'context' => MENU_CONTEXT_PAGE | MENU_CONTEXT_INLINE,
     ),
+    'admin/config/development/comment-notification-test' => array(
+      'title' => 'Comment Notification Testing Settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('group_content_notifications_test_settings_page'),
+      'access callback' => 'user_access',
+      'access arguments' => array('configure comment notifications test settings'),
+      'file' => 'group_comment_notifications.pages.inc',
+      'type' => MENU_NORMAL_ITEM,
+    )
   );
 }
 
@@ -58,55 +188,128 @@ function group_comment_notifications_comment_insert($comment) {
   
   if ($comment->status == 1) {
     
-    $emailed_users = array();
-    $group_results = db_select('group_comment_notifications_node_notifications_settings', 'n')
+    $immediate_group_results = db_select('group_comment_notifications_node_notifications_settings', 'n')
       ->fields('n', array('group_nid', 'notification_setting_id'))
       ->condition('content_nid', $comment->nid, '=')
+      ->condition('frequency', 'immediately', '=')
       ->execute()
       ->fetchAllKeyed(0,1);
     
-    if (!empty($group_results)) {
-      $user_query = new EntityFieldQuery();
-      $user_result = $user_query->entityCondition('entity_type', 'user')
-        ->propertyCondition('status', 1)
-        ->fieldCondition('og_user_node', 'target_id', array_keys($group_results), 'IN')
-        ->execute();
-      
-      if (!empty($user_result)) {
-        $users = user_load_multiple(array_keys($user_result['user']));
-        
-        foreach ($users as $uid => $loaded_user) {
-          if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
-            unset($users[$uid]);
-          }
-        }
-        
-        $emailed_users = $users;
-      }
-      
-      $commented_node = node_load($comment->nid);
-      $author = user_load($comment->uid);
-      
-      if (!empty($emailed_users)) {
-        foreach ($emailed_users as $emailed_user) {
-          drupal_mail(
-            'group_comment_notifications',
-            'group_comment_notifications_comment_notify',
-            $emailed_user->mail,
-            user_preferred_language($emailed_user),
-            array(
-              'comment_author' => $author->realname,
-              'node_title' => $commented_node->title,
-              'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
-              'comment_body' => strip_tags($comment->comment_body[LANGUAGE_NONE][0]['value'], '<p><a><em><strong><h2><h3><h4><h5><h6><ul><ol><li><dl><dt><dd>'),
-            ),
-            variable_get('site_mail', 'portal@impetushealthcare.com'), 
-            TRUE
-          );
-        }
-      }
+    if (!empty($immediate_group_results)) {
+      group_comment_notifications_send_immetiate_notifications($immediate_group_results);
+    }
+    else {
+      group_comment_notifications_save_queued_notifications($comment);
     }
   }
+}
+
+/**
+ * Helper function.
+ * Sends off comment notifications that are supposed to be immediate
+ * @param array $immediate_group_results: A database result consisting of an array with the following structure:
+ *                                        $group_nid => $notification_setting_id. This result SHOULD ONLY return records whose frequency column = 'immediately'.
+ * @param object $comment: A comment object. The comment people will be notified about.
+ */
+function group_comment_notifications_send_immetiate_notifications($immediate_group_results, $comment) {
+  
+  $emailed_users = array();
+  $user_query = new EntityFieldQuery();
+  $user_result = $user_query->entityCondition('entity_type', 'user')
+    ->propertyCondition('status', 1)
+    ->fieldCondition('og_user_node', 'target_id', array_keys($immediate_group_results), 'IN')
+    ->execute();
+
+  if (!empty($user_result)) {
+    $users = user_load_multiple(array_keys($user_result['user']));
+
+    foreach ($users as $uid => $loaded_user) {
+      if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
+        unset($users[$uid]);
+      }
+    }
+
+    $emailed_users = $users;
+  }
+
+  $commented_node = node_load($comment->nid);
+  $author = user_load($comment->uid);
+
+  if (!empty($emailed_users)) {
+    foreach ($emailed_users as $emailed_user) {
+      drupal_mail(
+        'group_comment_notifications',
+        'group_comment_notifications_comment_notify',
+        $emailed_user->mail,
+        user_preferred_language($emailed_user),
+        array(
+          'comment_author' => $author->realname,
+          'node_title' => $commented_node->title,
+          'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
+          'comment_body' => strip_tags($comment->comment_body[LANGUAGE_NONE][0]['value'], '<p><a><em><strong><h2><h3><h4><h5><h6><ul><ol><li><dl><dt><dd>'),
+        ),
+        variable_get('site_mail', 'portal@impetushealthcare.com'), 
+        TRUE
+      );
+    }
+  }
+}
+
+/**
+ * Helper function.
+ * Saves notification queue emails in the database IF settings are set to send notifications at a different time.
+ * @param object $comment: A full comment object.
+ */
+function group_comment_notifications_save_queued_notifications($comment) {
+  
+  if ($comment->status == 1) {
+    
+    $queued_group_results = db_select('group_comment_notifications_node_notifications_settings', 'n')
+      ->fields('n', array('notification_setting_id', 'frequency'))
+      ->condition('content_nid', $comment->nid, '=')
+      ->condition('frequency', 'immediately', '<>')
+      ->execute()
+      ->fetchAllKeyed(0, 1);
+
+    if (!empty($queued_group_results)) {
+
+      $queue_insert_query = db_insert('group_comment_notifications_queued_emails') 
+        ->fields(array('notification_setting_id', 'cid', 'send_out_timestamp'));
+      $notification_setting_ids = array_keys($queued_group_results);
+
+      foreach ($queued_group_results as $notification_setting_id => $frequency) {
+
+        $timestamp = 0;
+        if ($frequency == 'daily') {
+          $timestamp = strtotime('+1 day');
+        }
+        else if ($frequency == 'weekly') {
+          $timestamp = strtotime('+1 week');
+        }
+
+        $queue_insert_query->values(
+          array(
+            'notification_setting_id' => $notification_setting_id,
+            'cid' => $comment->cid,
+            'send_out_timestamp' => (variable_get('group_comment_notifications_testing_mode', 0) == 0) ? $timestamp : variable_get('group_comment_notifications_testing_mode', 1),
+          )    
+        );
+      }
+
+      $queue_insert_query->execute();
+    }
+  }
+}
+
+/**
+ * Implements hook_comment_delete.
+ */
+function group_comment_notifications_comment_delete($comment) {
+
+  // Delete queue records if a comment is deleted.
+  db_delete('group_comment_notifications_queued_emails')
+    ->condition('cid', $comment->cid, '=')
+    ->execute();
 }
 
 /**
@@ -155,6 +358,55 @@ function group_comment_notifications_mail($key, &$message, $params) {
           </tbody>
         </table>
       ';
+    break;
+    case 'group_comment_notifications_comment_notify_queued_email':
+      
+      $message['subject'] = t(
+        'Several comments have been posted in @node_title.', 
+        array(
+          '@node_title' => $params['node_title'],
+        )
+      );
+
+      $message['body'] .= '
+        <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="background:#ffffff">
+        <tbody>
+        <tr>
+        <td>';
+      
+      foreach ($params['comments'] as $comment) {
+        $comment_author = user_load($comment->uid);
+        $comment_author_name = $comment_author->realname;
+        
+        $message['body'] .= '
+          <table width="100%" cellspacing="0" cellpadding="0" border="0" style="border: 1px solid #dde1e6; width: 600px; margin-bottom: 20px;">
+            <tbody>
+              <tr>
+                <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                  <h1 style="text-decoration: none; font-size: 20px; font-weight: 300">' . t('@author wrote a post.', array('@author' => $comment_author_name)) . '</h1>
+                </td>
+              </tr>
+              <tr>
+                <td style="padding: 15px 20px; border-bottom: 1px solid #dde1e6;">
+                  <p style="font-size: 14px;"><strong>' . t('@author posted,', array('@author' => $comment_author_name)) . '</strong></p>
+                  ' . strip_tags($comment->comment_body[LANGUAGE_NONE][0]['safe_value'], '<p><a><em><strong><h2><h3><h4><h5><h6><ul><ol><li><dl><dt><dd>') . '
+                </td>
+              </tr>
+              <tr>
+                <td style="background-color:#f9fafb;border-bottom:1px solid #dde1e6;padding:15px 20px" cellpadding="15">
+                  <p style="font-size: 13px;">'. t('View this post at') . ':<br/>' . $params['node_url'] . '</p>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+      ';
+      }
+      
+      $message['body'] .= '<p>' . token_replace('[custom_tokens:oa_banner_logo]') . '</p>
+        </td>
+        </tr>
+        </tbody>
+        </table>';
     break;
   }
   

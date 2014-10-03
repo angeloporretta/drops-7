@@ -50,6 +50,60 @@ function group_comment_notifications_schema() {
     ),
     'primary key' => array('notification_setting_id'),
   );
+  
+  $schema['group_comment_notifications_queued_emails'] = array(
+    'description' => 'Stores information about queued notification emails that will be sent out some time in the future.',
+    'fields' => array(
+      'queue_id' => array(
+        'description' => 'A simple unique identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'notification_setting_id' => array(
+        'description' => 'The setting id that this email queue record belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'cid' => array(
+        'description' => 'The comment id that this email queue record belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,  
+      ),
+      'send_out_timestamp' => array(
+        'description' => 'The timestamp when this email should be sent out.',
+        'type' => 'int',
+        'not null' => TRUE,
+        'default' => 0,
+      )
+    ),
+    'foreign keys' => array(
+      'notification_setting_id' => array(
+        'table' => 'group_comment_notifications_node_notifications_settings',
+        'columns' => array('notification_setting_id' => 'notification_setting_id'),
+      ),
+      'cid' => array(
+        'table' => 'comment',
+        'columns' => array('cid' => 'cid'),
+      ),
+    ),
+    'primary key' => array('queue_id'),
+  );
 
   return $schema;
+}
+
+/**
+ * Creation of a table that stores information about queued comment notification emails.
+ */
+function group_comment_notifications_update_7100() {
+  
+  if (!db_table_exists('group_comment_notifications_queued_emails')) {
+    db_create_table(
+      'group_comment_notifications_queued_emails', 
+      drupal_get_schema_unprocessed('group_comment_notifications', 'group_comment_notifications_queued_emails')
+    );
+  }
 }
