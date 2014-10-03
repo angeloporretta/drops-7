@@ -196,7 +196,7 @@ function group_comment_notifications_comment_insert($comment) {
       ->fetchAllKeyed(0,1);
     
     if (!empty($immediate_group_results)) {
-      group_comment_notifications_send_immetiate_notifications($immediate_group_results);
+      group_comment_notifications_send_immediate_notifications($immediate_group_results);
     }
     else {
       group_comment_notifications_save_queued_notifications($comment);
@@ -211,7 +211,7 @@ function group_comment_notifications_comment_insert($comment) {
  *                                        $group_nid => $notification_setting_id. This result SHOULD ONLY return records whose frequency column = 'immediately'.
  * @param object $comment: A comment object. The comment people will be notified about.
  */
-function group_comment_notifications_send_immetiate_notifications($immediate_group_results, $comment) {
+function group_comment_notifications_send_immediate_notifications($immediate_group_results, $comment) {
   
   $emailed_users = array();
   $user_query = new EntityFieldQuery();
