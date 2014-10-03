@@ -103,7 +103,7 @@ function group_comment_notifications_send_queued_emails($data) {
         user_preferred_language($emailed_user),
         array(
           'node_title' => $comment_node->title,
-          'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $commented_node->nid),
+          'node_url' => 'http://' . $_SERVER['HTTP_HOST'] . '/' . drupal_get_path_alias('node/' . $comment_node->nid),
           'comments' => comment_load_multiple($comment_ids),
         ),
         variable_get('site_mail', 'portal@impetushealthcare.com'),
@@ -368,7 +368,7 @@ function group_comment_notifications_mail($key, &$message, $params) {
         )
       );
 
-      $message['body'] .= '
+      $message['body'] = '
         <table width="100%" cellspacing="0" cellpadding="0" border="0" bgcolor="#FFFFFF" style="background:#ffffff">
         <tbody>
         <tr>
