@@ -196,7 +196,7 @@ function group_comment_notifications_comment_insert($comment) {
       ->fetchAllKeyed(0,1);
     
     if (!empty($immediate_group_results)) {
-      group_comment_notifications_send_immediate_notifications($immediate_group_results);
+      group_comment_notifications_send_immediate_notifications($immediate_group_results, $comment);
     }
     else {
       group_comment_notifications_save_queued_notifications($comment);
