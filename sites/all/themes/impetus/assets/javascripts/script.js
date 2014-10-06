@@ -195,7 +195,11 @@
       3000);
     });
     
-    
+    // Sticky headers for metrics tables.
+    $('table.metrics-table').fixedHeaderTable({ 
+      altClass: 'odd',
+      autoShow: true
+    });
     
   });
 })(jQuery);

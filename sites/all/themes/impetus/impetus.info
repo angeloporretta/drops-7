@@ -21,6 +21,7 @@ plugins[panels][styles] = panels/styles
 ; CSS - General
 stylesheets[all][]     = assets/stylesheets/screen.css
 stylesheets[all][]     = assets/stylesheets/font-awesome.min.css
+stylesheets[all][]     = assets/stylesheets/sticky-table-headers.css
 stylesheets[print][]   = assets/stylesheets/print.css
 
 ; CSS - Conditional
@@ -28,5 +29,6 @@ stylesheets-conditional[IE 7][all][] = assets/stylesheets/ie7.css
 stylesheets-conditional[IE 8][all][] = assets/stylesheets/ie8.css
 
 ; Javascript
+scripts[] = assets/javascripts/jquery.fixedheadertable.js
 scripts[] = assets/javascripts/script.js
 
