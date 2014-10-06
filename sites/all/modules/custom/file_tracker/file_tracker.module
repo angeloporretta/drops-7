@@ -2,6 +2,7 @@
 /**
  * @file: Functionality of the module.
  */
+module_load_include('inc', 'file_tracker', 'file_tracker.helpers');
 
 /**
  * Implements hook_permission.
