@@ -390,6 +390,9 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
   .fht-table td {
     padding: 5px;
   }
+  .fht-table-wrapper fht-body {
+    max-height: 400px !important;
+  }
   thead tr th {
     border-bottom: #333 solid 2px;
     font-weight: bold;
