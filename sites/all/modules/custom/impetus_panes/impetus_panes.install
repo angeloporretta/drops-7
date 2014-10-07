@@ -1,0 +1,73 @@
+<?php
+/**
+ * @file: Set up constants, schemas, text formats, and other resources that will be used in .module and .inc files.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function impetus_panes_schema() {
+  $schema = array();
+  
+  $schema['impetus_panes_mailchimp_campaigns'] = array(
+    'description' => 'Select data from mailchimp campaigns. Generally, this data will be used in API calls to acquire more data about a campaign.',
+    'fields' => array(
+      'campaign_id' => array(
+        'description' => 'A campaign ID from the mailchimp system.',
+        'type' => 'varchar',
+        'length' => 128,
+        'not null' => TRUE,
+      ),
+      'campaign_title' => array(
+        'description' => 'The title of the campaign.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('campaign_id'),
+  );
+  
+  $schema['impetus_panes_survey_gizmo_surveys'] = array(
+    'description' => 'Select data from survey gizmo surveys. Generally, this data will be used in API calls to acquire more data about a survey.',
+    'fields' => array(
+      'survey_id' => array(
+        'description' => 'A survey ID from the Survey Gizmo system.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'survey_title' => array(
+        'description' => 'The title of the survey gizmo survey.',
+        'type' => 'varchar',
+        'length' => 255,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('survey_id'),
+  );
+  
+  return $schema;
+}
+
+/**
+ * Creation of a table that stores data of our many mailchimp campaigns.
+ * Creation of a table that stores data of our many survey gizmo surveys.
+ */
+function impetus_panes_update_7100() {
+  
+  if (!db_table_exists('impetus_panes_mailchimp_campaigns')) {
+    db_create_table(
+      'impetus_panes_mailchimp_campaigns', 
+      drupal_get_schema_unprocessed('impetus_panes', 'impetus_panes_mailchimp_campaigns')
+    );
+  }
+  
+  if (!db_table_exists('impetus_panes_survey_gizmo_surveys')) {
+    db_create_table(
+      'impetus_panes_survey_gizmo_surveys', 
+      drupal_get_schema_unprocessed('impetus_panes', 'impetus_panes_survey_gizmo_surveys')
+    );
+  }
+  
+}

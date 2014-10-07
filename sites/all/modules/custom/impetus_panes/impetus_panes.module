@@ -4,6 +4,178 @@
  */
 
 /**
+ * Implements hook_cron_queue_info.
+ */
+function impetus_panes_cron_queue_info() {
+  
+  return array(
+    'impetus_panes_mailchimp_campaign_sync' => array(
+      'worker callback' => 'impetus_panes_sync_mailchimp_campaigns',
+      'time' => 300,
+      'skip on cron' => FALSE,
+    ),
+    'impetus_panes_sync_survey_gizmo_surveys' => array(
+      'worker callback' => 'impetus_panes_sync_survey_gizmo_surveys',
+      'time' => 100,
+      'skip on cron' => FALSE,
+    ),
+  );
+}
+
+/**
+ * Cron queue function.
+ * Syncs our list of mailchimp campaigns with the one in our mailchimp account.
+ */
+function impetus_panes_sync_mailchimp_campaigns($options) {
+  
+  $mailchimp_library_path = libraries_get_path('mailchimp');
+  require_once $mailchimp_library_path . '/src/Mailchimp.php';
+  $remote_campaign_list = array();
+  
+  try {
+    $mailchimp_controller = new Mailchimp(variable_get('mailchimp_api_key', 'ebd8449da33ca1d0e49ed026fe8c9876-us1'));
+    $mailchimp_campaign_controller = new Mailchimp_Campaigns($mailchimp_controller);
+    $remote_campaign_list = $mailchimp_campaign_controller->getList(
+      array(), 
+      $options['batch_process_runs'], 
+      $options['batch_limit']
+    );
+  }
+  catch (Exception $e) {
+    watchdog('Impetus Panes - Cron', $e->getMessage(), array(), WATCHDOG_ERROR);
+  }
+  
+  $local_result = db_select('impetus_panes_mailchimp_campaigns', 'm')
+    ->fields('m', array('campaign_id', 'campaign_title'))
+    ->execute()
+    ->fetchAllKeyed(0,1);
+  $locally_stored_campaign_ids = array_keys($local_result);
+  
+  $insertion_query = db_insert('impetus_panes_mailchimp_campaigns')
+    ->fields(array('campaign_id', 'campaign_title'));
+  
+  foreach ($remote_campaign_list['data'] as $campaign) {
+    
+    $remote_campaign_id = $campaign['id'];
+    
+    if (!in_array($remote_campaign_id, $locally_stored_campaign_ids)) {
+      $insertion_query->values(
+        array(
+          'campaign_id' => $remote_campaign_id,
+          'campaign_title' => $campaign['title'],
+        )
+      );
+    }
+  }
+  
+  $insertion_query->execute();
+}
+
+/**
+ * Cron queue function.
+ * Stores data about survey gizmo surveys.
+ */
+function impetus_panes_sync_survey_gizmo_surveys($options) {
+  
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $options['rest_api_url']);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  $output = curl_exec($ch);
+  $output= json_decode($output);
+  
+  if ($output->result_ok == TRUE) {
+    
+    $local_survey_data = db_select('impetus_panes_survey_gizmo_surveys', 's')
+      ->fields('s', array('survey_id', 'survey_title'))
+      ->execute()
+      ->fetchAllKeyed(0, 1);
+    $local_survey_ids = array_keys($local_survey_data);
+    
+    $survey_data_insertion_query = db_insert('impetus_panes_survey_gizmo_surveys')
+      ->fields(array('survey_id','survey_title',));
+    
+    foreach ($output->data as $remote_survey_item) {
+      if (!in_array($remote_survey_item->id, $local_survey_ids)) {
+        $survey_data_insertion_query->values(array(
+          $remote_survey_item->id,
+          $remote_survey_item->title,
+        ));
+      }
+    }
+    
+    $survey_data_insertion_query->execute();
+  }
+  
+}
+
+/**
+ * Implements hook_cron.
+ */
+function impetus_panes_cron() {
+  
+  // Sync mailchimp campaigns.
+  $mailchimp_queue = DrupalQueue::get('impetus_panes_mailchimp_campaign_sync');
+  
+  $mailchimp_library_path = libraries_get_path('mailchimp');
+  require_once $mailchimp_library_path . '/src/Mailchimp.php';
+  
+  try {
+    $mailchimp_controller = new Mailchimp(variable_get('mailchimp_api_key', 'ebd8449da33ca1d0e49ed026fe8c9876-us1'));
+    $mailchimp_campaign_controller = new Mailchimp_Campaigns($mailchimp_controller);
+    $initial_mcapi_result = $mailchimp_campaign_controller->getList(array(), 0, 1);
+    $total_campaigns = $initial_mcapi_result['total'];
+    $mcapi_batch_import_limit = 1000;
+    $batch_process_runs = 0;
+    
+    while ($total_campaigns > $batch_process_runs * $mcapi_batch_import_limit) {
+      sleep(5); // Need to throttle api calls to mailchimp or they will get mad.
+      $mailchimp_queue->createItem(
+        array(
+          'batch_process_runs' => $batch_process_runs,
+          'batch_limit' => $mcapi_batch_import_limit,
+        )
+      );
+      $batch_process_runs += 1;
+    }
+  }
+  catch (Exception $e) {
+    watchdog('Impetus Panes - Cron', $e->getMessage(), array(), WATCHDOG_ERROR);
+  }
+  
+  // Sync survey gizmo surveys.
+  $gizmo_queue = DrupalQueue::get('impetus_panes_sync_survey_gizmo_surveys');
+  $gizmo_user = variable_get('impetus_panes_sg_email', 'administrator@impetushealthcare.com');
+  $gizmo_pass = variable_get('impetus_panes_sg_password', 'impetus3rockz');
+  $url ="https://restapi.surveygizmo.com/v4/survey/?user:pass={$gizmo_user}:{$gizmo_pass}&resultsperpage=1&filter[status=launched]";
+  
+  $ch = curl_init();
+  curl_setopt($ch, CURLOPT_URL, $url);
+  curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
+  $output = curl_exec($ch);
+  $output= json_decode($output);
+
+  if ($output->result_ok == TRUE) {
+
+    $total_surveys = $output->total_count;
+    $survey_processing_batch = 500;
+    $current_page = 1;
+    
+    while ($total_surveys > $survey_processing_batch * ($current_page - 1)) {
+      
+      sleep(2);
+      $url ="https://restapi.surveygizmo.com/v4/survey/?user:pass={$gizmo_user}:{$gizmo_pass}&page={$current_page}&resultsperpage={$survey_processing_batch}&filter[status=launched]";
+      $gizmo_queue->createItem(
+        array(
+          'rest_api_url' => $url,
+        )
+      );
+      
+      $current_page += 1;
+    }
+  }
+}
+
+/**
  * Implements hook_ctools_plugin_directory.
  */
 function impetus_panes_ctools_plugin_directory($owner, $plugin_type) {
@@ -11,6 +183,36 @@ function impetus_panes_ctools_plugin_directory($owner, $plugin_type) {
   if ($owner == 'ctools' && $plugin_type == 'content_types') {
     return 'plugins/' . $plugin_type;
   }
+}
+
+/**
+ * Implements hook_permission.
+ */
+function impetus_panes_permission() {
+  return array(
+    'configure impetus panes settings' => array(
+      'title' => t('Configure Impetus Panes Settings'),
+      'restrict access' => TRUE,
+    )
+  );
+}
+
+/**
+ * Implements hook_menu.
+ */
+function impetus_panes_menu() {
+  return array(
+    'admin/config/impetus-panes' => array(
+      'title' => 'Impetus Panes Settings',
+      'page callback' => 'drupal_get_form',
+      'page arguments' => array('impetus_panes_settings_form'),
+      'access callback' => 'user_access',
+      'access arguments' => array('configure impetus panes settings'),
+      'file' => 'impetus_panes.admin.inc',
+      'file path' => drupal_get_path('module', 'impetus_panes') . '/inc',
+      'type' => MENU_NORMAL_ITEM,
+    )
+  );
 }
 
 /**

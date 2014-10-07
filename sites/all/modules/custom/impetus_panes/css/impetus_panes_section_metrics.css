@@ -1,0 +1,13 @@
+/* All styling for the section metrics widget */
+.download-status-downloaded,
+.email-opened,
+.email-clicked,
+.survey-submitted {
+  color: #007308;
+}
+.download-status-not-downloaded,
+.email-not-opened,
+.email-not-clicked,
+.survey-not-submitted {
+  color: #8A0000;
+}
