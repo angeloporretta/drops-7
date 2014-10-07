@@ -37,7 +37,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block->title = ''; 
   $block->content = '';
 
-  if (!impetus_panes_is_admin()) {
+  if (/*!impetus_panes_is_admin()*/TRUE) {
     // Get the spaces this user has access to.
     $query = new EntityFieldQuery();
     $result = $query->entityCondition('entity_type', 'node')
