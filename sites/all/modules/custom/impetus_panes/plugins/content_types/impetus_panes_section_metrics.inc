@@ -59,6 +59,26 @@ function impetus_panes_section_metrics_edit_form($form, &$form_state) {
     '#suffix' => '</div>',
   );
   
+  // Excluded users field.
+  $excluded_user_options = array();
+  $excluded_users = (isset($form_state['conf']['section'])) ? impetus_panes_section_metrics_get_section_users($form_state['conf']['section']) : array();
+  
+  foreach ($excluded_users as $excluded_user) {
+    $excluded_user_options[$excluded_user->uid] = $excluded_user->realname;
+  }
+  
+  $form['section_metrics']['excluded_users'] = array(
+    '#type' => 'select',
+    '#title' => t('Exclude Users'),
+    '#multiple' => TRUE,
+    '#description' => t('Exclude some users from the metrics you want to track.'),
+    '#validated' => TRUE,
+    '#default_value' => $form_state['conf']['excluded_users'],
+    '#empty_option' => '- ' . t('Select Excluded Users') . ' -',
+    '#empty_value' => '',
+    '#options' => $excluded_user_options,
+  );  
+  
   // File Field.
   $files_options = array();
   
@@ -183,6 +203,17 @@ function impetus_panes_section_metrics_files_ajax($form, $form_state) {
   
   if (isset($form_state['values']['section']) && $form_state['values']['section'] != '') {
     
+    // Update the options of the excluded users field.
+    $excluded_user_options = array();
+    $excluded_users = (isset($form_state['values']['section'])) ? impetus_panes_section_metrics_get_section_users($form_state['values']['section']) : array();
+
+    foreach ($excluded_users as $excluded_user) {
+      $excluded_user_options[$excluded_user->uid] = $excluded_user->realname;
+    }
+    
+    $form['section_metrics']['excluded_users']['#validated'] = TRUE;
+    $form['section_metrics']['excluded_users']['#options'] = $excluded_user_options;
+    
     // Update the options of the file field.
     $file_options = array();
     
@@ -225,6 +256,11 @@ function impetus_panes_section_metrics_files_ajax($form, $form_state) {
     $form['section_metrics']['conversation_nodes']['#validated'] = TRUE;
     $form['section_metrics']['conversation_nodes']['#options'] = $conversation_options;
   }
+  else if ($form_state['values']['section'] == '') {
+    $form['section_metrics']['excluded_users']['#options'] = array();
+    $form['section_metrics']['files']['#options'] = array();
+    $form['section_metrics']['conversation_nodes']['#options'] = array();
+  }
   
   return $form['section_metrics'];
 }
@@ -253,49 +289,29 @@ function impetus_panes_section_metrics_render($subtype, $conf, $args, $contexts)
   
   if (isset($conf['section'])) {
     drupal_add_css(drupal_get_path('module', 'impetus_panes') . '/css/impetus_panes_section_metrics.css');
-    $users = array();
-    $section_node = node_load($conf['section']);
-    $related_groups = field_get_items('node', $section_node, 'field_oa_group_ref');
-
-    if ($related_groups !== FALSE) {
-      
-      $related_group_ids = array();
-      foreach($related_groups as $related_group) {
-        $related_group_ids[] = $related_group['target_id'];
-      }
-      
-      $user_query = new EntityFieldQuery();
-      $user_results = $user_query->entityCondition('entity_type', 'user')
-        ->propertyCondition('status', 1)
-        ->propertyCondition('uid', 1, '<>')
-        ->fieldCondition('og_user_node', 'target_id', $related_group_ids, 'IN')
-        ->propertyOrderBy('name', 'ASC')
-        ->execute();
-      
-      if (!empty($user_results)) {
-        $users = user_load_multiple(array_keys($user_results['user']));
-      }
-      
-      $file_nids = array_keys($conf['files']);
-      $comment_nids = array_keys($conf['conversation_nodes']);
-      
+    $users = impetus_panes_section_metrics_get_section_users($conf['section']);
+    
+    if (isset($conf['excluded_users']) && !empty($conf['excluded_users'])) {
       foreach ($users as $uid => $loaded_user) {
-        if (!in_array('administrator', $loaded_user->roles) && !in_array('impetus admin', $loaded_user->roles) && $loaded_user->uid != '1') {
-          
-          if (!empty($file_nids)) {
-            $users[$uid]->file_download_nodes = impetus_panes_section_metrics_get_file_downloads($loaded_user, $file_nids);
-          }
-          
-          if (!empty($comment_nids)) {
-            $users[$uid]->comments = impetus_panes_section_metrics_get_comments($loaded_user, $comment_nids);
-          }
-        }
-        else {
+        if (in_array($uid, $conf['excluded_users'])) {
           unset($users[$uid]);
         }
       }
     }
-    
+      
+    $file_nids = array_keys($conf['files']);
+    $comment_nids = array_keys($conf['conversation_nodes']);
+
+    foreach ($users as $uid => $loaded_user) {
+      if (!empty($file_nids)) {
+        $users[$uid]->file_download_nodes = impetus_panes_section_metrics_get_file_downloads($loaded_user, $file_nids);
+      }
+
+      if (!empty($comment_nids)) {
+        $users[$uid]->comments = impetus_panes_section_metrics_get_comments($loaded_user, $comment_nids);
+      }
+    }
+
     $block->content = impetus_panes_section_metrics_render_body($conf, $users);
   }
   
@@ -588,4 +604,45 @@ function impetus_panes_section_metrics_get_survey_emails($ch, $total_results_num
   } while($total_results_number > $api_call_batch_limit * $i);
 
   return $survey_email_addresses;
+}
+
+/**
+ * Helper function.
+ * Gets a list of users that have permissions to view a section.
+ * @param int $section_nid: The node id of the section.
+ * @return array: An array of user objects.
+ */
+function impetus_panes_section_metrics_get_section_users($section_nid) {
+  
+  $returned_users = array();
+  $section_node = node_load($section_nid);
+  $related_groups = field_get_items('node', $section_node, 'field_oa_group_ref');
+
+  if ($related_groups !== FALSE) {
+
+    $related_group_ids = array();
+    foreach($related_groups as $related_group) {
+      $related_group_ids[] = $related_group['target_id'];
+    }
+
+    $user_query = new EntityFieldQuery();
+    $user_results = $user_query->entityCondition('entity_type', 'user')
+      ->propertyCondition('status', 1)
+      ->propertyCondition('uid', 1, '<>')
+      ->fieldCondition('og_user_node', 'target_id', $related_group_ids, 'IN')
+      ->propertyOrderBy('name', 'ASC')
+      ->execute();
+
+    if (!empty($user_results)) {
+      $users = user_load_multiple(array_keys($user_results['user']));
+      
+      foreach ($users as $uid => $loaded_user) {
+        if (!in_array('administrator', $loaded_user->roles) && !in_array('impetus admin', $loaded_user->roles) && $loaded_user->uid != '1') {
+          $returned_users[$uid] = $loaded_user;
+        }
+      }
+    }
+  }
+
+  return $returned_users;
 }
