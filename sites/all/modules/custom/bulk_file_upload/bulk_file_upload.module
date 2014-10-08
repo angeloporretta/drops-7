@@ -268,8 +268,11 @@ function bulk_file_upload_render_file_table($tid) {
       $html .= '</tr>';
     }
     
-    $file_nodes = node_load_multiple(array_keys($file_results['node']));
-
+    $file_nodes = array();
+    if (!empty($file_results)) {
+      $file_nodes = node_load_multiple(array_keys($file_results['node']));
+    }
+    
     foreach ($file_nodes as $file_node) {
       
       $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
