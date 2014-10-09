@@ -2,4 +2,16 @@
 // Comment
 // --------------------------------------------------
 .comment {
+  .media-heading {
+    display: none;
+  }
+}
+body.page-node .comment {
+  padding-top: 15px;
+  border-top: 1px solid $grayLight;
+}
+body.page-node .indented .comment {
+  background-color: #DEE7FF;
+  padding: 5px;
+  border-top: none;
 }

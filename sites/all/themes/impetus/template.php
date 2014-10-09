@@ -282,3 +282,31 @@ function impetus_preprocess_privatemsg_recipients(&$variables) {
   
   $variables['participants'] = substr($variables['participants'], 0, strlen($variables['participants']) - 2);
 }
+
+/**
+ * Implements template_preprocess_comment.
+ */
+function impetus_preprocess_comment(&$variables) {
+  $loaded_user = user_load($variables['user']->uid);
+  
+  if (isset($variables['picture']) && $variables['picture'] != '') {
+    $user_picture_file = file_load($loaded_user->picture->fid);
+    $variables['picture'] = '<div class="user-picture">' .
+      theme('image_style', array('style_name' => 'panopoly_image_thumbnail', 'path' => $user_picture_file->uri)) .
+      '</div>';
+  }
+  
+  if (isset($variables['submitted'])) {
+
+    if (property_exists($loaded_user, 'realname')) {
+
+      $variables['submitted'] = t(
+        'Posted by @name on @date',
+        array(
+          '@name' => $loaded_user->realname,
+          '@date' => date('M d, Y - g:ia', $variables['comment']->created),
+        )
+      );
+    }
+  }
+}
