@@ -15,3 +15,10 @@ body.page-node .indented .comment {
   padding: 5px;
   border-top: none;
 }
+
+/* Comment forms */
+#comment-form {
+  .form-item-subject {
+    display: none;
+  }
+}
