@@ -289,7 +289,7 @@ function impetus_preprocess_privatemsg_recipients(&$variables) {
 function impetus_preprocess_comment(&$variables) {
   $loaded_user = user_load($variables['user']->uid);
   
-  if (isset($variables['picture']) && property_exists($loaded_user, 'picture')) {
+  if (isset($variables['picture']) && property_exists($loaded_user, 'picture') && $loaded_user->picture != NULL) {
     $user_picture_file = file_load($loaded_user->picture->fid);
     $variables['picture'] = '<div class="user-picture">' .
       theme('image_style', array('style_name' => 'panopoly_image_thumbnail', 'path' => $user_picture_file->uri)) .
