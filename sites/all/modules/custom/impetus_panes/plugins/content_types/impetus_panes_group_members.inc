@@ -76,7 +76,7 @@ function impetus_panes_group_members_custom_pane_render($subtype, $conf, $args, 
   $group_ids = array();
   $group_id = $conf['group'];
   $subgroups = og_subgroups_children_load('node', $group_id);
-  
+
   drupal_add_css(drupal_get_path('module', 'impetus_panes') . '/css/impetus_panes_group_members.css');
   
   if ($conf['include_children'] == 1) {
@@ -84,7 +84,13 @@ function impetus_panes_group_members_custom_pane_render($subtype, $conf, $args, 
     $subgroups = og_subgroups_children_load('node', $group_id);
     
     if (!empty($subgroups)) {
-      $group_ids[] = array_keys($subgroups['node']);
+      $subgroup_nodes = node_load_multiple(array_keys($subgroups['node']));
+
+      foreach ($subgroup_nodes as $subgroup_node) {
+        if ($subgroup_node->type == 'oa_group') {
+          $group_ids[] = $subgroup_node->nid; 
+        }
+      }
     }
   }
     

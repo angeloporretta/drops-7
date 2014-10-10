@@ -8,7 +8,7 @@
  */
 function group_adder_node_insert($node) {
   
-  if ($node->type == 'oa_group') {
+  if ($node->type == 'oa_group' || $node->type == 'oa_space') {
     
     // Add site administrator.
     $admin_account = user_load(1);

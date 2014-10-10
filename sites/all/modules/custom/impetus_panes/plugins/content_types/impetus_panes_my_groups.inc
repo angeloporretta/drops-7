@@ -43,7 +43,10 @@ function impetus_panes_my_groups_custom_pane_render($subtype, $conf, $args, $con
     foreach ($user->og_user_node['und'] as $nid) {
 
       $group_node = node_load($nid['target_id']);
-      $node_links[$group_node->title] = drupal_get_path_alias('node/' . $group_node->nid);
+      
+      if ($group_node->type == 'oa_group') {
+        $node_links[$group_node->title] = drupal_get_path_alias('node/' . $group_node->nid);
+      }
     }
 
     foreach ($node_links as $group_title => $group_url_alias) {
