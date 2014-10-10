@@ -1,0 +1,4 @@
+/* Simply hides the title! */
+#page-title {
+  display: none;
+}

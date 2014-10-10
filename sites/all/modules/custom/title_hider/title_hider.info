@@ -1,0 +1,4 @@
+name = Title Hider
+description = Simply allows admins to optionally hide the title of nodes.
+package = custom
+core = 7.x

@@ -1,0 +1,22 @@
+<?php
+/**
+ * @file: Functionality of this module.
+ */
+
+/**
+ * Implements hook_page_build.
+ */
+function title_hider_page_build(&$page) {
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == NULL) {
+    
+    $current_node = node_load(arg(1));
+    
+    if ($current_node->type == 'panopoly_page') {
+      $hide_title = field_get_items('node', $current_node, 'th_hide_title');
+      
+      if ($hide_title != FALSE && $hide_title[0]['value'] == 1) {
+        drupal_add_css(drupal_get_path('module', 'title_hider') . '/title_hider.css');
+      }
+    }
+  }
+}
