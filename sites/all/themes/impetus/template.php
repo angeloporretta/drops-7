@@ -287,8 +287,8 @@ function impetus_preprocess_privatemsg_recipients(&$variables) {
  * Implements template_preprocess_comment.
  */
 function impetus_preprocess_comment(&$variables) {
-  $loaded_user = user_load($variables['user']->uid);
-  
+  $loaded_user = user_load($variables['comment']->uid);
+ 
   if (isset($variables['picture']) && property_exists($loaded_user, 'picture') && $loaded_user->picture != NULL) {
     $user_picture_file = file_load($loaded_user->picture->fid);
     $variables['picture'] = '<div class="user-picture">' .
