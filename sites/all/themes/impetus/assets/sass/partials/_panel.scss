@@ -24,6 +24,15 @@
     }
   }
 }
+#content .pane-custom {
+  table tr td {
+    border: 1px solid #DDDDDD;
+  }
+  table.hide-border tr td {
+    border: 0 none;
+    border-top: 1px solid #DDDDDD;
+  }
+}
 
 // IPE
 // --------------------------------------------------
