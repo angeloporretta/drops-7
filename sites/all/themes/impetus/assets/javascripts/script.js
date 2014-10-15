@@ -201,5 +201,13 @@
       autoShow: true
     });
     
+    // Lightbox.
+    $('#lightbox').click(function(e){
+      if (e.target.id == 'lightbox2-overlay' || e.target.id == 'lightbox') {
+        $(this).fadeOut(500);
+        $('#lightbox2-overlay').fadeOut(500);
+      }
+    });
+    
   });
 })(jQuery);
