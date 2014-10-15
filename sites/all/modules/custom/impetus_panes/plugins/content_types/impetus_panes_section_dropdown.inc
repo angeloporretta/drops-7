@@ -45,15 +45,18 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       ->propertyCondition('status', 1)
       ->execute();
 
-    $space_nodes = node_load_multiple(array_keys($result['node']));
     $allowed_space_nodes = array();
+    
+    if (!empty($result)) {
+      $space_nodes = node_load_multiple(array_keys($result['node']));
 
-    foreach ($space_nodes as $space_node) {
-      if (node_access('view', $space_node) == TRUE) {
-        $allowed_space_nodes[] = $space_node;
+      foreach ($space_nodes as $space_node) {
+        if (node_access('view', $space_node) == TRUE) {
+          $allowed_space_nodes[] = $space_node;
+        }
       }
     }
-
+    
     // Get the sections under the allowed spaces.
     if (!empty($allowed_space_nodes)) {
 
