@@ -1,0 +1,280 @@
+//
+// Opin css add ons
+// --------------------------------------------------
+
+//Color variables
+
+$toolbar-hover: #76b1db;
+$bubble-bkg: #f2f2f2;
+$bubble-links-divider: #c2c2c2;
+$toolbar-link-hover: #004f75;
+$toolbar-link-color: #67a9d7;
+
+$collapsed-link: #333333;
+$active-link: #2b3990;
+$nested-link: #c4c4c4;
+
+//remove rounded corners from the buttons
+#toolbar-menu-button {
+  @include border-radius(0);
+}
+
+//remove rounded corners from the user login  and badge
+#user-badge-dropdown {
+  @include border-top-left-radius(0);
+  @include border-bottom-left-radius(0);
+}
+
+//Add blue border on hover
+.spaces-section-dropdown .dropdown > a {
+  //  @include transition(border-top, 0.2s);
+  //  @include transition (border-top-color 0.1s);
+
+  &:hover,
+  &:active {
+    border-top: 5px solid;
+    border-top-color: $toolbar-hover;
+    padding-top: 6px;
+    text-decoration: none;
+
+  }
+}
+
+//nav toolbar
+#mini-panel-oa_toolbar_panel .pane-impetus-panes-section-dropdown .nested {
+  top: 35px;
+  background: $bubble-bkg;
+  @include border-radius(0);
+
+  //triangle
+  &:before {
+    content: '';
+    position: absolute;
+    border-style: solid;
+    border-width: 0 12px 9px;
+    border-color: $bubble-bkg transparent;
+    display: block;
+    width: 0;
+    z-index: 1;
+    top: -9px;
+    left: 15px;
+
+  }
+
+  li {
+    padding: .5em 0;
+    border-bottom: 1px solid $bubble-links-divider;
+
+    &:last-child {
+      border-bottom: none;
+    }
+
+    a {
+      color: $toolbar-link-color;
+
+      &:hover {
+        color: $toolbar-link-hover;
+      }
+
+    }
+
+  }
+}
+
+//Sidebar pannel with secondary navigation
+.panels-ipe-portlet-wrapper {
+
+  .pane-content {
+
+    //overlaping a tag to link icons
+    a.dhtml-menu-icon{
+      width: 22px;
+      height: 22px;
+      top:7px;
+      left: -28px;
+    }
+
+    //First menu
+    ul.menu {
+      margin-left: 0;
+
+      //change the plus icon
+      li.dhtml-folder {
+
+        &.collapsed:before {
+          background: url("../images/new-plus-icon-large.png");
+        }
+
+        &.expanded:before {
+          background: url("../images/new-minus-icon-large.png");
+        }
+
+        &.expanded:after {
+
+        }
+      }
+
+      li {
+        min-height: 40px;
+        margin-left: 0;
+        margin-right: 0;
+
+        &.collapsed {
+          background-color: $collapsed-link;
+        }
+
+        &.expanded {
+          background-color: $toolbar-hover;
+
+          a {
+
+            &.active {
+              color: $active-link;
+            }
+
+
+
+          }
+        }
+
+        a {
+          color: white;
+          margin-left: 1.8em;
+          line-height: 200%;
+
+        }
+
+        &:before {
+          left: 5px;
+          top: 8px;
+        }
+      }
+
+      //Second menu
+      ul.menu {
+        background-color: white;
+
+        li.dhtml-folder.collapsed::before,
+        li.dhtml-folder.expanded::before {
+          background-size: 16px 16px !important;
+          background-repeat: no-repeat;
+          width: 16px !important;
+          height: 16px !important;
+        }
+
+        //change the plus icon
+        li.dhtml-folder {
+
+          &.collapsed:before {
+            background: url("../images/new-plus-icon-small.png");
+          }
+
+          &.expanded:before {
+            background: url("../images/new-minus-icon-small.png");
+          }
+
+          &.expanded:after {
+
+          }
+        }
+
+        li {
+          min-height: 30px;
+          //          padding-left: 1.2em;
+
+          a {
+            color: black;
+            margin-left: 2.2em;
+            line-height: 240%;
+            padding-left: 1em;
+          }
+
+          &:before {
+            left: 20px;
+            top: 8px;
+          }
+
+          &.first {
+            border-top: 2px solid white;
+
+            a{
+
+            }
+
+          }
+
+          &.leaf {
+            background-color: $bubble-bkg !important;
+            //            padding-left: .8em !important;
+
+            //            margin-top: 0;
+            //            margin-bottom: 0;
+
+            a {
+              color: black;
+              text-indent: -10px;
+              margin-left: 10px;
+            }
+
+          }
+
+          &.collapsed {
+            background-color: $nested-link;
+          }
+
+          &.expanded {
+            background-color: $nested-link;
+
+            a {
+
+              &.active {
+//                color: $active-link;
+              }
+
+            }
+          }
+
+        }
+
+        //third level
+        ul.menu{
+
+          li{
+            border-bottom: 1px solid $nested-link;
+            margin-bottom: 0 !important;
+            margin-top: 0 !important;
+
+            a{
+              display: block;
+              color:black;
+              padding-top: .5em;
+              padding-bottom: .5em;
+              margin-left: 0;
+              line-height: 140% !important;
+              text-indent: 0;
+              padding-left: 3em;
+
+
+
+
+
+            }
+
+          }
+
+        }
+
+      }
+    }
+
+  }
+
+}
+
+//          a.dhtml-menu-icon{
+//            background-color: red;
+//            width: 22px;
+//            height: 22px;
+//            top:7px;
+//            left: -28px;
+//          }
