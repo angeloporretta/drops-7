@@ -296,6 +296,12 @@ body.logged-in-admin #main-wrapper #contextual-tabs #visibility-dropdown{
     border-radius: 5px;
   }
 }
+#loadingLink {
+  display: none;
+}
+#outerImageContainer {
+  background: url('../images/video-loading.gif') no-repeat center center;
+}
 #modalContainer {
   #edit-body-value {
     width: 95%;
