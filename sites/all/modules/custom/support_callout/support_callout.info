@@ -1,0 +1,4 @@
+name = Support Callout
+description = Simply adds a support callout to the top of every page.
+package = custom
+core = 7.x

@@ -1,0 +1,34 @@
+<?php
+/**
+ * @file: Functionality of the module.
+ */
+
+/**
+ * Implements hook_page_build.
+ */
+function support_callout_page_build(&$page) {
+  if (!drupal_is_front_page()) {
+    
+    drupal_add_css(drupal_get_path('module', 'support_callout') . '/support_callout.css');
+    drupal_add_js(drupal_get_path('module', 'support_callout') . '/support_callout.js');
+    
+    $page['content']['system_main']['support_callout'] = array(
+      '#markup' => theme('support_callout_message'),
+    );
+  }
+}
+
+/**
+ * Implements hook_theme.
+ */
+function support_callout_theme($existing, $type, $theme, $path) {
+  return array(
+    'support_callout_message' => array(
+      'variables' => array(
+        'callout_button_text' => t('Contact Support'),
+        'callout_message' => t('If you run into any issues or need some technical assistance, please send a note to <a href="mailto:@link">@link</a>.', array('@link' => 'support@impetushealthcare.com')),
+      ),
+      'template' => 'support_callout_html',
+    ),
+  ); 
+}

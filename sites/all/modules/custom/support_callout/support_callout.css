@@ -1,0 +1,24 @@
+#support-callout-container {
+  bottom: 0;
+  left: 0;
+  padding: 15px;
+  position: fixed;
+  width: 160px;
+  background: #333;
+}
+#support-callout-container #callout-trigger {
+  font-size: 16px;
+  margin-bottom: 5px;
+}
+#support-callout-container a {
+  color: #45D3FB;
+}
+#support-callout-container * {
+  color: #fff;
+}
+#support-callout-container .hide {
+  display: none;
+}
+#support-callout-container .show {
+  display: block;
+}
