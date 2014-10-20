@@ -294,6 +294,16 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
   }
 }
 
+/* Regular HTML panes */
+.pane-custom {
+  ul {
+    list-style: disc outside none;
+  }
+  ol {
+    list-style: decimal outside none;
+  }  
+}
+
 /* Users in group pane */
 .pane-impetus-panes-group-members {
   .impetus-panes-user > img {
