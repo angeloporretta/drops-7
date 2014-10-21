@@ -61,7 +61,9 @@ function impetus_panes_profile_form_custom_pane_render($subtype, $conf, $args, $
       if (isset($user_form['field_user_picture']) && isset($user_form['field_user_picture']['und'][0]['alt'])) {
         unset($user_form['field_user_picture']['und'][0]['alt']);
       }
-      
+      if (isset($user_form['field_external_unique_identifier'])) {
+        unset($user_form['field_external_unique_identifier']);
+      }
       $block->content = render(drupal_get_form('impetus_panes_change_password', $user_page_user)) . render($user_form);
     }
     
