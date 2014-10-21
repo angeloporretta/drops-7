@@ -27,6 +27,10 @@ function user_login_alterations_permission() {
       'title' => t('Change External Unique Identifier'),
       'description' => t('Allows a user access to the external unique identifier field for user creation and edit forms.'),
     ),
+    'change associated user groups' => array(
+      'title' => t('Change Associated User Groups'),
+      'description' => t('Allows the user the ability to change the groups they are associated with on user creation and edit forms.'),
+    ),
   );
 }
 
@@ -96,6 +100,9 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       if (isset($form['field_external_unique_identifier']) && !user_access('change external unique identifier')) {
         unset($form['field_external_unique_identifier']);
       }
+      if (isset($form['og_user_node']) && !user_access('change associated user groups')) {
+        unset($form['og_user_node']);
+      }
       $form['account']['pass']['#description'] = t('To change the current user password, enter the new password in both fields.<br/><strong>Please record this password for future use.</strong>');
     break;
     case 'user_register_form':
@@ -116,6 +123,10 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       
       if (isset($form['field_external_unique_identifier']) && !user_access('change external unique identifier')) {
         unset($form['field_external_unique_identifier']);
+      }
+      
+      if (isset($form['og_user_node']) && !user_access('change associated user groups')) {
+        unset($form['og_user_node']);
       }
       
       array_unshift($form['#submit'], 'user_login_alterations_save_custom_email_message');
