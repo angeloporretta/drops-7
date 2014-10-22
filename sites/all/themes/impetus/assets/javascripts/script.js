@@ -4,7 +4,7 @@
     // Scroll to the top of the page on refresh.
     $(this).scrollTop(0);
     if (getUrlParameter('sg_sessionid') != undefined) {
-      setTimeout(function(){$(this).scrollTop(0);}, 3000);
+      setTimeout(function(){$(this).scrollTop(0);}, 2000);
     }
     
     /**
