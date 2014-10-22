@@ -163,3 +163,7 @@ color: @titleslogan;
 #mini-panel-oa_toolbar_panel .pane-impetus-panes-section-dropdown .spaces-section-dropdown > li > a {
   color: @toolbartext;
 }
+.announcement-back-button {
+  background-color: @top;
+  color: @toolbartext;
+}

@@ -346,3 +346,23 @@ body.page-node #main-wrapper #contextual-tabs {
     }
   }
 }
+
+/* Announcement Nodes */
+.node-node-announcement {
+  .announcement-back-button {
+    text-transform: uppercase;
+    border: none;
+    padding: 5px 12.5px;
+    font-size: 14px;
+    margin-bottom: 5px;
+  } 
+}
+body.node-type-announcement {
+  .pane-node-created {
+    padding-bottom: 0px;
+    .pane-content {
+      font-size: 20px;
+      font-weight: normal;
+    }
+  }
+}
