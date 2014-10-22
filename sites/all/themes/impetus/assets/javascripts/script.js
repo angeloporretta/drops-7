@@ -1,6 +1,28 @@
 (function ($) {
   $(document).ready(function() {
     
+    // Scroll to the top of the page on refresh.
+    $(this).scrollTop(0);
+    if (getUrlParameter('sg_sessionid') != undefined) {
+      setTimeout(function(){$(this).scrollTop(0);}, 3000);
+    }
+    
+    /**
+     * Gets the value of a GET parameter.
+     * @param {string} sParam: The name of the url parameter.
+     * @returns {mixed}: The value of the url parameter.
+     */
+    function getUrlParameter(sParam) {
+      var sPageURL = window.location.search.substring(1);
+      var sURLVariables = sPageURL.split('&');
+      for (var i = 0; i < sURLVariables.length; i++) {
+        var sParameterName = sURLVariables[i].split('=');
+        if (sParameterName[0] == sParam) {
+          return sParameterName[1];
+        }
+      }
+    }  
+    
     // Adding a body class if the site goes mobile.
     if ($(window).width() < 980) {
       $('body').addClass('mobile');

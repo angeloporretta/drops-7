@@ -427,6 +427,20 @@ body.page-node-add #main .burr-flipped-sidebar-inner {
 table.DynarchCalendar-topCont {
   width: 450px;
   top: 20px !important;
+  left: 20% !important;
+  position: fixed !important;
+  border-top: none !important;
+  tbody > tr > td {
+    border-top: none;
+  }
+  .DynarchCalendar-title {
+    margin-left: 50px !important;
+    margin-top: -8px !important;
+    width: 180px;
+  }
+  .DynarchCalendar-bodyTable .DynarchCalendar-week td {
+    line-height: 5px;
+  }
 }
 
 /* Folder Widget Panes */
