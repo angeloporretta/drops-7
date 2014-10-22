@@ -119,6 +119,9 @@ body.logged-in-admin #main-wrapper #main #contextual-tabs .btn-group {
     min-width: 830px !important;
     max-width: 85% !important;
     margin-top: 60px;
+    #frameContainer {
+      background-color: #FFF;
+    }
   }
   #imageDataContainer {
     min-width: 830px !important;
