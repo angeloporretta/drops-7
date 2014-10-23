@@ -80,7 +80,12 @@ function impetus_panes_survey_gizmo_custom_pane_render($subtype, $conf, $args, $
     $html = $conf['embed_code'];
 
     // Extract the proper script tag from survey gizmo's javascript embed.
-    $protocol = (stripos($_SERVER['SERVER_PROTOCOL'], 'https') === true) ? 'https://' : 'http://';
+    $protocol = 'http://';
+    
+    if ((!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off') || $_SERVER['SERVER_PORT'] == 443) {
+      $protocol = 'https://';
+    }
+    
     $script_src =  $protocol . substr($html , strpos($html , 'www.surveygizmo.com'));
     $script_src =  substr($script_src, 0 , strpos($script_src , 'ref=') + 4) . $protocol . filter_input(INPUT_SERVER, 'HTTP_HOST', FILTER_SANITIZE_STRING) . '/' . drupal_lookup_path('alias', current_path());
     $script_tag = '<script type="text/javascript" src="' . $script_src . '"></script>';
