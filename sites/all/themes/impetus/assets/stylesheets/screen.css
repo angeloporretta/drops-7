@@ -13458,7 +13458,7 @@ body.not-logged-in .pane-oa-navigation {
   margin-bottom: 0 !important;
   margin-top: 0 !important;
 }
-.panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu ul.menu li .last {
+.panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu ul.menu li.last {
   border-bottom: 3px solid #c4c4c4;
 }
 .panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu ul.menu li a {

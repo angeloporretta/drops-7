@@ -266,7 +266,7 @@ $nested-link: #c4c4c4;
             margin-bottom: 0 !important;
             margin-top: 0 !important;
 
-            & .last{
+            &.last{
               border-bottom: 3px solid $nested-link;
             }
 
