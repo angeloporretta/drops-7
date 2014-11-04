@@ -4,16 +4,27 @@
 
 //Color variables
 
-
-$toolbar-hover: #76b1db;
+$toolbar-hover: #1e8ad2;
 $bubble-bkg: #f2f2f2;
 $bubble-links-divider: #c2c2c2;
-$toolbar-link-hover: #004f75;
-$toolbar-link-color: #67a9d7;
+$toolbar-link-hover: #1e8ad2;
+$toolbar-link-color: #004f75;
 
 $collapsed-link: #333333;
 $active-link: #2b3990;
 $nested-link: #c4c4c4;
+
+//Pane title
+.pane-title {
+
+  a {
+    font-size: 22px;
+    font-weight: bold;
+    color: black;
+
+  }
+
+}
 
 //remove rounded corners from the buttons
 #toolbar-menu-button {
@@ -88,10 +99,10 @@ $nested-link: #c4c4c4;
   .pane-content {
 
     //overlaping a tag to link icons
-    a.dhtml-menu-icon{
+    a.dhtml-menu-icon {
       width: 22px;
       height: 22px;
-      top:7px;
+      top: 7px;
       left: -28px;
     }
 
@@ -121,19 +132,20 @@ $nested-link: #c4c4c4;
         margin-right: 0;
 
         &.collapsed {
-          background-color: $nested-link;
+          background-color: $bubble-bkg;
 
-          a{
+          a {
             margin-left: .5em;
+            color: black;
           }
         }
 
         &.start-collapsed {
           background-color: $collapsed-link;
 
-          a{
-//            margin-left: 1.8em;
-//            line-height: 1.2;///////////
+          a {
+            //            margin-left: 1.8em;
+            //            line-height: 1.2;///////////
 
             display: block;
             padding-top: .3em;
@@ -143,6 +155,7 @@ $nested-link: #c4c4c4;
             text-indent: 0;
             padding-left: 2em;
             max-width: 90%;
+            color: white;
           }
         }
 
@@ -154,8 +167,6 @@ $nested-link: #c4c4c4;
             &.active {
               color: $active-link;
             }
-
-
 
           }
         }
@@ -219,7 +230,7 @@ $nested-link: #c4c4c4;
           &.first {
             border-top: 2px solid white;
 
-            a{
+            a {
 
             }
 
@@ -250,7 +261,7 @@ $nested-link: #c4c4c4;
             a {
 
               &.active {
-//                color: $active-link;
+                //                color: $active-link;
               }
 
             }
@@ -259,30 +270,26 @@ $nested-link: #c4c4c4;
         }
 
         //third level
-        ul.menu{
+        ul.menu {
 
-          li{
+          li {
             border-bottom: 1px solid $nested-link;
             margin-bottom: 0 !important;
             margin-top: 0 !important;
 
-            &.last{
+            &.last {
               border-bottom: 3px solid $nested-link;
             }
 
-            a{
+            a {
               display: block;
-              color:black;
+              color: black;
               padding-top: .5em;
               padding-bottom: .5em;
               margin-left: 0;
               line-height: 140% !important;
               text-indent: 0;
               padding-left: 4em;
-
-
-
-
 
             }
 
