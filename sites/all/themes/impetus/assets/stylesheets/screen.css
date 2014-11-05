@@ -13299,9 +13299,13 @@ body.not-logged-in .pane-oa-navigation {
 }
 
 .pane-title a {
+  display: block;
   font-size: 22px;
   font-weight: bold;
   color: black;
+  border-top: 5px solid;
+  border-top-color: #1e8ad2;
+  padding-top: 6px;
 }
 
 #toolbar-menu-button {
@@ -13405,6 +13409,7 @@ body.not-logged-in .pane-oa-navigation {
 }
 .panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded a.active {
   color: #2b3990;
+  color: white !important;
 }
 .panels-ipe-portlet-wrapper .pane-content ul.menu li a {
   color: white;

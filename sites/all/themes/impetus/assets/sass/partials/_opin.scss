@@ -17,11 +17,17 @@ $nested-link: #c4c4c4;
 //Pane title
 .pane-title {
 
+
+
   a {
+    display: block;
     font-size: 22px;
     font-weight: bold;
     color: black;
 
+    border-top: 5px solid;
+    border-top-color: $toolbar-hover;
+    padding-top: 6px;
   }
 
 }
@@ -165,7 +171,8 @@ $nested-link: #c4c4c4;
           a {
 
             &.active {
-              color: $active-link;
+//              color: $active-link;
+              color: white !important;
             }
 
           }
