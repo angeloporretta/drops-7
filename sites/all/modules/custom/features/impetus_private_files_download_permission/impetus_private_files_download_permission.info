@@ -1,0 +1,14 @@
+name = IMPETUS - Private files download permission
+description = Private files download permission
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = impetus_private_files_download_permission
+dependencies[] = defaultconfig
+dependencies[] = features
+dependencies[] = private_files_download_permission
+features[defaultconfig][] = user_default_permissions:administer private files download permission
+features[defaultconfig][] = user_default_permissions:bypass private files download permission
+features[features_api][] = api:2
+features[user_permission][] = administer private files download permission
+features[user_permission][] = bypass private files download permission
