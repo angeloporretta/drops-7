@@ -77,7 +77,7 @@ function user_login_alterations_form_alter(&$form, &$form_state, $form_id) {
       drupal_set_title(t('Troubleshoot Access'));
       $form['preamble'] = array(
         '#type' => 'markup',
-        '#markup' =>  t('If you cannot sign on, but you are using the email registered to this portal – where all email communications are sent - please enter your email below and press "Email me Access".You will be sent an email with further instructions - be sure to check your spam folder if you do not see it.'),
+        '#markup' =>  t('If you cannot sign on, but you are using the email registered to this portal – where all email communications are sent - please enter your email below and press "Email me Access". You will be sent an email with further instructions - be sure to check your spam folder if you do not see it.'),
         '#weight' => -50,
       );
       $form['name']['#title'] = t('My Email Address');
