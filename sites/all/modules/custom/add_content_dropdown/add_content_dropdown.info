@@ -1,0 +1,4 @@
+name = Add content dropdown
+description = Create "Add content" link for management menu.
+package = custom
+core = 7.x

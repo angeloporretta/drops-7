@@ -1,0 +1,48 @@
+<?php
+
+function add_content_dropdown_install() {
+
+$item = array(
+  'link_path' => 'node/add',
+  'link_title' => t('Add content'),
+  'menu_name' => 'management',
+  'weight' => -1000,
+  'expanded' => TRUE,
+  'plid' => 1,
+);
+$item_id = menu_link_save($item);
+
+$types = node_type_get_types();
+foreach($types as $type) {
+  $item = array(
+    'link_path' => 'node/add/' . str_replace('_' , '-' , $type->type),
+    'link_title' => $type->name,
+    'menu_name' => 'management',
+    'weight' => 0,
+    'expanded' => TRUE,
+    'plid' => $item_id,
+  );
+  menu_link_save($item);
+}
+}
+
+function add_content_dropdown_uninstall() {
+  $mlid = db_select('menu_links' , 'm')
+    ->fields('m')
+    ->condition('menu_name' , 'management' , '=')
+    ->condition('link_path' , 'node/add' , '=')
+    ->condition('plid' , 1 , '=')
+    ->execute()
+    ->fetchAssoc();
+    $item_id = menu_link_delete($mlid['mlid']);
+  $leafs = db_select('menu_links' , 'm')
+    ->fields('m')
+    ->condition('menu_name' , 'management' , '=')
+    ->condition('plid' , $mlid['mlid'] , '=')
+    ->execute();
+  while ($leaf = $leafs->fetchAssoc()) {
+    	menu_link_delete($leaf['mlid']);
+    }
+}
+
+?>
