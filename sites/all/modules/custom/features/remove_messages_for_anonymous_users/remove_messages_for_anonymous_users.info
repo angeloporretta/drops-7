@@ -1,0 +1,11 @@
+name = Remove messages for anonymous users
+description = Feature module that removes messages for anonymous users
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = remove_messages_for_anonymous_users
+dependencies[] = disable_messages
+dependencies[] = features
+features[features_api][] = api:2
+features[user_permission][] = view error messages
+project path = sites/all/modules/custom/features
