@@ -934,7 +934,7 @@ function logintoboggan_get_authentication_form($active_form = 'login') {
 
 function logintoboggan_denied() {
   if ($GLOBALS['user']->uid == 0) {
-    drupal_set_title(t('Access Denied / User log in'));
+    //drupal_set_title(t('Access Denied / User log in'));
 		 
 		 drupal_set_title(t('User log in'));
 		 
