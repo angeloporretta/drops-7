@@ -61,7 +61,7 @@ function impetus_module_implements_alter(&$implementations, $hook) {
  * Implements template_preprocess_page().
  */
 function impetus_preprocess_page(&$vars) {
-  
+  drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix-anchors.js');
   // General pages.
   if (module_exists('chosen')) {
     drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/select-searcher.js');
