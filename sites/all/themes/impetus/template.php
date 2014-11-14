@@ -61,6 +61,11 @@ function impetus_module_implements_alter(&$implementations, $hook) {
  * Implements template_preprocess_page().
  */
 function impetus_preprocess_page(&$vars) {
+
+  global $user;
+  if (user_is_logged_in() && arg(0) == 'user' && arg(1) == $user->uid && arg(2) == '') {
+    drupal_goto('user/' . $user->uid . '/view');
+  }
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix-anchors.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix.js');
   // General pages.
