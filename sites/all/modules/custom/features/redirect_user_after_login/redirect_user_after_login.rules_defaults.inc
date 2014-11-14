@@ -14,8 +14,9 @@ function redirect_user_after_login_default_rules_configuration() {
       "PLUGIN" : "reaction rule",
       "OWNER" : "rules",
       "TAGS" : [ "login" ],
-      "REQUIRES" : [ "rules" ],
+      "REQUIRES" : [ "path", "rules" ],
       "ON" : { "user_login" : [] },
+      "IF" : [ { "path_has_alias" : { "source" : "user\\r\\nuser\\/*" } } ],
       "DO" : [ { "redirect" : { "url" : "user\\/[account:uid]\\/view" } } ]
     }
   }');

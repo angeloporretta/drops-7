@@ -6,6 +6,7 @@ version = 7.x-1.0
 project = redirect_user_after_login
 dependencies[] = entity
 dependencies[] = features
+dependencies[] = path
 dependencies[] = rules
 dependencies[] = rules_admin
 features[features_api][] = api:2
