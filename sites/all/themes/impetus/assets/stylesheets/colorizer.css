@@ -167,3 +167,12 @@ color: @titleslogan;
   background-color: @top;
   color: @toolbartext;
 }
+.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
+  background-color:@active;
+}
+.panels-ipe-portlet-content .pane-title a {
+  border-top-color:@active !important;
+}
+.panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu li.leaf {
+  background-color:@menu_links !important;
+}
