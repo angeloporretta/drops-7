@@ -223,11 +223,12 @@ function group_comment_notifications_send_immediate_notifications($immediate_gro
   if (!empty($user_result)) {
     $users = user_load_multiple(array_keys($user_result['user']));
 
-    foreach ($users as $uid => $loaded_user) {
-      if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
-        unset($users[$uid]);
-      }
-    }
+    /* COMMENTED THE NEXT LINES TO ALLOW ALL USERS TO RECEIVE MAILS */
+    // foreach ($users as $uid => $loaded_user) {
+    //   if (in_array('administrator', $loaded_user->roles) || in_array('impetus admin', $loaded_user->roles) || $loaded_user->uid == 1) {
+    //     unset($users[$uid]);
+    //   }
+    // }
 
     $emailed_users = $users;
   }
