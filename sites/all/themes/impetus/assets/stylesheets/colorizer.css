@@ -170,7 +170,7 @@ color: @titleslogan;
 .panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
   background-color:@active;
 }
-.panels-ipe-portlet-wrapper .pane-content ul.menu li.start-expanded a.active  {
+.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded a.active  {
   color:@inactive;
 }
 .panels-ipe-portlet-content .pane-title a {
