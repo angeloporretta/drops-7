@@ -4,8 +4,8 @@ $info = array(
   // Available colors and color labels used in theme.
   'fields' => array(
     'active' => t('Active menu top parent'),
-    'inactive_menu_parent' => t('Inactive menu top parent'),
-    'inactive' => t('Inactive menu items'),
+    'inactive_menu_parent' => t('Main menu border top color'),
+    'inactive' => t('Color of the active top parent'),
     'active_leaf' => t('Active menu item'),
     'menu_links' => t('Menu links'),
     'top' => t('Toolbar top'),
