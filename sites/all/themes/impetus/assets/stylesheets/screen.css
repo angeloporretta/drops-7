@@ -129,3 +129,6 @@ article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, 
  *
  * Designed and built with all the love in the world @twitter by @mdo and @fat.
  */
+.sg-control-custom.sg-control-survey_question_custom .sg-question-options canvas:nth-child(3) {
+	display:none;
+}
