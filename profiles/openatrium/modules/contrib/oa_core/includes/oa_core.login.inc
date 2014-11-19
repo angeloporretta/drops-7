@@ -139,7 +139,7 @@ function oa_core_login_prepare_goto($destination) {
  */
 function oa_core_login_perform_redirect($trigger = '', $current = NULL) {
   $destination = oa_core_login_get_destination($trigger, $current);
-
+	
   // Check if we redirect
   if ($destination !== FALSE) {
     oa_core_login_prepare_goto($destination);
@@ -158,6 +158,7 @@ function oa_core_login_get_destination($trigger = '', $current = NULL) {
   if ($trigger == 'login') {
     $spaces = oa_core_get_groups_by_user($user, 'node');
     // if not a member of any spaces, go to default home
+		
     if (count($spaces) <= 0) {
       return $homepage;
     }

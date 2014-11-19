@@ -85,8 +85,8 @@ function file_preview_node_delete($node) {
     $shared->setBasePath($base_path);
     $result = "";
     $user_data = $shared->LoginUser(
-      variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
-      variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
+		   variable_get('file_preview_groupdocs_username', 'support@impetushealthcare.com'), 
+		   variable_get('file_preview_groupdocs_password', 'Mzchg9Lqfu0jI!')	
     );
 
     if ($user_data->status == 'Ok') {
@@ -154,10 +154,10 @@ function file_preview_send_file_to_groupdocs($file_field) {
   $shared->setBasePath($base_path);
   $result = "";
   $user_data = $shared->LoginUser(
-    variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
-    variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
+		variable_get('file_preview_groupdocs_username', 'support@impetushealthcare.com'), 
+		variable_get('file_preview_groupdocs_password', 'Mzchg9Lqfu0jI!')		
   );
-
+	
   if ($user_data->status == 'Ok') {
     $result = $user_data->result->user;
     $user_id = $result->guid;

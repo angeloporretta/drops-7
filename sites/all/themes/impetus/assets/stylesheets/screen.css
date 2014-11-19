@@ -13409,7 +13409,7 @@ body.not-logged-in .pane-oa-navigation {
 }
 .panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded a.active {
   color: #2b3990;
-  color: white !important;
+  /*color: white !important;*/
 }
 .panels-ipe-portlet-wrapper .pane-content ul.menu li a {
   color: white;

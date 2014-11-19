@@ -97,7 +97,7 @@ function impetus_panes_survey_gizmo_custom_pane_render($subtype, $conf, $args, $
     $noscript_tag = '<noscript id="gizmo-noscript">' .
                       '<a href="' . $dom->getElementsByTagName('a')->item(1)->getAttribute('href') . '">' . $dom->getElementsByTagName('a')->item(1)->nodeValue . '</a>' .
                     '</noscript>';
-
+		
     // Add the proper survey gizmo html to the panel.
     $block->content = $script_tag . $noscript_tag;
   }
