@@ -1,0 +1,203 @@
+<?php
+
+// Plugin definition
+$plugin = array(
+    // Title and description of the plugin
+    'title' => t('Custom Attributes'),
+    'description' => t('Allows you you to set custom css attributes for the panel'),
+    // Define a theme function for this plugin
+    'render pane' => 'custom_attributes_style_render_pane',
+    // We'll be using a template for rendering
+    'hook theme' => array(
+        'custom_attributes_style_pane' => array(
+            'variables' => array(
+                'content' => NULL,
+                'title' => NULL,
+                'style_attributes' => array(),
+                'title_style' => array(),
+                'settings' => NULL,
+                'classes' => NULL,
+                'variables' => NULL,
+            ),
+            'path' => drupal_get_path('module', 'panel_custom_style') . '/plugins/styles/custom_attributes',
+            'template' => 'custom-attributes',
+        ),
+    ),
+    // This defines the settings form for the plugin
+    'pane settings form' => 'custom_attributes_style_settings_form',
+);
+
+/**
+ * Settings form callback.
+ */
+function custom_attributes_style_settings_form($form, $form_state) {
+    $form['title-background'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Title Background'),
+        '#description' => t('Background colour for title text'),
+        //'#required' => TRUE,
+        '#default_value' => (isset($form['title-background'])) ? $form['title-background'] : '',
+    );
+    $form['title-text'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Title Text'),
+        '#description' => t('Colour for the title text'),
+        //'#options' => image_style_options(),
+        '#default_value' => (isset($form['title-text'])) ? $form['title-text'] : '',
+    );
+    $form['title-border'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Title Border'),
+        '#description' => t('Border colour for the title text'),
+        '#default_value' => (isset($form['title-border'])) ? $form['title-border'] : '',
+    );
+    $form['panel-background'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Widget Background'),
+        '#description' => t('Background colour for the widget'),
+        '#default_value' => (isset($form['panel-background'])) ? $form['panel-background'] : '',
+    );
+    $form['panel-border'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Widget Border'),
+        '#description' => t('Border colour for the widget'),
+        '#default_value' => (isset($form['panel-border'])) ? $form['panel-border'] : '',
+    );
+    $form['panel-footer'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Widget Footer'),
+        '#description' => t('Background colour for the widget footer'),
+        '#default_value' => (isset($form['panel-footer'])) ? $form['panel-footer'] : '',
+    );
+    $form['border-width'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Border Width'),
+        '#description' => t('Border width for the pane in px'),
+        '#default_value' => (isset($form['border-width'])) ? $form['border-width'] : '',
+    );
+    $form['border-radius'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Border Radius'),
+        '#description' => t('Border radius for the pane in px'),
+        '#default_value' => (isset($form['border-radius'])) ? $form['border-radius'] : '',
+    );
+    $form['border-style'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Border Style'),
+        '#description' => t('Border style for the pane'),
+        '#default_value' => (isset($form['border-style'])) ? $form['border-style'] : '',
+    );
+    $form['panel-padding'] = array(
+        '#type' => 'textfield',
+        '#title' => t('Padding'),
+        '#description' => t('Padding size for the pane in px'),
+        '#default_value' => (isset($form['panel-padding'])) ? $form['panel-padding'] : '',
+    );
+
+    return $form;
+}
+
+/**
+ * Render callback.
+ */
+function theme_custom_attributes_style_render_pane($vars) {
+
+    $title_style = array();
+    $panel_style = array();
+    $footer_style = array();
+
+    foreach($vars['settings'] as $key => $value) {
+        if(isset($value) && !empty($value)) {
+            switch($key) {
+                case "title-background":
+                    $title_style[] = "background-color:".$value;
+                    break;
+                case "title-text":
+                    $title_style[] = "color:".$value;
+                    break;
+                case "title-border":
+                    $title_style[] = "border-color:".$value;
+                    break;
+                case "panel-background":
+                    $panel_style[] = "background-color:".$value;
+                    break;
+                case "panel-border":
+                    $panel_style[] = "border-color:".$value;
+                    break;
+                case "panel-footer":
+                    $footer_style[] = "background-color:".$value;
+                    break;
+                case "border-width":
+                    $panel_style[] = "border-width:".$value."px";
+                    break;
+                case "border-radius":
+                    $panel_style[] = "border-radius:".$value."px";
+                    $panel_style[] = "-moz-border-radius:".$value."px";
+                    $panel_style[] = "-webkit-border-radius:".$value."px";
+                    break;
+                case "border-style":
+                    $panel_style[] = "border-style:".$value;
+                    break;
+                case "panel-padding":
+                    $panel_style[] = "padding:".$value."px";
+                    break;
+            }
+        }
+    }
+
+    $style_attributes['style'] = implode(";", $panel_style);
+    $style_attributes['style'] .= ";";
+
+    $title_attributes['style'] = implode(";", $title_style);
+    $title_attributes['style'] .= ";";
+
+    // Get the absolute path of the original image from the context substitution
+    /*$image_abs_path = ctools_context_keyword_substitute($vars['settings']['image'], array(), $vars['display']->context);
+
+    $image_style = $vars['settings']['image_style'];
+
+    if ($image_style == '') {
+        // If no image style is selected, use the original image.
+        $image_url = $image_abs_path;
+    } else {
+        // Image style is provided in the settings form.
+        // We need to get the original image uri to return the URL for an image derivative.
+        global $base_url;
+        $files_rel_path = variable_get('file_public_path', conf_path() . '/files');
+        $image_rel_path = str_replace($base_url . '/' . $files_rel_path, '', $image_abs_path);
+        $image_uri = file_build_uri($image_rel_path);
+
+        $image_style_url = image_style_url($image_style, $image_uri);
+
+        $image_url = $image_style_url;
+    }
+
+    $style_attributes = array();
+    $style_attributes['style'] = 'background-image: url(' . $image_url . ');';
+
+    // Add our classes to the attrubutes array, if any defined
+    if ($vars['settings']['class']) {
+        $style_attributes['class'] = explode(' ', $vars['settings']['class']);
+    }
+
+    */
+
+    $content = $vars['content']->content;
+    $title = $vars['content']->title;
+    $settings = $vars['settings'];
+    $classes = $vars['classes'];
+    $id = $vars['id'];
+
+    //return print_r($vars, true);
+    return theme('custom_attributes_style_pane', array(
+            'content' => $content,
+            'title' => $title,
+            'style_attributes' => $style_attributes,
+            'title_style' => $title_attributes,
+            'settings' => $settings,
+            'classes' => $classes,
+            'variables' => $vars,
+        )
+    );
+}
+
