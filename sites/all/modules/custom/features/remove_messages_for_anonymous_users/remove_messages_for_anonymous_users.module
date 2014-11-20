@@ -1,5 +1,7 @@
 <?php
 /**
  * @file
- * Drupal needs this blank file.
+ * Code for the Remove messages for anonymous users feature.
  */
+
+include_once 'remove_messages_for_anonymous_users.features.inc';
