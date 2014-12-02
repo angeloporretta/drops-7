@@ -1,0 +1,6 @@
+name = Menu Columns
+description = Custom module that splits the space menu in columns.
+package = custom
+core = 7.x
+
+files[] = menu_columns.admin.inc

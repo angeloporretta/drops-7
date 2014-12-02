@@ -75,16 +75,31 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         }
       }
     }
-
+    $items_per_column = variable_get('column_items', '');
     // Create html structure.
     $block->content .= '<ul class="spaces-section-dropdown">';
     foreach ($allowed_space_nodes as $space_node) {
       
       if (property_exists($space_node, 'section_nodes')) {
-        $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a><ul class="nested hide">';
+        $number_of_columns = ceil(count($space_node->section_nodes) / $items_per_column);
+        if ($number_of_columns > 0) {
+          $width = 100/$number_of_columns;
+        } else {
+          $width = 100;
+        }
+        $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
         $block->content .= '<li class="close-button"><button>X</button></li>';
+        $this_column_items = 0;
         foreach ($space_node->section_nodes as $section_node) {
+          if($this_column_items == 0) {
+            $block->content .= '<div class="menu-column" style="width:' . $width . '%">';
+          }
           $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $section_node->nid) . '">' . $section_node->title . '</a></li>';
+          $this_column_items++;
+          if ($this_column_items == $items_per_column) {
+            $this_column_items = 0;
+            $block->content .= "</div>";
+          }
         }
         $block->content .= '</ul></li>';
       }
@@ -92,7 +107,6 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a></li>';
       }
     }
-
     $block->content .= '</ul>';
   }
   
