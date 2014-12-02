@@ -79,6 +79,7 @@
  */
 ?>
 <article id="node-<?php print $node->nid; ?>" class="<?php print $classes; ?> clearfix"<?php print $attributes; ?> role="article">
+
   <?php print render($title_prefix); ?>
   <?php if (!$page): ?>
     <h2<?php print $title_attributes; ?>>
@@ -89,12 +90,8 @@
 
   <?php if ($display_submitted): ?>
     <footer class="meta submitted">
-      <?php if ($user_picture != ''): ?>
-        <?php print $user_picture; ?>
-      <?php endif; ?>
-      <div class="submitted-by">
-        <?php print $submitted; ?>
-      </div>
+      <?php print $user_picture; ?>
+      <?php print $submitted; ?>
     </footer>
   <?php endif; ?>
 
@@ -121,7 +118,7 @@
       <?php print $links; ?>
     </div>
   <?php endif; ?>
-
+  <?php //dsm($content['comments']); ?>
   <?php $content['comments']['comments'] = array(); ?>
   <?php $view = views_embed_view('comments_current_node' , 'block'); ?>
   <?php print render($view); ?>

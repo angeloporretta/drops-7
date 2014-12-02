@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Comment like feature.
+ */
+
+include_once 'comment_like.features.inc';

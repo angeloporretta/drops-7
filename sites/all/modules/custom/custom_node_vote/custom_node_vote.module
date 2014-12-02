@@ -1,0 +1,213 @@
+<?php
+
+function custom_node_vote_views_api() {
+  return array(
+      'api' => 3,
+      'path' => drupal_get_path('module', 'custom_node_vote') . '/includes/views',
+  );
+}
+
+/* create page for node like link */
+function custom_node_vote_menu() {
+	$items = array();
+	$items['comment/%comment/like/nojs'] = array(
+	  'title' => t('Vote Settings'),
+	  'page callback' => 'node_like_callback',
+	  'page arguments' => array(1),
+	  'access arguments' => array('access content'),
+	  'type' => MENU_CALLBACK,
+	);
+  $items['comment/%comment/unlike/nojs'] = array(
+    'title' => t('Vote Settings'),
+    'page callback' => 'node_unlike_callback',
+    'page arguments' => array(1),
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK,
+  );
+  $items['comment/%comment/like/ajax'] = array(
+    'delivery callback' => 'ajax_deliver',
+  ) + $items['comment/%comment/like/nojs'];
+
+  $items['comment/%comment/unlike/ajax'] = array(
+    'delivery callback' => 'ajax_deliver',
+  ) + $items['comment/%comment/unlike/nojs'];
+	return $items;
+}
+
+/* callback function for Like page */
+function node_like_callback($cid) {
+  global $user;
+  change_user_vote($user->uid , $cid->cid , 1);
+}
+
+function node_unlike_callback($cid) {
+  global $user;
+  change_user_vote($user->uid , $cid->cid , 0);
+}
+
+/* on node update save the setting for node like */
+function custom_node_vote_node_update($node) {
+  $status = _node_vote_get_settings_state($node->nid);
+  if ($status > -1) {
+    db_update('node_vote_settings')
+      ->fields(array(
+        'state' => $node->comment_like,
+       ))
+     ->condition('nid' , $node->nid , '=')
+     ->execute();
+  } else {
+    db_insert('node_vote_settings')
+      ->fields(array(
+        'nid' => $node->nid,
+        'state' => $node->comment_like,
+       ))
+      ->execute();
+  }
+}
+
+/* on node insert save the setting for node like */
+function custom_node_vote_node_insert($node) {
+  $status = _node_vote_get_settings_state($node->nid);
+  if ($status > -1) {
+    db_update('node_vote_settings')
+      ->fields(array(
+        'state' => $node->comment_like,
+       ))
+     ->condition('nid' , $node->nid , '=')
+     ->execute();
+  } else {
+    db_insert('node_vote_settings')
+      ->fields(array(
+        'nid' => $node->nid,
+        'state' => $node->comment_like,
+       ))
+      ->execute();
+  }
+}
+
+/* add the checkbox to set the like setting on node/%nid/edit and node/add */
+function custom_node_vote_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#node_edit_form']) && $form['#node_edit_form'] == TRUE) {
+    drupal_add_js(drupal_get_path('module' , 'custom_node_vote') . '/js/custom_node_vote.js');
+    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == 'edit') {
+      if (_node_vote_get_settings_state(arg(1)) == 1) {
+        $default_value = 1;
+      } else {
+        $default_value = 0;
+      }
+      $form['comment_settings']['comment']['comment_like'] = array('#type' => 'checkbox' , '#title' => t('Allow voting for this node') , '#description' => t('Allow users to like comments for this node') , '#prefix' => '<div class="comment-like-setting"><label><strong>Comment Like Settings</strong></label>' , '#suffix' => '</div>' , '#default_value' => $default_value , '#weight' => 2000);
+    } else {
+      $form['comment_settings']['comment']['comment_like'] = array('#type' => 'checkbox' , '#title' => t('Allow voting for this node') , '#description' => t('Allow users to like comments for this node') , '#prefix' => '<div class="comment-like-setting"><label><strong>Comment Like Settings</strong></label>' , '#suffix' => '</div>' , '#default_value' => 0 , '#weight' => 2000);
+    }
+  }
+}
+
+/* hook_comment_view - add like link */
+function custom_node_vote_comment_view($comment, $view_mode, $langcode) { 
+  global $user;
+  $vote_settings = db_select('node_vote_settings' , 'v')
+    ->fields('v')
+    ->condition('nid' , $comment->nid , '=')
+    ->execute()
+    ->fetchAssoc();
+  if (!empty($vote_settings) && $vote_settings['state'] == 1) {
+  drupal_add_js(drupal_get_path('module' , 'custom_node_vote') . '/js/custom_node_vote.js');
+  $comment->content['links']['#suffix'] = '';
+  //add ajax library
+  drupal_add_library('system' , 'drupal.ajax');
+  //get the number of likes for current comment
+  $likes = db_select('node_vote' , 'n')
+    ->fields('n')
+    ->condition('cid' , $comment->cid , '=')
+    ->condition('value' , 1 , '=')
+    ->countQuery()
+    ->execute()
+    ->fetchAssoc();
+  //get the number of dislikes for current comment
+  $dislikes = db_select('node_vote' , 'n')
+    ->fields('n')
+    ->condition('cid' , $comment->cid , '=')
+    ->condition('value' , 0 , '=')
+    ->countQuery()
+    ->execute()
+    ->fetchAssoc();
+  $count = $likes['expression'];
+
+  //check if current user already liked this comment
+  $voted = db_select('node_vote' , 'n')
+    ->fields('n')
+    ->condition('cid' , $comment->cid , '=')
+    ->condition('uid' , $user->uid , '=')
+    ->execute()
+    ->fetchAssoc();
+  if (empty($voted)) {
+    //create ajax unlike and like links and hide the unlike one 
+    $comment->content['links']['comment']['#links']['comment-like'] = array('title' => t('Like') , 'href' => 'comment/' . $comment->cid . '/like/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-like-link first'));
+    $comment->content['links']['comment']['#links']['comment-unlike-hide'] = array('title' => t('Unlike') , 'href' => 'comment/' . $comment->cid . '/unlike/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-unlike-link'));
+   } else if ($voted['value'] == 1){
+     //hide like link
+    $comment->content['links']['comment']['#links']['comment-like-hide'] = array('title' => t('Like') , 'href' => 'comment/' . $comment->cid . '/like/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-like-link first'));
+     $comment->content['links']['comment']['#links']['comment-unlike'] = array('title' => t('Unlike') , 'href' => 'comment/' . $comment->cid . '/unlike/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-unlike-link'));
+   } else {
+     $comment->content['links']['comment']['#links']['comment-like'] = array('title' => t('Like') , 'href' => 'comment/' . $comment->cid . '/like/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-like-link'));
+     $comment->content['links']['comment']['#links']['comment-unlike-hide'] = array('title' => t('Unlike') , 'href' => 'comment/' . $comment->cid . '/unlike/nojs' , 'html' => TRUE , 'attributes' => array('class' => 'use-ajax comment-unlike-link'));
+   }
+  $comment->content['links']['#suffix'] .= "<div class='like-count'>" . $count . '</div>';
+}
+}
+
+function change_user_vote($uid , $nid , $value) {
+  //check if the current user already casted a like/unlike on the given comment
+  $vote = db_select('node_vote' , 'n')
+    ->fields('n')
+    ->condition('uid' , $uid , '=') 
+    ->condition('cid' , $nid , '=')
+    ->execute()
+    ->fetchAssoc();
+    //if there is no like/unlike yet insert his current action
+  if (empty($vote)) {
+    db_insert('node_vote')
+      ->fields(array(
+      	'cid' => $nid,
+      	'uid' => $uid,
+        'value' => $value,
+      	))
+      ->execute();
+  } else {
+    //if he already has liked/unliked the comment , update it with the current state
+    db_update('node_vote')
+      ->fields(array(
+        'value' => $value,
+        ))
+      ->condition('uid' , $uid , '=')
+      ->condition('cid' , $nid , '=')
+      ->execute();
+  }
+}
+
+/*
+* -1 if settings aren't saved for this node
+* 1 if voting is allowed for this node
+* 0 if voting isn't allowed for this node
+*/
+function _node_vote_get_settings_state($nid) {
+  $setting = db_select('node_vote_settings' , 'n')
+    ->fields('n')
+    ->condition('nid' , $nid , '=')
+    ->execute()
+    ->fetchAssoc();
+  if (empty($setting)) {
+    return -1;
+  } else{
+    return $setting['state'];
+  }
+}
+
+function custom_node_vote_views_query_alter(&$view, &$query) {
+  if ($view->name == 'comments_current_node' && $view->current_display == 'block') {
+    $query->table_queue['comment_node_vote']['join']->type = "RIGHT";
+    $query->add_field('comment', 'cid', 'comment_node_vote_cid', array('function' => 'groupby'));
+  }
+}
+
+?>

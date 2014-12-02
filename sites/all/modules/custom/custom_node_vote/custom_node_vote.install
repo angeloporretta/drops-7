@@ -1,0 +1,77 @@
+<?php
+
+function custom_node_vote_schema() {
+  $schema = array();
+
+    $schema['node_vote'] = array(
+      'description' => 'Vote for nodes.',
+      'fields' => array(
+        'vid' => array(
+          'description' => 'The identifier for a vote',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'cid' => array(
+          'description' => 'The cid of the comment.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'uid' => array(
+          'description' => 'The uid of the voter.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'value' => array(
+          'description' => 'The value of the vote(1 for like , 0 for unlike)',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+      ),
+      'foreign keys' => array(
+        'comment_id' => array(
+          'table' => 'comment',
+          'columns' => array('cid' => 'cid'),
+        ),
+        'user_id' => array(
+          'table' => 'users',
+          'columns' => array('uid' => 'uid'),
+        ),
+      ),
+      'primary key' => array('vid'),
+    );
+
+  if (!db_table_exists('node_vote_settings')) {
+    $schema['node_vote_settings'] = array(
+      'description' => 'Store vote settings for each node',
+      'fields' => array(
+        'nid' => array(
+          'description' => 'Node ID',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'state' => array(
+          'description' => 'The state of the vote for this node (1 - open , 0 - closed)',
+          'type' => 'int',
+          'size' => 'tiny',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+      ),
+      'foreign keys' => array(
+        'node_nid' => array(
+          'table' => 'node',
+          'columns' => array('nid' => 'nid'),
+        ),
+      ),
+    );
+  }
+
+  return $schema;
+}
+
+?>

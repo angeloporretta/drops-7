@@ -1,0 +1,4 @@
+name = Node Vote
+description = Custom module that builds the node vote functionality
+package = custom
+core = 7.x
