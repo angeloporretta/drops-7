@@ -76,6 +76,9 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       }
     }
     $items_per_column = variable_get('column_items', '');
+    if ($items_per_column == 0) {
+      $items_per_column = 99;
+    }
     // Create html structure.
     $block->content .= '<ul class="spaces-section-dropdown">';
     foreach ($allowed_space_nodes as $space_node) {
