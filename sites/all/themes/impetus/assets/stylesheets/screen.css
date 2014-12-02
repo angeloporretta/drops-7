@@ -212,11 +212,11 @@ background-color: #f2f2f2;
 .panels-ipe-portlet-wrapper .pane-og-menu-single-menu ul.menu li.active.expanded {
 	background-color:white !important;
 }
-#oa-navbar .pane-impetus-panes-section-dropdown ul li a:hover {
+/*#oa-navbar .pane-impetus-panes-section-dropdown ul li a:hover {
   border-top-color: @main_menu_hover_color;
   border-top-width: 4px;
   border-top-style: solid;
-}
+}*/
 #oa-navbar .pane-impetus-panes-section-dropdown ul li ul a:hover {
 	border-top:none;
 }
