@@ -51,7 +51,7 @@ function custom_node_vote_node_update($node) {
   if ($status > -1) {
     db_update('node_vote_settings')
       ->fields(array(
-        'state' => $node->comment_like,
+        'state' => isset($node->comment_like):$node->comment_like:0,
        ))
      ->condition('nid' , $node->nid , '=')
      ->execute();
@@ -59,7 +59,7 @@ function custom_node_vote_node_update($node) {
     db_insert('node_vote_settings')
       ->fields(array(
         'nid' => $node->nid,
-        'state' => $node->comment_like,
+        'state' => isset($node->comment_like):$node->comment_like:0,
        ))
       ->execute();
   }
@@ -71,7 +71,7 @@ function custom_node_vote_node_insert($node) {
   if ($status > -1) {
     db_update('node_vote_settings')
       ->fields(array(
-        'state' => $node->comment_like,
+        'state' => isset($node->comment_like):$node->comment_like:0,
        ))
      ->condition('nid' , $node->nid , '=')
      ->execute();
@@ -79,7 +79,7 @@ function custom_node_vote_node_insert($node) {
     db_insert('node_vote_settings')
       ->fields(array(
         'nid' => $node->nid,
-        'state' => $node->comment_like,
+        'state' => isset($node->comment_like):$node->comment_like:0,
        ))
       ->execute();
   }
