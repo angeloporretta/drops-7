@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Notification link feature feature.
+ */
+
+include_once 'notification_link_feature.features.inc';
