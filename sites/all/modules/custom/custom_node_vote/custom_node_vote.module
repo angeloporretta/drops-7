@@ -48,40 +48,44 @@ function node_unlike_callback($cid) {
 /* on node update save the setting for node like */
 function custom_node_vote_node_update($node) {
   $status = _node_vote_get_settings_state($node->nid);
-  if ($status > -1) {
-    db_update('node_vote_settings')
-      ->fields(array(
-        'state' => isset($node->comment_like):$node->comment_like:0,
-       ))
-     ->condition('nid' , $node->nid , '=')
-     ->execute();
-  } else {
-    db_insert('node_vote_settings')
-      ->fields(array(
-        'nid' => $node->nid,
-        'state' => isset($node->comment_like):$node->comment_like:0,
-       ))
-      ->execute();
+  if (isset($node->comment_like)) {
+    if ($status > -1) {
+      db_update('node_vote_settings')
+        ->fields(array(
+          'state' => $node->comment_like,
+         ))
+       ->condition('nid' , $node->nid , '=')
+       ->execute();
+    } else {
+      db_insert('node_vote_settings')
+        ->fields(array(
+          'nid' => $node->nid,
+          'state' => $node->comment_like,
+         ))
+        ->execute();
+    }
   }
 }
 
 /* on node insert save the setting for node like */
 function custom_node_vote_node_insert($node) {
   $status = _node_vote_get_settings_state($node->nid);
-  if ($status > -1) {
-    db_update('node_vote_settings')
-      ->fields(array(
-        'state' => isset($node->comment_like):$node->comment_like:0,
-       ))
-     ->condition('nid' , $node->nid , '=')
-     ->execute();
-  } else {
-    db_insert('node_vote_settings')
-      ->fields(array(
-        'nid' => $node->nid,
-        'state' => isset($node->comment_like):$node->comment_like:0,
-       ))
-      ->execute();
+  if (isset($node->comment_like)) {
+    if ($status > -1) {
+      db_update('node_vote_settings')
+        ->fields(array(
+          'state' => $node->comment_like,
+         ))
+       ->condition('nid' , $node->nid , '=')
+       ->execute();
+    } else {
+      db_insert('node_vote_settings')
+        ->fields(array(
+          'nid' => $node->nid,
+          'state' => $node->comment_like,
+         ))
+        ->execute();
+    }
   }
 }
 
