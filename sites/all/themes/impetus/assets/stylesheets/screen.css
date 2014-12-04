@@ -94,7 +94,7 @@ ul.spaces-section-dropdown .menu-column{
 }*/
 li.comment-like , li.comment-unlike{margin-right:0px !important;}
 li.comment-like-hide , li.comment-unlike-hide {display:none !important;}
-.sg-content textarea , .sg-content input[text] {
+.sg-content textarea , .sg-content input[type="text"] {
 	width: auto !important;
 }
 
