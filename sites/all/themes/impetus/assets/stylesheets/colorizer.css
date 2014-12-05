@@ -195,3 +195,14 @@ ul.spaces-section-dropdown a.active {
 .pane-og-menu-single-menu h3.pane-title a{
   border-top-color:@sidebar_menu_top_border;
 }
+ul.spaces-section-dropdown a:hover {
+  border-top :5px solid;
+  padding-top:6px;
+  text-decoration: none;
+  border-top-color:@main_menu_hover_color;
+  font-style:normal;
+}
+
+ul.spaces-section-dropdown ul a:hover{
+  border-top:none;
+}
