@@ -167,22 +167,31 @@ color: @titleslogan;
   background-color: @top;
   color: @toolbartext;
 }
-/*
-.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
-  background-color:@active;
-}
-.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded a.active  {
-  color:@inactive !important;
-}
-.panels-ipe-portlet-content .pane-title a {
-  border-top-color:@active !important;
+
+.pane-og-menu-single-menu .pane-content {
+  padding:5px;
+  /*background-color:@menu_background_color;*/
 }
 
-.panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu li.leaf {
-  background-color:@menu_links !important;
+.pane-og-menu-single-menu .pane-content ul.menu a.active {
+  /*color:@menu_active_item_color !important;*/
 }
 
-.spaces-section-dropdown li a:hover {
-  border-top-color:@inactive_menu_parent !important;
+ul.spaces-section-dropdown a:hover {
+  border-top-color:@main_menu_hover_color;
 }
-*/
+
+ul.spaces-section-dropdown a.active {
+  border-top :5px solid;
+  padding-top:6px;
+  text-decoration: none;
+  border-top-color:@main_menu_hover_color;
+  font-style:normal;
+}
+
+.panels-ipe-portlet-wrapper .pane-content ul.menu li a.active {
+  color:@linkactive !important;
+}
+.pane-og-menu-single-menu h3.pane-title a{
+  border-top-color:@sidebar_menu_top_border;
+}

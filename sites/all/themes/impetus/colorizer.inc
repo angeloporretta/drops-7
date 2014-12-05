@@ -3,6 +3,8 @@
 $info = array(
   // Available colors and color labels used in theme.
   'fields' => array(
+    'main_menu_hover_color' => t('Main menu border top color'),
+    'sidebar_menu_top_border' => t('Sidebar menu top border'),
     //'active' => t('Active menu top parent'),
    // 'inactive_menu_parent' => t('Main menu border top color'),
     //'inactive' => t('Color of the active top parent'),
@@ -33,6 +35,8 @@ $info = array(
     'default' => array(
       'title' => t('Bootstrap (default)'),
       'colors' => array(
+        'main_menu_hover_color' => '#018fe2',
+        'sidebar_menu_top_border' => '#333',
         //'active' => '#222222',
         //'inactive_menu_parent' => '#222222',
        // 'inactive' => '#222222',
