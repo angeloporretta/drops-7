@@ -54,7 +54,10 @@ function colorizer_init() {
   if (!file_exists($file)) {
     $palette = colorizer_get_palette($theme_key, $instance);
     if (!empty($palette)) {
-      $file = colorizer_update_stylesheet($theme_key, $instance, $palette);
+      if (!user_is_anonymous()) {
+     $file = colorizer_update_stylesheet($theme_key, $instance, $palette);
+    $file2 = colorizer_update_stylesheet($theme_key, $instance . '_0', $palette);
+        }
       // clear file status cache so file_exists will look for file again
       clearstatcache();
     }
