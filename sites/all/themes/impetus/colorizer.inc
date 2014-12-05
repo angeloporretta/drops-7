@@ -1,15 +1,22 @@
 <?php
-
+//LINES COMMENTED BELOW MIGHT BE USED LATER
 $info = array(
   // Available colors and color labels used in theme.
   'fields' => array(
     'main_menu_hover_color' => t('Main menu border top color'),
     'sidebar_menu_top_border' => t('Sidebar menu top border'),
-    //'active' => t('Active menu top parent'),
-   // 'inactive_menu_parent' => t('Main menu border top color'),
-    //'inactive' => t('Color of the active top parent'),
-    //'active_leaf' => t('Active menu item'),
-    //'menu_links' => t('Menu links'),
+    // 'active_top_parent_color' => t('Color of the active top parent'),
+    // 'active_top_parent_background' => t('Top Active Parent background'),
+    // 'inactive_top_parent_color' => t('Top Inactive Parent color'),
+    // 'inactive_top_parent_background' => t('Top Inactive Parent background'),
+    // 'top_leaf_background' => t('Top Leaf background'),
+    // 'top_leaf_color' => t('Top leaf color'),
+    // 'active_parent_background' => t('Current Active Parent background'),
+    // 'active_parent_color' => t('Current Active Parent color'),
+    // 'interior_leaf_background' => t('Interior Leaf background'),
+    // 'interior_leaf_color' => t('Interior Leaf color'),
+    'menu_background_color' => t('Menu background color'),
+    'menu_active_item_color' => t('Active item color'),
     'top' => t('Toolbar top'),
     'bottom' => t('Toolbar bottom'),
     'toolbarbtn' => t('Toolbar button background'),
@@ -36,12 +43,19 @@ $info = array(
       'title' => t('Bootstrap (default)'),
       'colors' => array(
         'main_menu_hover_color' => '#018fe2',
+        'menu_background_color' => '#e3e3e3',
+        'menu_active_item_color' => '#003853',
         'sidebar_menu_top_border' => '#333',
-        //'active' => '#222222',
-        //'inactive_menu_parent' => '#222222',
-       // 'inactive' => '#222222',
-        //'active_leaf' => '#222222',
-       // 'menu_links' => '#222222',
+        // 'active_top_parent_color' => '#222222',
+        // 'active_top_parent_background' => '#222222',
+        // 'inactive_top_parent_color' => '#222222',
+        // 'inactive_top_parent_background' => '#222222',
+        // 'top_leaf_background' => '#222222',
+        // 'top_leaf_color' => '#222222',
+        // 'active_parent_background' => '#222222',
+        // 'active_parent_color' => '#222222',
+        // 'interior_leaf_background' => '#222222',
+        // 'interior_leaf_color' => '#222222',
         'top' => '#222222',
         'bottom' => '#111111',
         'toolbarbtn' => '#333333',
@@ -67,11 +81,6 @@ $info = array(
       'title' => t('Blue Lagoon'),
       'base' => '#48a9e4',
       'colors' => array(
-        //'active' => '#222222',
-        //'inactive_menu_parent' => '#222222',
-       // 'inactive' => '#222222',
-        //'active_leaf' => '#222222',
-       // 'menu_links' => '#222222',
         'top' => '#0779bf',
         'bottom' => '#48a9e4',
         'toolbarbtn' => '#0879bf',
@@ -95,11 +104,6 @@ $info = array(
       'title' => t('Firehouse'),
       'base' => '#d6121f',
       'colors' => array(
-       // 'active' => '#222222',
-        //'inactive_menu_parent' => '#222222',
-       // 'inactive' => '#222222',
-       // 'active_leaf' => '#222222',
-       // 'menu_links' => '#222222',
         'top' => '#cd2d2d',
         'bottom' => '#cf3535',
         'toolbarbtn' => '#b12525',
@@ -122,13 +126,6 @@ $info = array(
       'title' => t('Ice'),
       'base' => '#019dbf',
       'colors' => array(
-        /*
-				  'active' => '#222222',
-        'inactive_menu_parent' => '#222222',
-        'inactive' => '#222222',
-        'active_leaf' => '#222222',
-        'menu_links' => '#222222',
-				  */
         'top' => '#d0d0d0',
         'bottom' => '#c2c4c5',
         'toolbarbtn' => '#dedede',
@@ -152,13 +149,6 @@ $info = array(
       'title' => t('Plum'),
       'base' => '#4c1c58',
       'colors' => array(
-				  /*
-        'active' => '#222222',
-        'inactive_menu_parent' => '#222222',
-        'inactive' => '#222222',
-        'active_leaf' => '#222222',
-        'menu_links' => '#222222',
-					*/
         'top' => '#4c1c58',
         'bottom' => '#593662',
         'toolbarbtn' => '#401050',
@@ -181,13 +171,6 @@ $info = array(
       'title' => t('Forest'),
       'base' => '#28870d',
       'colors' => array(
-				  /*
-        'active' => '#222222',
-        'inactive_menu_parent' => '#222222',
-        'inactive' => '#222222',
-        'active_leaf' => '#222222',
-        'menu_links' => '#222222',
-					*/ 
         'top' => '#28870d',
         'bottom' => '#43b329',
         'toolbarbtn' => '#25830c',
@@ -210,13 +193,6 @@ $info = array(
       'title' => t('Slate'),
       'base' => '#0073b6',
       'colors' => array(
-				  /*
-        'active' => '#222222',
-        'inactive_menu_parent' => '#222222',
-        'inactive' => '#222222',
-        'active_leaf' => '#222222',
-        'menu_links' => '#222222',
-					*/
         'top' => '#4a4a4a',
         'bottom' => '#4e4e4e',
         'toolbarbtn' => '#464646',
@@ -240,13 +216,6 @@ $info = array(
       'title' => t('Phase2'),
       'base' => '#0073b6',
       'colors' => array(
-				  /*
-        'active' => '#222222',
-        'inactive_menu_parent' => '#222222',
-        'inactive' => '#222222',
-        'active_leaf' => '#222222',
-        'menu_links' => '#222222',
-					*/
         'top' => '#FE7900',
         'bottom' => '#FE7900',
         'toolbarbtn' => '#eb7407',
