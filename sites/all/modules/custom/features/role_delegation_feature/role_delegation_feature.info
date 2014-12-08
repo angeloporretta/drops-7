@@ -1,0 +1,14 @@
+name = Role delegation feature
+description = Feature module that lets the administrators and impetus admins to assign roles.
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = role_delegation_feature
+dependencies[] = features
+dependencies[] = role_delegation
+features[features_api][] = api:2
+features[user_permission][] = assign all roles
+features[user_permission][] = assign comment moderator role
+features[user_permission][] = assign editor role
+features[user_permission][] = assign impetus admin role
+project path = sites/all/modules/custom/features
