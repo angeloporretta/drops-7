@@ -241,6 +241,7 @@ function colorizer_admin_settings_validate($form, &$form_state) {
  * Mostly copied from Color module
  */
 function colorizer_admin_form_submit($form, &$form_state) {
+  @drupal_rmdir('public://colorizer');
   // Save the file locations
   if (!empty($form_state['values']['op']) && ($form_state['values']['op'] == $form_state['values']['colorizer_clearcache'])) {
     // clear the colorizer css cache
@@ -289,6 +290,8 @@ function colorizer_admin_form_submit($form, &$form_state) {
   variable_set('colorizer_' . $instance . '_palette', $palette);
 
   colorizer_update_stylesheet($theme, $instance, $palette);
+  colorizer_update_stylesheet($theme, $instance . '_0', $palette);
+  //colorizer_update_stylesheet($theme, $instance . '_0', $palette);
 }
 
 /**
