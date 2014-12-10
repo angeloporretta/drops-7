@@ -3,6 +3,16 @@
  * The configuration of SimpleSAMLphp
  * 
  */
+#Insure that simpleSaml can keep a session when used in standalone mode:
+if (!ini_get('session.save_handler')) {
+  ini_set('session.save_handler', 'file');
+}
+
+# Load necessary environmental data
+$ps = json_decode($_SERVER['PRESSFLOW_SETTINGS'], TRUE);
+$host = $_SERVER['HTTP_HOST'];
+$drop_id = $ps['conf']['pantheon_binding'];
+$db = $ps['databases']['default']['default'];
 
 $config = array(
 
@@ -21,7 +31,8 @@ $config = array(
      * external url, no matter where you come from (direct access or via the
      * reverse proxy).
      */
-    'baseurlpath' => 'simplesaml/',
+    //'baseurlpath' => 'simplesaml/',
+    'baseurlpath' => 'http://'. $host .'/simplesaml/',
     'certdir' => 'cert/',
     'loggingdir' => 'log/',
     'datadir' => 'data/',
@@ -31,8 +42,8 @@ $config = array(
      *
      * SimpleSAMLphp will attempt to create this directory if it doesn't exist.
      */
-    'tempdir' => '/tmp/simplesaml',
-
+    //'tempdir' => '/tmp/simplesaml',
+    'tempdir' => '/srv/bindings/'. $drop_id .'/tmp/simplesaml',
 
     /*
      * If you enable this option, simpleSAMLphp will log all sent and received messages
@@ -605,7 +616,11 @@ $config = array(
      *
      * (This option replaces the old 'session.handler'-option.)
      */
-    'store.type'                    => 'phpsession',
+    //'store.type'                    => 'phpsession',
+    'store.type' => 'sql',
+    'store.sql.dsn' => 'mysql:host='. $db['host'] .';port='. $db['port'] .';dbname='. $db['database'],
+    'store.sql.username' => $db['username'],
+    'store.sql.password' => $db['password'],
 
 
     /*
@@ -614,13 +629,13 @@ $config = array(
      * See http://www.php.net/manual/en/pdo.drivers.php for the various
      * syntaxes.
      */
-    'store.sql.dsn'                 => 'sqlite:/path/to/sqlitedatabase.sq3',
+    //'store.sql.dsn'                 => 'sqlite:/path/to/sqlitedatabase.sq3',
 
     /*
      * The username and password to use when connecting to the database.
      */
-    'store.sql.username' => null,
-    'store.sql.password' => null,
+    //'store.sql.username' => null,
+    //'store.sql.password' => null,
 
     /*
      * The prefix we should use on our tables.
