@@ -124,7 +124,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     $form['new_upload_fields']['file'] = array(
         '#type' => 'file',
         '#name' => 'files[]',
-        '#title' => t('Upload some photos'),
+        '#title' => t('Choose some files'),
         //'#description' => t('JPG\'s, GIF\'s, and PNG\'s only, 10MB Max Size'),
         '#attributes' => array('multiple' => 'multiple'),
     );
