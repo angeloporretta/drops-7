@@ -19,5 +19,33 @@ jQuery( document ).ready(function() {
 			jQuery(window).scrollTop(position-header);
 		}
 	});
+	jQuery("a").click(function(event){
+	setTimeout(function(){
+	var width = jQuery("#outerImageContainer").width();
+	if (width > 1000) {
+		jQuery("#lightbox").css("-webkit-transform" , "scale(0.6)").css("transform" , "scale(0.6)").css("-ms-transform" , "scale(0.6)");
+		var container_width = jQuery("#frameContainer").width();
+		var img = jQuery("iframe#lightboxFrame").contents().find("img");
+		
+		if (img.length == 0) {
+		  if(jQuery("iframe#lightboxFrame").width() > 1000) {
+			jQuery("iframe#lightboxFrame").css("width" , 1000);
+		  }
+		} else {
+			jQuery(img).css("width" , container_width);
+		}
+	} else {
+		var container_width = jQuery("#frameContainer").width();
+		var img = jQuery("iframe#lightboxFrame").contents().find("img");
+		if (img.length == 0) {
+		  if(jQuery("iframe#lightboxFrame").width() > 1000) {
+			jQuery("iframe#lightboxFrame").css("width" , 600);
+		  }
+		} else {
+		  jQuery(img).css("width" , container_width);
+		}
+	}
+	}, 1000);
+});
   
 });
