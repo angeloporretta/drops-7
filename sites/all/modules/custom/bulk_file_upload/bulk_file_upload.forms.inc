@@ -119,8 +119,6 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
 
     $node_upload_field_info = field_info_instance('node', 'field_uploaded_file', 'file');
 
-  
-
     $form['new_upload_fields']['file'] = array(
         '#type' => 'file',
         '#name' => 'files[]',
@@ -201,14 +199,15 @@ function bulk_file_upload_ajax_sections($form, &$form_state) {
  * Handles the validation for the bulk add files form.
  */
 function bulk_file_upload_add_files_form_validate($form, &$form_state) {
+
   $term = taxonomy_term_load($form_state['values']['tid']);
   if ($term == FALSE || $term->vocabulary_machine_name != 'file_categories') {
     form_set_error('files', t('Error: You are trying to save these files under a restricted folder.'));
   }
   $num_files = count($_FILES['files']['name']);
     for ($i = 0; $i < $num_files; $i++) {
-        $file = file_save_upload($i, array(
-        ));
+      $validators = array('file_validate_extensions' => array('docx , xslx , pptx , jpg , jpeg , gif , png , txt , doc , xls , pdf , ppt , pps , odt , ods , odp'));
+        $file = file_save_upload($i, $validators);
         if ($file) {
             if ($file = file_move($file, 'public://')) {
                 $form_state['values']['file'][$i] = $file;
@@ -249,7 +248,7 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
   if (isset($form_state['values']['tid']) && ctype_digit($form_state['values']['tid'])) {
     $new_file_node->field_file_category['und'][0]['tid'] = $form_state['values']['tid'];
   }
-   
+
   foreach ($form_state['values']['file'] as $element_name => $value) {
       if (isset($form_state['values']['space']) && isset($form_state['values']['section'])) {
         $new_file_node->og_group_ref['und'][0]['target_id'] = $form_state['values']['space'];
