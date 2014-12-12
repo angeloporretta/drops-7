@@ -22,7 +22,7 @@ jQuery( document ).ready(function() {
 	jQuery("a").click(function(event){
 	setTimeout(function(){
 	var width = jQuery("#outerImageContainer").width();
-	if (width > 1000) {
+	if (width > 1500) {
 		jQuery("#lightbox").css("-webkit-transform" , "scale(0.6)").css("transform" , "scale(0.6)").css("-ms-transform" , "scale(0.6)");
 		var container_width = jQuery("#frameContainer").width();
 		var img = jQuery("iframe#lightboxFrame").contents().find("img");
