@@ -19,12 +19,12 @@
   </div>
 
   <div class="moscone-flipped-container moscone-flipped-column-content clearfix row-fluid">
-    <div class="moscone-flipped-column-content-region moscone-flipped-content panel-panel span9">
+    <div class="moscone-flipped-column-content-region moscone-flipped-content panel-panel span8">
       <div class="moscone-flipped-column-content-region-inner moscone-flipped-content-inner panel-panel-inner">
         <?php print $content['contentmain']; ?>
       </div>
     </div>
-    <div class="moscone-flipped-column-content-region moscone-flipped-sidebar panel-panel span3">
+    <div class="moscone-flipped-column-content-region moscone-flipped-sidebar panel-panel span4">
       <div class="moscone-flipped-column-content-region-inner moscone-flipped-sidebar-inner panel-panel-inner">
         <?php print $content['sidebar']; ?>
       </div>
