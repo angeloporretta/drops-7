@@ -92,12 +92,11 @@ function bulk_file_upload_preprocess_taxonomy_term(&$variables) {
       '#type' => 'markup',
       '#markup' => '',
     );
-    $taxonomy_form = drupal_get_form('bulk_file_upload_add_taxonomy_term_form' , $variables['term']->tid);
-    $file_form = drupal_get_form('bulk_file_upload_add_files_form', $variables['term']->tid);
+    
     $variables['content']['bulk_file_uploads']['#markup'] .= //bulk_file_upload_render_child_folders($variables['term']->tid) .
       bulk_file_upload_render_file_table($variables['term']->tid) .
-      render($taxonomy_form) .
-      render($file_form);
+      render(drupal_get_form('bulk_file_upload_add_taxonomy_term_form', $variables['term']->tid)) .
+      render(drupal_get_form('bulk_file_upload_add_files_form', $variables['term']->tid));
   }
 }
 
@@ -255,7 +254,7 @@ function bulk_file_upload_render_file_table($tid) {
       $html .= '<a id="bulk-file-download" href="/bulk-download-files?tid=' . $tid . '" class="btn btn-small">' . t('Download All') . '</a>';
     }
     
-    $html .= '<table><tr><th>' . t('Title') . '</th><th>' . t('Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</th>' . '</tr>';
+    $html .= '<table><tr><th>' . t('Title') . '</th><th>' . t('Link') . '</th><th>' . t('File Size') . '</th><th>' . t('Last Modified By') . '</th><th>' . t("Edit") . '</th></tr>';
 
     foreach ($subfolders as $subfolder) {
       $html .= '<tr class="folder-section">';
@@ -266,7 +265,7 @@ function bulk_file_upload_render_file_table($tid) {
                  '</a>' .
                '</td>';
       $html .= '<td></td><td></td><td></td>';
-     // $html .= '<td>' . l(t("Edit") , 'taxonomy/term/' .$subfolder->tid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
+      $html .= '<td>' . l(t("Edit") , 'taxonomy/term/' .$subfolder->tid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
       $html .= '</tr>';
     }
     
@@ -299,7 +298,7 @@ function bulk_file_upload_render_file_table($tid) {
         if ($revision_user !== FALSE) {
           $html .= '<td>' . $revision_user->realname . '</td>';
         }
-       // $html .= '<td>' . l(t("Edit") , 'node/' . $file_node->nid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
+        $html .= '<td>' . l(t("Edit") , 'node/' . $file_node->nid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
 
         $html .= '</tr>';
       }
