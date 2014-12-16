@@ -1,0 +1,840 @@
+<?php
+  function custom_access_file_folder_menu() {
+  	$items = array();
+
+	$items['taxonomy/term/%taxonomy_term/access'] = array(
+    'title' => 'Folder access control',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_term_access'),
+    'access callback' => array('term_access_check'),
+    'access arguments' => array(2),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+  );
+  $items['node/%node/access'] = array(
+    'title' => 'File access control',
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('form_node_access'),
+    'access callback' => array('node_access_check'),
+    'access arguments' => array(1),
+    'type' => MENU_LOCAL_TASK,
+    'weight' => 3,
+  );
+  $items['groups/autocomplete'] = array(
+      'title' => 'Autocomplete for groups',
+      'page callback' => '_groups_autocomplete',
+      'access arguments' => array('access content'),
+      'type' => MENU_CALLBACK
+    );
+	return $items;
+  }
+
+  function form_node_access_submit($form , &$form_state){
+
+    //save user roles
+    $nid = arg(1);
+    //save groups
+    if (isset($form_state['values']['groups_fieldset']['group'])) {
+      db_delete('custom_access_node')
+        ->condition('nid' , $nid , '=')
+        ->condition('access_type' , 'group' , '=')
+        ->execute();
+      foreach ($form_state['values']['groups_fieldset']['group'] as $group_form) {
+        if (!empty($group_form)) {
+        $node_id = get_node_by_name($group_form);
+        db_insert('custom_access_node')
+          ->fields(array(
+            'nid' => $nid,
+            'access_type' => 'group',
+            'id' => $node_id,
+            ))
+          ->execute();
+        }
+      }
+    }
+    // $terms = db_delete('custom_access')
+    //   ->condition('tid' , $tid , '=')
+    //   ->condition('access_type' , 'role' , '=')
+    //   ->execute();
+
+    // foreach($form_state['values']['user_roles'] as $user_roles => $value) {
+    //   if ($value > 0) {
+    //     db_insert('custom_access')
+    //       ->fields(array(
+    //         'tid' => $tid,
+    //         'access_type' => 'role',
+    //         'id' => $user_roles,
+    //       ))
+    //       ->execute();
+    //   }
+    // }
+    //save users
+    if (isset($form_state['values']['users_fieldset']['user'])) {
+      db_delete('custom_access_node')
+        ->condition('nid' , $nid , '=')
+        ->condition('access_type' , 'user' , '=')
+        ->execute();
+      foreach ($form_state['values']['users_fieldset']['user'] as $user_form) {
+        if (!empty($user_form)) {
+        $user = user_load_by_name($user_form);
+        db_insert('custom_access_node')
+          ->fields(array(
+            'nid' => $nid,
+            'access_type' => 'user',
+            'id' => $user->uid,
+            ))
+          ->execute();
+        }
+      }
+    }
+    drupal_set_message(t("Your settings have been saved"));
+  }
+
+  function term_access_check($term) {
+    if ($term->vocabulary_machine_name == 'file_categories') {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  function node_access_check($node) {
+    if ($node->type == 'file') {
+      return TRUE;
+    }
+    return FALSE;
+  }
+
+  function _groups_autocomplete($string) {
+    $matches = array();
+    $or = db_or();
+    $or->condition('type' , 'oa_group' , '=');
+    $or->condition('type' , 'oa_space' , '=');
+    $result = db_select('node' , 'n')
+      ->fields('n')
+      ->condition('title' , '%' . db_like($string) . '%' , 'LIKE')
+      ->condition($or)
+      ->execute();
+    foreach ($result as $row) {
+      $matches[$row->title] = check_plain($row->title);
+    }
+    drupal_json_output($matches);
+  }
+
+  function form_node_access($form , &$form_state) {
+    $form['#tree'] = TRUE;
+
+    /* GROUP FUNCTIONALITY - start */
+
+    $form['groups_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Groups that can access this term'),
+      '#prefix' => '<div id="groups-fieldset-wrapper">',
+      '#suffix' => '</div>',
+    );
+
+    $default_group = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , arg(1) , '=')
+      ->condition('access_type' , 'group' , '=')
+      ->countQuery()
+      ->execute()
+      ->fetchAssoc();
+      //build array that will store the default values
+    $default_group_values_array = array();
+
+    $retrieve_groups = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , arg(1) , '=')
+      ->condition('access_type' , 'group' , '=')
+      ->execute();
+
+    while ($retrieve = $retrieve_groups->fetchAssoc()) {
+      $retrieved_group = node_load($retrieve['id']);
+      $default_values_array[] = $retrieved_group->title;
+    }
+
+    if(empty($default_group_values_array)){
+      $node = node_load(arg(1));
+      if (isset($node->field_file_category[LANGUAGE_NONE][0]['tid'])) {
+        $groups = _get_parent_groups($node->field_file_category[LANGUAGE_NONE][0]['tid']);
+        foreach ($groups as $group) {
+          $group_load = node_load($group);
+          $default_values_array[] = $group_load->title;
+        }
+        $default_group['expression'] = sizeof($default_values_array);
+      }
+    }
+
+    if (empty($form_state['num_groups'])) {
+       if (!empty($default_group['expression'])) {
+         $form_state['num_groups'] = $default_group['expression'];
+       } else {
+        $form_state['num_groups'] = 1;
+      }
+    }
+
+    for ($i = 0 ; $i < $form_state['num_groups'] ; $i++) {
+      $form['groups_fieldset']['group'][$i] = array(
+        '#type' => 'textfield',
+        '#title' => t('Group Name'),
+        '#autocomplete_path' => 'groups/autocomplete',
+      );
+
+      if (!empty($default_values_array[$i])) {
+        $form['groups_fieldset']['group'][$i]['#default_value'] = $default_values_array[$i];
+      }
+    }
+
+    $form['groups_fieldset']['add_more_groups'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more groups'),
+      '#submit' => array('add_more_group_ajax_button'),
+      '#ajax' => array(
+        'callback' => 'group_ajax_callback',
+        'wrapper' => 'groups-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_groups'] > 1) {
+      $form['groups_fieldset']['remove_group'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove group'),
+        '#submit' => array('add_more_group_ajax_remove'),
+        '#ajax' => array(
+          'callback' => 'group_remove_ajax_callback',
+          'wrapper' => 'groups-fieldset-wrapper',
+        ),
+      );
+    }
+
+    /* GROUP FUNCTIONALITY - end */
+
+    /* USER FUNCTIONALITY - start */
+
+    $form['users_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Users that can access this term'),
+      '#prefix' => '<div id="users-fieldset-wrapper">',
+      '#suffix' => '</div>',
+    );
+    //create default value for users
+    $default = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , arg(1) , '=')
+      ->condition('access_type' , 'user' , '=')
+      ->countQuery()
+      ->execute()
+      ->fetchAssoc();
+      //build array that will store the default values
+    $default_values_array = array();
+    $retrieve_users = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , arg(1) , '=')
+      ->condition('access_type' , 'user' , '=')
+      ->execute();
+    while ($retrieve = $retrieve_users->fetchAssoc()) {
+      $retrieved_user = user_load($retrieve['id']);
+      $default_values_array[] = $retrieved_user->name;
+    }
+
+    if (empty($default_values_array)) {
+      $node = node_load(arg(1));
+      if(isset($node->field_file_category[LANGUAGE_NONE][0]['tid'])) {
+        $users = _get_parent_users($node->field_file_category[LANGUAGE_NONE][0]['tid']);
+        foreach ($users as $node_user) {
+          $user_access = user_load($node_user);
+          $default_values_array[] = $user_access->name;
+        }
+        $default['expression'] = sizeof($default_values_array);
+      }
+    }
+   // $form_state['num_users'] = $default['expression'];
+    //$form_state['num_users'] = 2;
+
+    if (empty($form_state['num_users'])) {
+      if (!empty($default['expression'])) {
+        $form_state['num_users'] = $default['expression'];
+      } else {
+        $form_state['num_users'] = 1;
+      }
+      
+    }
+    for ($i = 0 ; $i < $form_state['num_users'] ; $i++) {
+      $form['users_fieldset']['user'][$i] = array(
+        '#type' => 'textfield',
+        '#title' => t('Name'),
+        '#autocomplete_path' => 'users/autocomplete',
+      );
+
+      if (!empty($default_values_array[$i])) {
+        $form['users_fieldset']['user'][$i]['#default_value'] = $default_values_array[$i];
+      }
+    }
+
+    // $form['users'] = array(
+    //   '#type' => 'textfield',
+    //   '#title' => t('Select the users that should not be able to see this page'),
+    //   '#autocomplete_path' => 'users/autocomplete',
+   //    '#default_value' => $user_object->name,
+   //  );
+
+    $form['users_fieldset']['add_more'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more'),
+      '#submit' => array('add_more_ajax_button'),
+      '#ajax' => array(
+        'callback' => 'add_more_ajax_callback',
+        'wrapper' => 'users-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_users'] > 1) {
+      $form['users_fieldset']['remove_name'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove user'),
+        '#submit' => array('add_more_ajax_remove'),
+        '#ajax' => array(
+          'callback' => 'add_more_ajax_remove_callback',
+          'wrapper' => 'users-fieldset-wrapper',
+        ),
+      );
+    }
+
+    /* USER FUNCTIONALITY - end */
+    
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+    );
+    
+    return $form;
+  }
+
+  function form_term_access($form , &$form_state) {
+    //drupal_add_js(drupal_get_path('module' , 'custom_access_file_folder') . '/js/custom_access_file_folder.js');
+    //get roles
+  	//$user_roles = user_roles();
+
+    //get saved roles and build the default value
+    // $saved_roles = db_select('custom_access' ,'a')
+    //   ->fields('a')
+    //   ->condition('tid' , arg(2) , '=')
+    //   ->condition('access_type' , 'role' , '=')
+    //   ->execute();
+    // while ($role = $saved_roles->fetchAssoc()) {
+    //   $role_default_value[$role['id']] = '';
+    // }
+
+    $form['#tree'] = TRUE;
+
+  	// $form['user_roles'] = array(
+  	//   '#type' => 'checkboxes',
+  	//   '#title' => t('Pick the role that can access this node'),
+  	//   '#options' => $user_roles,
+   //    '#default_value' => array_keys($role_default_value),
+  	// );
+
+    /* GROUP FUNCTIONALITY - START */
+
+    $form['groups_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Groups that can access this term'),
+      '#prefix' => '<div id="groups-fieldset-wrapper">',
+      '#suffix' => '</div>',
+    );
+
+    $default_group = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , arg(2) , '=')
+      ->condition('access_type' , 'group' , '=')
+      ->countQuery()
+      ->execute()
+      ->fetchAssoc();
+      //build array that will store the default values
+    $default_group_values_array = array();
+
+    $retrieve_groups = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , arg(2) , '=')
+      ->condition('access_type' , 'group' , '=')
+      ->execute();
+
+    while ($retrieve = $retrieve_groups->fetchAssoc()) {
+      $retrieved_group = node_load($retrieve['id']);
+      $default_values_array[] = $retrieved_group->title;
+    }
+    if (!isset($default_values_array)) {
+      $access_groups = _get_parent_groups(arg(2));
+      foreach($access_groups as $groups) {
+        $group = node_load($groups);
+        $default_values_array[] = $group->title;
+      }
+      
+      $default_group['expression'] = sizeof($default_values_array);
+    }
+    if (empty($form_state['num_groups'])) {
+       if (!empty($default_group['expression'])) {
+         $form_state['num_groups'] = $default_group['expression'];
+       } else {
+        $form_state['num_groups'] = 1;
+      }
+    }
+
+    for ($i = 0 ; $i < $form_state['num_groups'] ; $i++) {
+      $form['groups_fieldset']['group'][$i] = array(
+        '#type' => 'textfield',
+        '#title' => t('Group Name'),
+        '#autocomplete_path' => 'groups/autocomplete',
+      );
+
+      if (!empty($default_values_array[$i])) {
+        $form['groups_fieldset']['group'][$i]['#default_value'] = $default_values_array[$i];
+      }
+    }
+
+    // $form['groups_fieldset']['groups'] = array(
+    //     '#type' => 'textfield',
+    //     '#title' => t('Group Name'),
+    //     '#autocomplete_path' => 'groups/autocomplete',
+    //   );
+
+    $form['groups_fieldset']['add_more_groups'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more groups'),
+      '#submit' => array('add_more_group_ajax_button'),
+      '#ajax' => array(
+        'callback' => 'group_ajax_callback',
+        'wrapper' => 'groups-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_groups'] > 1) {
+      $form['groups_fieldset']['remove_group'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove group'),
+        '#submit' => array('add_more_group_ajax_remove'),
+        '#ajax' => array(
+          'callback' => 'group_remove_ajax_callback',
+          'wrapper' => 'groups-fieldset-wrapper',
+        ),
+      );
+    }
+
+    /* GROUP FUNCTIONALITY - end */
+
+    /* USER FUNCTIONALITY - start */
+
+    $form['users_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Users that can access this term'),
+      '#prefix' => '<div id="users-fieldset-wrapper">',
+      '#suffix' => '</div>',
+    );
+    //create default value for users
+    $default = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , arg(2) , '=')
+      ->condition('access_type' , 'user' , '=')
+      ->countQuery()
+      ->execute()
+      ->fetchAssoc();
+      //build array that will store the default values
+    $default_values_array = array();
+    $retrieve_users = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , arg(2) , '=')
+      ->condition('access_type' , 'user' , '=')
+      ->execute();
+    while ($retrieve = $retrieve_users->fetchAssoc()) {
+      $retrieved_user = user_load($retrieve['id']);
+      $default_values_array[] = $retrieved_user->name;
+    }
+    if(empty($default_values_array)){
+      $term_users = _get_parent_users(arg(2));
+      foreach ($term_users as $users) {
+        $term_user = user_load($users);
+        $default_values_array[] = $term_user->name;
+      }
+      $default['expression'] = sizeof($default_values_array);
+    }
+   // $form_state['num_users'] = $default['expression'];
+    //$form_state['num_users'] = 2;
+
+    if (empty($form_state['num_users'])) {
+      if (!empty($default['expression'])) {
+        $form_state['num_users'] = $default['expression'];
+      } else {
+        $form_state['num_users'] = 1;
+      }
+      
+    }
+    for ($i = 0 ; $i < $form_state['num_users'] ; $i++) {
+      $form['users_fieldset']['user'][$i] = array(
+        '#type' => 'textfield',
+        '#title' => t('Name'),
+        '#autocomplete_path' => 'users/autocomplete',
+      );
+
+      if (!empty($default_values_array[$i])) {
+        $form['users_fieldset']['user'][$i]['#default_value'] = $default_values_array[$i];
+      }
+    }
+
+  	// $form['users'] = array(
+  	//   '#type' => 'textfield',
+  	//   '#title' => t('Select the users that should not be able to see this page'),
+  	//   '#autocomplete_path' => 'users/autocomplete',
+   //    '#default_value' => $user_object->name,
+   //  );
+
+    $form['users_fieldset']['add_more'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more'),
+      '#submit' => array('add_more_ajax_button'),
+      '#ajax' => array(
+        'callback' => 'add_more_ajax_callback',
+        'wrapper' => 'users-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_users'] > 1) {
+      $form['users_fieldset']['remove_name'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove user'),
+        '#submit' => array('add_more_ajax_remove'),
+        '#ajax' => array(
+          'callback' => 'add_more_ajax_remove_callback',
+          'wrapper' => 'users-fieldset-wrapper',
+        ),
+      );
+    }
+
+    /* USER FUNCTIONALITY - end */
+    
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Submit'),
+  	);
+  	
+    return $form;
+  }
+
+  function add_more_ajax_button($form, &$form_state) {
+    if (!isset($form_state['num_users'])) {
+      $form_state['num_users'] = 0;
+      $form_state['num_users']++;
+    }
+    $form_state['num_users']++;
+    $form_state['rebuild'] = TRUE;
+  }
+
+  function add_more_ajax_callback($form , $form_state) {
+    return $form['users_fieldset'];
+  }
+
+  function add_more_ajax_remove($form , &$form_state) {
+    $form_state['num_users']--;
+    $form_state['rebuild'] = TRUE;
+  }
+
+  function add_more_ajax_remove_callback($form , $form_state) {
+    return $form['users_fieldset'];
+  }
+
+  function group_ajax_callback($form , $form_state) {
+    return $form['groups_fieldset'];
+  }
+
+  function add_more_group_ajax_button($form , &$form_state) {
+    if (!isset($form_state['num_groups'])) {
+      $form_state['num_groups'] = 0;
+      $form_state['num_groups']++;
+    }
+    $form_state['num_groups']++;
+    $form_state['rebuild'] = TRUE;
+  }
+
+  function add_more_group_ajax_remove($form , &$form_state) {
+    $form_state['num_groups']--;
+    $form_state['rebuild'] = TRUE;
+  }
+
+  function group_remove_ajax_callback($form , &$form_state) {
+    return $form['groups_fieldset'];
+  }
+
+  function form_term_access_submit($form , &$form_state){
+
+    //save user roles
+    $tid = arg(2);
+    //save groups
+    if (isset($form_state['values']['groups_fieldset']['group'])) {
+      db_delete('custom_access_term')
+        ->condition('tid' , $tid , '=')
+        ->condition('access_type' , 'group' , '=')
+        ->execute();
+      foreach ($form_state['values']['groups_fieldset']['group'] as $group_form) {
+        if (!empty($group_form)) {
+        $node_id = get_node_by_name($group_form);
+        db_insert('custom_access_term')
+          ->fields(array(
+            'tid' => $tid,
+            'access_type' => 'group',
+            'id' => $node_id,
+            ))
+          ->execute();
+        }
+      }
+    }
+    // $terms = db_delete('custom_access')
+    //   ->condition('tid' , $tid , '=')
+    //   ->condition('access_type' , 'role' , '=')
+    //   ->execute();
+
+    // foreach($form_state['values']['user_roles'] as $user_roles => $value) {
+    //   if ($value > 0) {
+    //     db_insert('custom_access')
+    //       ->fields(array(
+    //         'tid' => $tid,
+    //         'access_type' => 'role',
+    //         'id' => $user_roles,
+    //       ))
+    //       ->execute();
+    //   }
+    // }
+    //save users
+    if (isset($form_state['values']['users_fieldset']['user'])) {
+      db_delete('custom_access_term')
+        ->condition('tid' , $tid , '=')
+        ->condition('access_type' , 'user' , '=')
+        ->execute();
+      foreach ($form_state['values']['users_fieldset']['user'] as $user_form) {
+        if (!empty($user_form)) {
+        $user = user_load_by_name($user_form);
+        db_insert('custom_access_term')
+          ->fields(array(
+            'tid' => $tid,
+            'access_type' => 'user',
+            'id' => $user->uid,
+            ))
+          ->execute();
+        }
+      }
+    }
+    drupal_set_message(t("Your settings have been saved"));
+  }
+
+  function custom_access_file_folder_node_view($node, $view_mode, $langcode) {
+    global $user;
+     if ($node->type == 'file') {
+      $user_groups = og_get_groups_by_user($user);
+      if (isset($node->field_file_category[LANGUAGE_NONE][0]['tid'])) {
+        $tid = $node->field_file_category[LANGUAGE_NONE][0]['tid'];
+      } else {
+        $tid = 0;
+      }
+       //build array of users that have access to this node based on tid
+        $saved_name = build_saved_name_for_tid($tid);
+       //build array of groups having access to this node based on tid
+        $saved_groups = build_saved_groups($tid);
+
+        //build array of groups having access to this node based on nid
+        $saved_groups_nid = build_saved_groups_by_nid($node->nid);
+        //build arary of users that have access to this node based on nid
+        $saved_users_nid = build_saved_name_for_nid($node->nid);
+        if ($user->uid > 1 && !isset($user->roles[5]) && !isset($user->roles[3])) {
+          if(_get_access_by_group($saved_groups , $user_groups['node'] , $tid) == 0 && _get_access_by_name($user->uid , $saved_name , $tid) == 0) {
+            $access_tid = 0;
+          } else {
+            $access_tid = 1;
+          } 
+          if (_get_access_by_group_node($saved_groups_nid , $user_groups['node']) == 0 && _get_access_by_name_node($user->uid , $saved_users_nid) == 0) {
+            $access_nid = 0;
+          } else {
+            $access_nid = 1;
+          }
+          if ($access_tid == 0 || $access_nid == 0) {
+            drupal_access_denied();
+            hide($node);
+          }
+        }
+      }
+  }
+
+  function custom_access_file_folder_entity_view($entity, $type, $view_mode, $langcode) {
+    global $user;
+    if ($type == 'taxonomy_term' && $entity->vocabulary_machine_name == 'file_categories') {
+     $tid = $entity->tid;
+
+     $user_groups = og_get_groups_by_user($user);
+     $saved_name = build_saved_name_for_tid($tid);
+     $saved_groups = build_saved_groups($tid);
+
+     if ($user->uid > 1 && !isset($user->roles[5]) && !isset($user->roles[3]))
+      if(_get_access_by_group($saved_groups , $user_groups['node'] , $tid) == 0 && _get_access_by_name($user->uid , $saved_name , $tid) == 0) {
+       drupal_access_denied();
+        hide($entity);
+     }
+    }
+  }
+
+  function _get_access_by_group($groups , $user_groups , $tid) {
+    if (empty($groups)) {
+      $tree = taxonomy_get_parents_all($tid);
+      if (isset($tree[1]->tid)) {
+        $get_groups = build_saved_groups($tree[1]->tid);
+        return _get_access_by_group($get_groups , $user_groups , $tree[1]->tid);
+      }
+    }
+    foreach ($groups as $key => $value) {
+      if (isset($user_groups[$value])) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  function _get_access_by_group_node($groups , $user_groups) {
+    foreach ($groups as $key => $value) {
+      if (isset($user_groups[$value])) {
+        return 1;
+      }
+    }
+    return 0;
+  }
+
+  function _get_access_by_name($uid , $saved_name , $tid) {
+    if (empty($saved_name)) {
+      $tree = taxonomy_get_parents_all($tid);
+      if (isset($tree[1]->tid)) {
+        $get_name = build_saved_name_for_tid($tree[1]->tid);
+        return _get_access_by_name($uid , $get_name , $tree[1]->tid);
+      }
+    }
+    if (in_array($uid , $saved_name)) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function _get_access_by_name_node($uid , $saved_name) {
+    if (in_array($uid , $saved_name)) {
+      return 1;
+    }
+    return 0;
+  }
+
+  function build_saved_groups($tid) {
+    $roles = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , $tid ,'=')
+      ->condition('access_type' , 'group' ,'=')
+      ->execute();
+      $group_array = array();
+    while($role = $roles->fetchAssoc()) {
+      $group_array[] = $role['id'];
+    }
+    if (!empty($group_array)) {
+      return $group_array;
+    }
+    return array();
+  }
+
+  function build_saved_name_for_tid($tid) {
+    $name = db_select('custom_access_term' , 'a')
+      ->fields('a')
+      ->condition('tid' , $tid , '=')
+      ->condition('access_type' , 'user' ,'=')
+      ->execute();
+    $name_array = array();
+     while ($uname = $name->fetchAssoc()) {
+       $name_array[] = $uname['id'];
+     }
+     if (!empty($name_array)) {
+      return $name_array;
+     }
+    return array();
+  }
+
+  function build_saved_name_for_nid($nid) {
+    $name = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , $nid , '=')
+      ->condition('access_type' , 'user' ,'=')
+      ->execute();
+    $name_array = array();
+     while ($uname = $name->fetchAssoc()) {
+       $name_array[] = $uname['id'];
+     }
+     if (!empty($name_array)) {
+      return $name_array;
+     }
+    return array();
+  }
+
+  function build_saved_groups_by_nid($nid) {
+    $roles = db_select('custom_access_node' , 'a')
+      ->fields('a')
+      ->condition('nid' , $nid ,'=')
+      ->condition('access_type' , 'group' ,'=')
+      ->execute();
+      $group_array = array();
+    while($role = $roles->fetchAssoc()) {
+      $group_array[] = $role['id'];
+    }
+    if (!empty($group_array)) {
+      return $group_array;
+    }
+    return array();
+  }
+
+  function get_node_by_name($group) {
+    $group_array = db_select('node' , 'n')
+      ->fields('n')
+      ->condition('title' , $group , '=')
+      ->execute()
+      ->fetchAssoc();
+
+    return $group_array['nid'];
+  }
+
+  function build_user_roles($roles) {
+    foreach($roles as $key => $value) {
+      $roles[$key] = $key;
+    }
+    return $roles;
+  }
+
+  /* RETURN THE GROUPS THAT HAVE ACCESS TO THE PARENT OF THIS TAXONOMY TERM */
+  function _get_parent_groups($tid) {
+
+    //get taxonomy parents of current tid
+    $tree = taxonomy_get_parents_all($tid);
+    if (isset($tree[1]->tid)) {
+      //get first parent group access
+      $groups = build_saved_groups($tree[1]->tid);
+      if (!empty($groups)) {
+        return $groups;
+      } else {
+        return _get_parent_groups($tree[1]->tid);
+      }
+    } else {
+      return array();
+    }
+  }
+
+  function _get_parent_users($tid) {
+    //get taxonomy parents of current tid
+    $tree = taxonomy_get_parents_all($tid);
+    if (isset($tree[1]->tid)) {
+      $users = build_saved_name_for_tid($tree[1]->tid);
+      if (!empty($users)) {
+        return $users;
+      } else {
+        return _get_parent_users($tree[1]->tid);
+      }
+    } else {
+      return array();
+    }
+  }
+?>

@@ -1,0 +1,68 @@
+<?php
+
+function custom_access_file_folder_schema() {
+  $schema = array();
+
+    $schema['custom_access_term'] = array(
+      'description' => 'Access for files and folders.',
+      'fields' => array(
+        'aid' => array(
+          'description' => 'The identifier for the access',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'tid' => array(
+          'description' => 'The tid.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'access_type' => array(
+          'description' => 'The type of the access(user , group).',
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'id' => array(
+          'description' => 'The user or group id',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+      ),
+      'primary key' => array('aid'),
+    );
+
+    $schema['custom_access_node'] = array(
+      'description' => 'Access for files and folders.',
+      'fields' => array(
+        'aid' => array(
+          'description' => 'The identifier for the access',
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'nid' => array(
+          'description' => 'The nid.',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'access_type' => array(
+          'description' => 'The type of the access(user , group).',
+          'type' => 'text',
+          'not null' => TRUE,
+        ),
+        'id' => array(
+          'description' => 'The user or group id',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+      ),
+      'primary key' => array('aid'),
+    );
+  return $schema;
+}
+
+?>

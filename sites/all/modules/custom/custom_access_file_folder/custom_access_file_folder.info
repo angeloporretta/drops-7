@@ -1,0 +1,4 @@
+name = Custom access for files and folders
+description = Custom module that adds the functionality to restrict acces for folders and files
+package = custom
+core = 7.x
