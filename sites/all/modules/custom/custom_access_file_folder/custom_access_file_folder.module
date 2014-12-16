@@ -147,7 +147,7 @@
       ->condition('nid' , arg(1) , '=')
       ->condition('access_type' , 'group' , '=')
       ->execute();
-
+    $default_values_array = array();
     while ($retrieve = $retrieve_groups->fetchAssoc()) {
       $retrieved_group = node_load($retrieve['id']);
       $default_values_array[] = $retrieved_group->title;
@@ -358,7 +358,7 @@
       ->condition('tid' , arg(2) , '=')
       ->condition('access_type' , 'group' , '=')
       ->execute();
-
+      $default_values_array = array();
     while ($retrieve = $retrieve_groups->fetchAssoc()) {
       $retrieved_group = node_load($retrieve['id']);
       $default_values_array[] = $retrieved_group->title;
@@ -679,6 +679,9 @@
   }
 
   function _get_access_by_group($groups , $user_groups , $tid) {
+    if ($tid == 0) {
+      return 1;
+    }
     if (empty($groups)) {
       $tree = taxonomy_get_parents_all($tid);
       if (isset($tree[1]->tid)) {
@@ -695,6 +698,9 @@
   }
 
   function _get_access_by_group_node($groups , $user_groups) {
+    if (empty($groups)) {
+      return 1;
+    }
     foreach ($groups as $key => $value) {
       if (isset($user_groups[$value])) {
         return 1;
@@ -704,6 +710,9 @@
   }
 
   function _get_access_by_name($uid , $saved_name , $tid) {
+    if ($tid == 0) {
+      return 1;
+    }
     if (empty($saved_name)) {
       $tree = taxonomy_get_parents_all($tid);
       if (isset($tree[1]->tid)) {
