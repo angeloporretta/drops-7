@@ -277,7 +277,9 @@ function bulk_file_upload_render_file_table($tid) {
     foreach ($file_nodes as $file_node) {
       
       $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
-      
+      $file_object = (object) $file_downloads[0];
+      $token_uri = file_entity_download_uri($file_object);
+
       if ($file_downloads != FALSE) {
         $html .= '<tr>';
         $html .= '<td>' .
@@ -291,7 +293,7 @@ function bulk_file_upload_render_file_table($tid) {
                       $file_node->title . 
                     '</a>' .
                   '</td>';
-        $html .= '<td><a download href="' . file_create_url($file_downloads[0]['uri']) . '">' . t('Download This File') . '</a></td>';
+        $html .= '<td>' . l(t("Download this file") , $token_uri['path'] , array('query' => $token_uri['options']['query'])) . '</td>';
         $html .= '<td>' . format_size($file_downloads[0]['filesize']) . '</td>';
         $revision_user = user_load($file_node->revision_uid);
       
