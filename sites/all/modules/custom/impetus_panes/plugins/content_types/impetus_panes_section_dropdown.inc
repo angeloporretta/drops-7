@@ -68,7 +68,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         if (!empty($submenu_items)) {
           foreach ($submenu_items as $submenu_item) {
             $section_node = menu_get_object('node', 1, $submenu_item['link']['link_path']);
-            if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
+            if ($section_node != '' && node_access('view', $section_node) && !empty($flag) && $flag->is_flagged($section_node->nid) == "") {
               $allowed_space_nodes[$i]->section_nodes[] = $section_node;
             }
           }
