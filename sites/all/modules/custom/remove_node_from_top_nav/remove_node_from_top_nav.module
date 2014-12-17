@@ -1,0 +1,45 @@
+<?php
+
+function remove_node_from_top_nav_form_alter(&$form, &$form_state, $form_id) {
+  global $user;
+  if (isset($form['#node_edit_form']) && $form['#node_edit_form'] == TRUE) {
+    if (isset($user->roles[5]) || isset($user->roles[3]) || $user->uid == 1) {
+  	if (isset($form['menu'])) {
+  		$default_value = 0;
+  		if (arg(0) == 'node' && is_numeric(arg(1))) {
+  		  $form['#submit'][] = 'remove_node_from_top_nav_submit';			
+  		  $flag = flag_get_flag('remove_from_top_nav');
+  		  $node = node_load(arg(1));
+  		  if ($flag->is_flagged($node->nid) == 1) {
+  		  	$default_value = 1;
+  		  }
+  		}
+  		$form['menu']['top_nav'] = array('#type' => 'checkbox' , '#title' => t('Remove from top nav') , '#default_value' => $default_value);
+  	}
+  }
+}
+}
+
+function remove_node_from_top_nav_submit($form, &$form_state) {
+  if (isset($form_state['values']['menu']['top_nav'])) {
+  	$flag = flag_get_flag('remove_from_top_nav');
+  	if ($form_state['values']['menu']['top_nav'] == 1) {
+  	  $flag->flag('flag' , $form_state['values']['nid']);
+  	} else {
+  	  $flag->flag('unflag' , $form_state['values']['nid']);
+  	}
+  }
+}
+
+function remove_node_from_top_nav_node_insert($node) {
+	if (isset($node->menu['top_nav'])) {
+	  if ($node->menu['top_nav'] == 1) {
+	  	$flag = flag_get_flag('remove_from_top_nav');
+	  	$flag->flag('flag' , $node->nid);
+	  }
+	}
+}
+
+
+
+?>

@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Remove item from top menu feature.
+ */
+
+include_once 'remove_item_from_top_menu.features.inc';

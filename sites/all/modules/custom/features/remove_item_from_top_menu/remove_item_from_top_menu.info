@@ -1,0 +1,11 @@
+name = Remove item from top menu
+description = Allows to remove a page from the top menu
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = remove_item_from_top_menu
+dependencies[] = flag
+dependencies[] = remove_node_from_top_nav
+features[features_api][] = api:2
+features[flag][] = remove_from_top_nav
+project path = sites/all/modules/custom/features

@@ -1,0 +1,4 @@
+name = Remove node from top nav
+description = Custom module that adds the possibility to remove a node from the top nav
+package = custom
+core = 7.x

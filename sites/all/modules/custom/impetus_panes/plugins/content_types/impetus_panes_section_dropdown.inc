@@ -36,6 +36,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block = new stdClass();
   $block->title = ''; 
   $block->content = '';
+  $flag = flag_get_flag('remove_from_top_nav');
 
   if (/*!impetus_panes_is_admin()*/TRUE) {
     // Get the spaces this user has access to.
@@ -67,22 +68,20 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         if (!empty($submenu_items)) {
           foreach ($submenu_items as $submenu_item) {
             $section_node = menu_get_object('node', 1, $submenu_item['link']['link_path']);
-            
-            if ($section_node != '' && node_access('view', $section_node)) {
+            if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
               $allowed_space_nodes[$i]->section_nodes[] = $section_node;
             }
           }
         }
       }
     }
-    $items_per_column = variable_get('column_items', '');
-    if ($items_per_column == 0) {
-      $items_per_column = 99;
+    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+      $current_node = node_load(arg(1));
     }
+    $items_per_column = variable_get('column_items', '');
     // Create html structure.
     $block->content .= '<ul class="spaces-section-dropdown">';
     foreach ($allowed_space_nodes as $space_node) {
-      
       if (property_exists($space_node, 'section_nodes')) {
         $number_of_columns = ceil(count($space_node->section_nodes) / $items_per_column);
         if ($number_of_columns > 0) {
@@ -90,7 +89,18 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         } else {
           $width = 100;
         }
-        $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+        $class = '';
+        if (isset($current_node) && $current_node === $space_node) {
+          $class = ' class="active"';
+        }
+        if (isset($current_node)) {
+          foreach ($space_node->section_nodes as $node) {
+            if ($node === $current_node) {
+              $class = ' class="active"';
+            }
+          }
+        }
+        $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . $class . '>' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
         $block->content .= '<li class="close-button"><button>X</button></li>';
         $this_column_items = 0;
         foreach ($space_node->section_nodes as $section_node) {

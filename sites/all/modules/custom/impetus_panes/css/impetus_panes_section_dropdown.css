@@ -19,6 +19,7 @@
 .spaces-section-dropdown > li {
   display: inline-block;
   margin-right: 25px;
+  margin-bottom:10px;
 }
 .spaces-section-dropdown > li > .nested > li {
   margin-bottom: 5px;
