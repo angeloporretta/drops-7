@@ -37,6 +37,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block->title = ''; 
   $block->content = '';
   $flag = flag_get_flag('remove_from_top_nav');
+  $og_menu = menu_tree_all_data('og-menu-single');
 
   if (/*!impetus_panes_is_admin()*/TRUE) {
     // Get the spaces this user has access to.
@@ -50,17 +51,21 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     
     if (!empty($result)) {
       $space_nodes = node_load_multiple(array_keys($result['node']));
-
-      foreach ($space_nodes as $space_node) {
-        if (node_access('view', $space_node) == TRUE) {
-          $allowed_space_nodes[] = $space_node;
+      foreach ($og_menu as $og_item) {
+        foreach ($space_nodes as $space_node) {
+          if (node_access('view', $space_node) == TRUE) {
+           // dsm($og_menu);
+            if ($og_item['link']['link_title'] == $space_node->title) {
+              $allowed_space_nodes[] = $space_node;
+            }
+          }
         }
       }
     }
     
     // Get the sections under the allowed spaces.
     if (!empty($allowed_space_nodes)) {
-
+      //sort the spaces based on the og menu
       for ($i = 0; $i < count($allowed_space_nodes); $i++) {
         $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', 'node/' . $allowed_space_nodes[$i]->nid);
         $allowed_space_nodes[$i]->section_nodes = array();
@@ -68,7 +73,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         if (!empty($submenu_items)) {
           foreach ($submenu_items as $submenu_item) {
             $section_node = menu_get_object('node', 1, $submenu_item['link']['link_path']);
-            if ($section_node != '' && node_access('view', $section_node) && !empty($flag) && $flag->is_flagged($section_node->nid) == "") {
+            if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
               $allowed_space_nodes[$i]->section_nodes[] = $section_node;
             }
           }
@@ -91,16 +96,16 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         }
         $class = '';
         if (isset($current_node) && $current_node === $space_node) {
-          $class = ' class="active"';
+          $class = ' active';
         }
         if (isset($current_node)) {
           foreach ($space_node->section_nodes as $node) {
             if ($node === $current_node) {
-              $class = ' class="active"';
+              $class = ' active';
             }
           }
         }
-        $block->content .= '<li class="dropdown"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . $class . '>' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+        $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
         $block->content .= '<li class="close-button"><button>X</button></li>';
         $this_column_items = 0;
         foreach ($space_node->section_nodes as $section_node) {
