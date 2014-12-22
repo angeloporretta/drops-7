@@ -45,6 +45,11 @@ function comment_like_views_default_views() {
   $handler->display->display_options['relationships']['uid']['table'] = 'comment';
   $handler->display->display_options['relationships']['uid']['field'] = 'uid';
   $handler->display->display_options['relationships']['uid']['relationship'] = 'cid';
+  /* Relationship: Comment: Parent comment */
+  $handler->display->display_options['relationships']['pid']['id'] = 'pid';
+  $handler->display->display_options['relationships']['pid']['table'] = 'comment';
+  $handler->display->display_options['relationships']['pid']['field'] = 'pid';
+  $handler->display->display_options['relationships']['pid']['relationship'] = 'cid';
   /* Field: Comment: Updated date */
   $handler->display->display_options['fields']['changed']['id'] = 'changed';
   $handler->display->display_options['fields']['changed']['table'] = 'comment';
@@ -56,6 +61,15 @@ function comment_like_views_default_views() {
   $handler->display->display_options['fields']['changed']['date_format'] = 'time ago';
   $handler->display->display_options['fields']['changed']['second_date_format'] = 'custom';
   $handler->display->display_options['fields']['changed']['oa_date'] = '0';
+  /* Field: Comment: ID */
+  $handler->display->display_options['fields']['cid']['id'] = 'cid';
+  $handler->display->display_options['fields']['cid']['table'] = 'comment';
+  $handler->display->display_options['fields']['cid']['field'] = 'cid';
+  $handler->display->display_options['fields']['cid']['relationship'] = 'cid';
+  $handler->display->display_options['fields']['cid']['label'] = '';
+  $handler->display->display_options['fields']['cid']['exclude'] = TRUE;
+  $handler->display->display_options['fields']['cid']['element_label_colon'] = FALSE;
+  $handler->display->display_options['fields']['cid']['link_to_comment'] = FALSE;
   /* Field: Comment: Author */
   $handler->display->display_options['fields']['name']['id'] = 'name';
   $handler->display->display_options['fields']['name']['table'] = 'comment';
@@ -94,6 +108,11 @@ function comment_like_views_default_views() {
   $handler->display->display_options['fields']['rendered_entity']['display'] = 'view';
   $handler->display->display_options['fields']['rendered_entity']['view_mode'] = 'full';
   $handler->display->display_options['fields']['rendered_entity']['bypass_access'] = 0;
+  /* Sort criterion: Comment: Thread */
+  $handler->display->display_options['sorts']['thread']['id'] = 'thread';
+  $handler->display->display_options['sorts']['thread']['table'] = 'comment';
+  $handler->display->display_options['sorts']['thread']['field'] = 'thread';
+  $handler->display->display_options['sorts']['thread']['relationship'] = 'cid';
   /* Sort criterion: SUM(Node Vote: VALUE) */
   $handler->display->display_options['sorts']['value']['id'] = 'value';
   $handler->display->display_options['sorts']['value']['table'] = 'node_vote';
