@@ -206,7 +206,7 @@ function bulk_file_upload_add_files_form_validate($form, &$form_state) {
   }
   $num_files = count($_FILES['files']['name']);
     for ($i = 0; $i < $num_files; $i++) {
-      $validators = array('file_validate_extensions' => array('roq , mxf , asf , yuv , avi , mng , drc , ogv , ogg , mkv , webm , flv , qt , rm , wmv , mp4 , m4p , m4v , mpg , mp2 , mpeg , mpe , rmvb , svi , 3gp , 3g2 , mpv , nsv , mov , docx , xslx , pptx , jpg , jpeg , gif , png , txt , doc , xls , pdf , ppt , pps , odt , ods , odp'));
+      $validators = array('file_validate_extensions' => array('roq , mxf , asf , yuv , avi , mng , drc , ogv , ogg , mkv , webm , flv , qt , rm , wmv , mp4 , m4p , m4v , mpg , mp2 , mp3 , mpeg , mpe , rmvb , svi , 3gp , 3g2 , mpv , nsv , mov , docx , xslx , pptx , jpg , jpeg , gif , png , txt , doc , xls , pdf , ppt , pps , odt , ods , odp'));
         $file = file_save_upload($i, $validators);
         if ($file) {
             if ($file = file_move($file, 'public://')) {
