@@ -65,6 +65,7 @@ function impetus_preprocess_page(&$vars) {
   if (user_is_logged_in() && arg(0) == 'user' && arg(1) == $user->uid && arg(2) == '') {
     drupal_goto('user/' . $user->uid . '/view');
   }
+ 
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/top-menu-fix.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix-anchors.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix.js');
@@ -72,7 +73,9 @@ function impetus_preprocess_page(&$vars) {
   if (module_exists('chosen')) {
     drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/select-searcher.js');
   }
-  
+   if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+    drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/remove-lightbox-menu.js');
+  }
   // Taxonomy pages.
   if (arg(0) == 'taxonomy' && arg(1) == 'term' && is_numeric(arg(2))) {
     $term = taxonomy_term_load(arg(2));
@@ -137,7 +140,6 @@ function impetus_preprocess_fullcalendar(&$variables) {
  * Implements template_preprocess_node.
  */
 function impetus_preprocess_node(&$variables) {
-  
   switch ($variables['type']) {
     case 'file':
       
