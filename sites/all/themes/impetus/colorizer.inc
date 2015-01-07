@@ -27,6 +27,8 @@ $info = array(
     'link' => t('Link color'),
     'linkactive' => t('Link (active)'),
     'linkhover' => t('Link (hover)'),
+    'top_menu_leafs' => t('Top menu leafs'),
+    'main_menu_active_item' => t('Main menu active item'),
   ),
   // Pre-defined color schemes.
   'schemes' => array(
@@ -38,6 +40,8 @@ $info = array(
        // 'inactive' => '#222222',
         //'active_leaf' => '#222222',
        // 'menu_links' => '#222222',
+        'top_menu_leafs' => '#9C0058',
+        'main_menu_active_item' => '#9C0058',
         'top' => '#222222',
         'bottom' => '#111111',
         'toolbarbtn' => '#333333',

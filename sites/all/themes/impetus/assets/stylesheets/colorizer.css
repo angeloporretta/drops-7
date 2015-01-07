@@ -167,6 +167,18 @@ color: @titleslogan;
   background-color: @top;
   color: @toolbartext;
 }
+
+ul.spaces-section-dropdown ul.nested li a {
+  color:@top_menu_leafs !important;
+}
+
+#panels-ipe-regionid-sidebar .panels-ipe-portlet-content .pane-content a.active {
+  color:@main_menu_active_item !important;
+}
+
+#panels-ipe-regionid-sidebar .panels-ipe-portlet-content h3.pane-title a {
+  color:@main_menu_active_item !important;
+}
 /*
 .panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
   background-color:@active;
