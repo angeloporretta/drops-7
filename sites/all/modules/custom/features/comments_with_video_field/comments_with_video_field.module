@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Comments with video field feature.
+ */
+
+include_once 'comments_with_video_field.features.inc';
