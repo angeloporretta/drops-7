@@ -179,6 +179,17 @@ ul.spaces-section-dropdown ul.nested li a {
 #panels-ipe-regionid-sidebar .panels-ipe-portlet-content h3.pane-title a {
   color:@main_menu_active_item !important;
 }
+
+.translate-button {
+  color:white;
+  background-image:linear-gradient(to bottom, @top,@bottom);
+}
+
+.translate-button:hover {
+  color:white;
+  background-image:linear-gradient(to bottom, @top,@bottom);
+  background-color: @top;
+}
 /*
 .panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
   background-color:@active;
