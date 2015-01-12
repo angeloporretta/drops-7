@@ -1,0 +1,13 @@
+name = Old file field
+description = Feature module that adds the view displaying the content using the old file field
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = old_file_field
+dependencies[] = features
+dependencies[] = views
+features[ctools][] = views:views_default:3.0
+features[features_api][] = api:2
+features[views_view][] = content_using_old_file_field
+features_exclude[dependencies][ctools] = ctools
+project path = sites/all/modules/custom/features

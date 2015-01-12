@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Old file field feature.
+ */
+
+include_once 'old_file_field.features.inc';
