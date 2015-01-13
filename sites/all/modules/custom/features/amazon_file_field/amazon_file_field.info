@@ -1,0 +1,15 @@
+name = Amazon file field
+description = Feature module that adds the amazon field for files
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = amazon_file_field
+dependencies[] = amazons3_cors
+dependencies[] = features
+dependencies[] = file
+features[defaultconfig][] = field_default_fields:node-file-field_upload_file_big_files
+features[features_api][] = api:2
+features[field_base][] = field_upload_file_big_files
+features[field_instance][] = node-file-field_upload_file_big_files
+features_exclude[dependencies][defaultconfig] = defaultconfig
+project path = sites/all/modules/custom/features
