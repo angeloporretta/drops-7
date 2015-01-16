@@ -37,56 +37,58 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block->title = ''; 
   $block->content = '';
   $flag = flag_get_flag('remove_from_top_nav');
-  $og_menu = menu_tree_all_data('og-menu-single');
+  $menu = db_select('menu_links' , 'm');
+  $menu->join('node' , 'n' , 'n.title = m.link_title');
+  $menu->groupBy('m.link_title');
+  $menu->fields('m' , array('link_title' , 'mlid'))
+    ->condition('menu_name' , 'og-menu-single' , '=')
+    ->condition('plid' , '0' ,'=');
+  $menu->fields('n' , array('nid'))
+    ->condition('type' , 'oa_space' , '=');
+  $result = $menu->execute();
+  while ($men = $result->fetchAssoc()) {
+    $og_menu[] = $men;
+  }
 
-  if (/*!impetus_panes_is_admin()*/TRUE) {
-    // Get the spaces this user has access to.
-    $query = new EntityFieldQuery();
-    $result = $query->entityCondition('entity_type', 'node')
-      ->entityCondition('bundle', 'oa_space')
-      ->propertyCondition('status', 1)
-      ->execute();
-
-    $allowed_space_nodes = array();
-    
-    if (!empty($result)) {
-      $space_nodes = node_load_multiple(array_keys($result['node']));
-      foreach ($og_menu as $og_item) {
-        foreach ($space_nodes as $space_node) {
-          if (node_access('view', $space_node) == TRUE) {
-           // dsm($og_menu);
-            if ($og_item['link']['link_title'] == $space_node->title) {
-              $allowed_space_nodes[] = $space_node;
-            }
-          }
-        }
-      }
+  $i = 0;
+  $allowed_space_nodes = $og_menu;
+  foreach($allowed_space_nodes as $nodes) {
+    $node = node_load($nodes['nid']);
+    if (node_access('view' , $node) == FALSE) {
+      unset($allowed_space_nodes[$i]);
     }
+    $i++;
+  }
     
     // Get the sections under the allowed spaces.
-    if (!empty($allowed_space_nodes)) {
-      //sort the spaces based on the og menu
-      for ($i = 0; $i < count($allowed_space_nodes); $i++) {
-        $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', 'node/' . $allowed_space_nodes[$i]->nid);
-        $allowed_space_nodes[$i]->section_nodes = array();
+  if (!empty($allowed_space_nodes)) {
+    //sort the spaces based on the og menu
+    for ($i = 0; $i < count($allowed_space_nodes); $i++) {
+      $allowed_space_nodes[$i] = (object)$allowed_space_nodes[$i];
+      $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', $allowed_space_nodes[$i]->mlid);
+      $allowed_space_nodes[$i]->section_nodes = array();
        
-        if (!empty($submenu_items)) {
-          foreach ($submenu_items as $submenu_item) {
-            $section_node = menu_get_object('node', 1, $submenu_item['link']['link_path']);
-            if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
-              $allowed_space_nodes[$i]->section_nodes[] = $section_node;
-            }
+      if (!empty($submenu_items)) {
+        foreach ($submenu_items as $submenu_item) {
+          $section_node = menu_get_object('node', 1, $submenu_item['link_path']);
+          if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
+            $allowed_space_nodes[$i]->section_nodes[] = $section_node;
           }
         }
       }
     }
-    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
-      $current_node = node_load(arg(1));
-    }
-    $items_per_column = variable_get('column_items', '');
-    // Create html structure.
+  }
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+    $current_node = node_load(arg(1));
+  }
+     $items_per_column = variable_get('column_items', '');
+     // Create html structure.
     $block->content .= '<ul class="spaces-section-dropdown">';
     foreach ($allowed_space_nodes as $space_node) {
+      $class = '';
+      if (isset($current_node) && $current_node->nid == $space_node->nid) {
+        $class = ' active';
+      }
       if (property_exists($space_node, 'section_nodes')) {
         $number_of_columns = ceil(count($space_node->section_nodes) / $items_per_column);
         if ($number_of_columns > 0) {
@@ -94,8 +96,10 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         } else {
           $width = 100;
         }
-        $class = '';
         if (isset($current_node) && $current_node === $space_node) {
+          $class = ' active';
+        }
+        if(isset($current_node->og_group_ref) && $current_node->og_group_ref[LANGUAGE_NONE][0]['target_id'] == $space_node->nid) {
           $class = ' active';
         }
         if (isset($current_node)) {
@@ -105,7 +109,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
             }
           }
         }
-        $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+        $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->link_title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
         $block->content .= '<li class="close-button"><button>X</button></li>';
         $this_column_items = 0;
         foreach ($space_node->section_nodes as $section_node) {
@@ -122,11 +126,10 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         $block->content .= '</ul></li>';
       }
       else {
-        $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->title . '</a></li>';
+        $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->link_title . '</a></li>';
       }
     }
     $block->content .= '</ul>';
-  }
   
   return $block;
 }
@@ -138,17 +141,17 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
  * @param string $link_path: The link path of the parent item whose children you want, for example "node/43".
  * @return array: An array structure of the child menu item or an empty array if the parent item has no children.
  */
-function impetus_panes_submenu_tree_all_data($menu_name, $link_path) {
-  
-  $tree = menu_tree_all_data($menu_name);
-  $child_tree = array();
-  
-  foreach ($tree as $branch){
-    if ($branch['link']['link_path'] == $link_path){
-      $child_tree = $branch['below'];
-      break;
-    }
+function impetus_panes_submenu_tree_all_data($menu_name, $plid) {
+  $return = array();
+  $childrens = db_select('menu_links' , 'm')
+    ->fields('m' , array('link_title' , 'link_path'))
+    ->condition('menu_name' , $menu_name , '=')
+    ->condition('plid' , $plid , '=')
+    ->execute();
+
+  while($children = $childrens->fetchAssoc()) {
+    $return[] = $children;
   }
-  
-  return $child_tree;
+
+  return $return;
 }

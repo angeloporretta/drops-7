@@ -8,6 +8,7 @@ $info = array(
     //'inactive' => t('Color of the active top parent'),
     //'active_leaf' => t('Active menu item'),
     //'menu_links' => t('Menu links'),
+    'main_menu_hover_color' => t('Main menu border top color'),
     'top' => t('Toolbar top'),
     'bottom' => t('Toolbar bottom'),
     'toolbarbtn' => t('Toolbar button background'),

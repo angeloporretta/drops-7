@@ -190,22 +190,26 @@ ul.spaces-section-dropdown ul.nested li a {
   background-image:linear-gradient(to bottom, @top,@bottom);
   background-color: @top;
 }
-/*
-.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded {
-  background-color:@active;
-}
-.panels-ipe-portlet-wrapper .pane-content ul.menu li.expanded a.active  {
-  color:@inactive !important;
-}
-.panels-ipe-portlet-content .pane-title a {
-  border-top-color:@active !important;
+ul.spaces-section-dropdown a:hover {
+  border-top-color:@main_menu_hover_color;
 }
 
-.panels-ipe-portlet-wrapper .pane-content ul.menu ul.menu li.leaf {
-  background-color:@menu_links !important;
+ul.spaces-section-dropdown li.active {
+  border-top :5px solid;
+  padding-top:6px;
+  text-decoration: none;
+  border-top-color:@main_menu_hover_color;
+  font-style:normal;
 }
 
-.spaces-section-dropdown li a:hover {
-  border-top-color:@inactive_menu_parent !important;
+ul.spaces-section-dropdown li:hover {
+  border-top :5px solid;
+  padding-top:6px;
+  text-decoration: none;
+  border-top-color:@main_menu_hover_color;
+  font-style:normal;
 }
-*/
+
+ul.spaces-section-dropdown li ul li:hover{
+  border-top:none;
+}
