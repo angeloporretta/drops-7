@@ -40,11 +40,12 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $menu = db_select('menu_links' , 'm');
   $menu->join('node' , 'n' , 'n.title = m.link_title');
   $menu->groupBy('m.link_title');
-  $menu->fields('m' , array('link_title' , 'mlid'))
+  $menu->fields('m' , array('link_title' , 'mlid' , 'weight'))
     ->condition('menu_name' , 'og-menu-single' , '=')
     ->condition('plid' , '0' ,'=');
   $menu->fields('n' , array('nid'))
     ->condition('type' , 'oa_space' , '=');
+  $menu->orderBy('m.weight' , 'ASC');
   $result = $menu->execute();
   while ($men = $result->fetchAssoc()) {
     $og_menu[] = $men;
