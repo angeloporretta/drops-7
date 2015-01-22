@@ -213,3 +213,7 @@ ul.spaces-section-dropdown li:hover {
 ul.spaces-section-dropdown li ul li:hover{
   border-top:none;
 }
+
+#panels-ipe-regionid-sidebar .panels-ipe-portlet-content h3.pane-title a {
+  color:@main_menu_active_item !important;
+}
