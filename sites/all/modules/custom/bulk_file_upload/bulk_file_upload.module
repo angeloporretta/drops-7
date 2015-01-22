@@ -243,7 +243,7 @@ function bulk_file_upload_render_file_table($tid) {
     ->fieldCondition('field_file_category', 'tid', $tid)
     ->propertyOrderBy('title')
     ->execute();
-  
+ 
   $subfolders = taxonomy_get_children($tid);
   
   if (!empty($file_results) || !empty($subfolders)) {
@@ -273,20 +273,29 @@ function bulk_file_upload_render_file_table($tid) {
     if (!empty($file_results)) {
       $file_nodes = node_load_multiple(array_keys($file_results['node']));
     }
-    
-    foreach ($file_nodes as $file_node) {
-      
-      $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
-      $file_object = (object) $file_downloads[0];
-      $token_uri = file_entity_download_uri($file_object);
 
-      if ($file_downloads != FALSE) {
+    foreach ($file_nodes as $file_node) {
+      $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
+
+      $file_d = field_get_items('node' , $file_node , 'field_upload_file_big_files');
+
+      if (!empty($file_downloads) || !empty($file_d)){
+        if (empty($file_downloads)) {
+          $file_downloads = $file_d;
+        } else if (empty($file_d)) {
+
+        } else {
+           $file_downloads = array_merge($file_downloads , $file_d);
+        }
+      foreach ($file_downloads as $f_downloads) {
+        $file_object = (object) $f_downloads;
+        $token_uri = file_entity_download_uri($file_object);
         $html .= '<tr>';
         $html .= '<td>' .
                     '<a href="/' . drupal_get_path_alias('node/' . $file_node->nid) . '">' .
                       theme_file_icon(
                         array(
-                          'file' => file_load($file_downloads[0]['fid']),
+                          'file' => file_load($f_downloads['fid']),
                           'icon_directory' => drupal_get_path('module', 'file') . '/icons',
                         )
                       ) .
@@ -294,7 +303,7 @@ function bulk_file_upload_render_file_table($tid) {
                     '</a>' .
                   '</td>';
         $html .= '<td>' . l(t("Download this file") , $token_uri['path'] , array('query' => $token_uri['options']['query'])) . '</td>';
-        $html .= '<td>' . format_size($file_downloads[0]['filesize']) . '</td>';
+        $html .= '<td>' . format_size($f_downloads['filesize']) . '</td>';
         $revision_user = user_load($file_node->revision_uid);
       
         if ($revision_user !== FALSE) {
@@ -303,8 +312,42 @@ function bulk_file_upload_render_file_table($tid) {
         $html .= '<td>' . l(t("Edit") , 'node/' . $file_node->nid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
 
         $html .= '</tr>';
+
       }
     }
+    }
+
+
+
+
+      // $file_object = (object) $file_downloads[0];
+      // $token_uri = file_entity_download_uri($file_object);
+      // dsm($file_downloads);
+      // if ($file_downloads != FALSE) {
+      //   $html .= '<tr>';
+      //   $html .= '<td>' .
+      //               '<a href="/' . drupal_get_path_alias('node/' . $file_node->nid) . '">' .
+      //                 theme_file_icon(
+      //                   array(
+      //                     'file' => file_load($file_downloads[0]['fid']),
+      //                     'icon_directory' => drupal_get_path('module', 'file') . '/icons',
+      //                   )
+      //                 ) .
+      //                 $file_node->title . 
+      //               '</a>' .
+      //             '</td>';
+      //   $html .= '<td>' . l(t("Download this file") , $token_uri['path'] , array('query' => $token_uri['options']['query'])) . '</td>';
+      //   $html .= '<td>' . format_size($file_downloads[0]['filesize']) . '</td>';
+      //   $revision_user = user_load($file_node->revision_uid);
+      
+      //   if ($revision_user !== FALSE) {
+      //     $html .= '<td>' . $revision_user->realname . '</td>';
+      //   }
+      //   $html .= '<td>' . l(t("Edit") , 'node/' . $file_node->nid . '/edit' , array('query' => array('destination' => 'taxonomy/term/' . $tid))) . '</td>';
+
+      //   $html .= '</tr>';
+      // }
+    //}
 
     $html .= '</table>';
     $html .= '</div>';
