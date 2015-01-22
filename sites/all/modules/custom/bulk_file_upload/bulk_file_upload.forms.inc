@@ -82,7 +82,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
         '#ajax' => array(
           'callback' => 'bulk_file_upload_ajax_sections',
           'wrapper' => 'section-field-wrapper',
-        )
+        ),
       );
       
       // if (isset($_SESSION['oa_space_id'])) {
@@ -143,7 +143,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
 
     $field = field_info_field('field_drag_and_drop_upload');
     $instance = field_info_instance('node', 'field_drag_and_drop_upload', 'file');
-    $my_field = field_default_form('node', NULL, $field, $instance, LANGUAGE_NONE, array(), $form, $form_state);
+    @$my_field = field_default_form('node', NULL, $field, $instance, LANGUAGE_NONE, array(), $form, $form_state);
     $my_field['field_drag_and_drop_upload'][LANGUAGE_NONE]['#file_upload_description'] .= "<br />In order to upload files larger than <strong>100 MB</strong> " . l(t("Click here") , 'node/add/file');
     $form['new_upload_fields']['dnd'] = $my_field['field_drag_and_drop_upload'];
     $form['new_upload_fields']['dnd']['#weight'] = -40;
