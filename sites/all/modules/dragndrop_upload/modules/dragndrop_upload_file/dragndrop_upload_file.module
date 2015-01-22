@@ -151,7 +151,7 @@ function dragndrop_upload_file_field_widget_settings_form($field, $instance) {
  * TODO: dive into this function again.
  */
 function dragndrop_upload_file_field_widget_form(&$form, &$form_state, $field, $instance, $langcode, $items, $delta, $element) {
-  dsm("test");
+
   $defaults = array(
     'fid' => 0,
     'display' => !empty($field['settings']['display_default']),

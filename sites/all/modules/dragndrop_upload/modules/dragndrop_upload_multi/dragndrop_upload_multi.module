@@ -51,7 +51,6 @@ function dragndrop_upload_multi_field_widget_form_alter(&$element, &$form_state,
  */
 function dragndrop_upload_multi_widget_value(&$element, $input = FALSE, &$form_state) {
 
-  dsm($element);dsm($input);dsm($form_state);
   if ($input !== FALSE) {
     $added =& drupal_static(__FUNCTION__, array());
     $key = implode('-', array_slice($element['#array_parents'], 0, -1));
