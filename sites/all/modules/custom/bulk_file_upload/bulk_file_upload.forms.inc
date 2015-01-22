@@ -85,23 +85,23 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
         )
       );
       
-      if (isset($_SESSION['oa_space_id'])) {
-        $section_query = new EntityFieldQuery();
-        $section_results = $section_query->entityCondition('entity_type', 'node')
-          ->entityCondition('bundle', 'oa_section')
-          ->propertyCondition('status', 1)
-          ->fieldCondition('og_group_ref', 'target_id', $_SESSION['oa_space_id'])
-          ->propertyOrderBy('title', 'ASC')
-          ->execute();
+      // if (isset($_SESSION['oa_space_id'])) {
+      //   $section_query = new EntityFieldQuery();
+      //   $section_results = $section_query->entityCondition('entity_type', 'node')
+      //     ->entityCondition('bundle', 'oa_section')
+      //     ->propertyCondition('status', 1)
+      //     ->fieldCondition('og_group_ref', 'target_id', $_SESSION['oa_space_id'])
+      //     ->propertyOrderBy('title', 'ASC')
+      //     ->execute();
         
-        if (!empty($section_results)) {
-          $section_nodes = node_load_multiple(array_keys($section_results['node']));
+      //   if (!empty($section_results)) {
+      //     $section_nodes = node_load_multiple(array_keys($section_results['node']));
         
-          foreach ($section_nodes as $section_node) {
-            $section_options[$section_node->nid] = $section_node->title;
-          }
-        }
-      }
+      //     foreach ($section_nodes as $section_node) {
+      //       $section_options[$section_node->nid] = $section_node->title;
+      //     }
+      //   }
+      // }
       
       $form['new_upload_fields']['section'] = array(
         '#type' => 'select',
@@ -117,17 +117,37 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
       );
     }
 
-    $node_upload_field_info = field_info_instance('node', 'field_uploaded_file', 'file');
+    // $form['new_upload_fields']['file'] = array(
+    //     '#type' => 'file',
+    //     '#name' => 'files[]',
+    //     '#title' => t('Choose some files'),
+    //     //'#description' => t('JPG\'s, GIF\'s, and PNG\'s only, 10MB Max Size'),
+    //     '#attributes' => array('multiple' => 'multiple'),
+    // );
 
-    $form['new_upload_fields']['file'] = array(
-        '#type' => 'file',
-        '#name' => 'files[]',
-        '#title' => t('Choose some files'),
-        //'#description' => t('JPG\'s, GIF\'s, and PNG\'s only, 10MB Max Size'),
-        '#attributes' => array('multiple' => 'multiple'),
-    );
+    // $form['new_upload_fields']['dnd'] = array(
+    // '#tree' => TRUE,
+    // '#type' => 'dragndrop_upload',
+    // '#title' => t('Drag & Drop files here'),
+    // '#file_upload_max_size' => '100M',
+    // '#upload_location' => 'public://',
+    // '#upload_event' => 'manual',
+    // '#multiupload' => TRUE,
+    // '#cardinality' => -1,
 
 
+    //'#value_callback' => 'dragndrop_upload_multi_widget_value',
+    // '#theme' => 'file_widget_multiple',
+    // '#display_field ' => 0,
+    //);
+
+    $field = field_info_field('field_drag_and_drop_upload');
+    $instance = field_info_instance('node', 'field_drag_and_drop_upload', 'file');
+    $my_field = field_default_form('node', NULL, $field, $instance, LANGUAGE_NONE, array(), $form, $form_state);
+    $my_field['field_drag_and_drop_upload'][LANGUAGE_NONE]['#file_upload_description'] .= "<br />In order to upload files larger than <strong>100 MB</strong> " . l(t("Click here") , 'node/add/file');
+    $form['new_upload_fields']['dnd'] = $my_field['field_drag_and_drop_upload'];
+    $form['new_upload_fields']['dnd']['#weight'] = -40;
+    //$form['new_upload_fields']['field_set'] = field_create_instance($dnd);
 
     // for ($i = 0; $i < 1; $i++) {
     //   $form['new_upload_fields']['files']['file_upload_' . $i] = array(
@@ -151,10 +171,15 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
       '#value' => t('Upload Files'),
     );
 
+    // $form['new_upload_fields']['submit_1'] = array(
+    //   '#type' => 'submit',
+    //   '#value' => t('Upload files with drag and drop'),
+    // );
+
     $form['#validate'] = array('bulk_file_upload_add_files_form_validate');
     $form['#submit'] = array('bulk_file_upload_add_files_form_submit');
   }
-  
+
   return $form;
   
 }
@@ -164,7 +189,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
  * Populates the section field based on the space field for the bulk add files form.
  */
 function bulk_file_upload_ajax_sections($form, &$form_state) {
-  
+
   global $user;
   
   if (in_array('impetus admin', $user->roles) || in_array('administrator', $user->roles) || $user->uid == 1) {
@@ -204,22 +229,22 @@ function bulk_file_upload_add_files_form_validate($form, &$form_state) {
   if ($term == FALSE || $term->vocabulary_machine_name != 'file_categories') {
     form_set_error('files', t('Error: You are trying to save these files under a restricted folder.'));
   }
-  $num_files = count($_FILES['files']['name']);
-    for ($i = 0; $i < $num_files; $i++) {
-      $validators = array('file_validate_extensions' => array('roq , mxf , asf , yuv , avi , mng , drc , ogv , ogg , mkv , webm , flv , qt , rm , wmv , mp4 , m4p , m4v , mpg , mp2 , mp3 , mpeg , mpe , rmvb , svi , 3gp , 3g2 , mpv , nsv , mov , docx , xslx , pptx , jpg , jpeg , gif , png , txt , doc , xls , pdf , ppt , pps , odt , ods , odp'));
-        $file = file_save_upload($i, $validators);
-        if ($file) {
-            if ($file = file_move($file, 'public://')) {
-                $form_state['values']['file'][$i] = $file;
-            }
-            else {
-                form_set_error('file', t('Failed to write the uploaded file the site\'s file folder.'));
-            }
-        }
-        else {
-            form_set_error('file', t('No file was uploaded.'));
-        }   
-    }
+  // $num_files = count($_FILES['files']['name']);
+  //   for ($i = 0; $i < $num_files; $i++) {
+  //     $validators = array('file_validate_extensions' => array('roq , mxf , asf , yuv , avi , mng , drc , ogv , ogg , mkv , webm , flv , qt , rm , wmv , mp4 , m4p , m4v , mpg , mp2 , mp3 , mpeg , mpe , rmvb , svi , 3gp , 3g2 , mpv , nsv , mov , docx , xslx , pptx , jpg , jpeg , gif , png , txt , doc , xls , pdf , ppt , pps , odt , ods , odp'));
+  //       $file = file_save_upload($i, $validators);
+  //       if ($file) {
+  //           if ($file = file_move($file, 'public://')) {
+  //               $form_state['values']['file'][$i] = $file;
+  //           }
+  //           else {
+  //               form_set_error('file', t('Failed to write the uploaded file the site\'s file folder.'));
+  //           }
+  //       }
+  //       else {
+  //           form_set_error('file', t('No file was uploaded.'));
+  //       }   
+  //   }
 }
 
 /**
@@ -227,6 +252,7 @@ function bulk_file_upload_add_files_form_validate($form, &$form_state) {
  * Handles the submission for the bulk add files form.
  */
 function bulk_file_upload_add_files_form_submit($form, &$form_state) {
+
   global $user;
   global $language;
 
@@ -249,7 +275,7 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
     $new_file_node->field_file_category['und'][0]['tid'] = $form_state['values']['tid'];
   }
 
-  foreach ($form_state['values']['file'] as $element_name => $value) {
+  foreach ($form_state['values']['dnd'][LANGUAGE_NONE] as $element) {
       if (isset($form_state['values']['space']) && isset($form_state['values']['section'])) {
         $new_file_node->og_group_ref['und'][0]['target_id'] = $form_state['values']['space'];
         $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
@@ -260,20 +286,20 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
         $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
         $new_file_node->oa_section_ref['und'][0]['target_id'] = $_SESSION['oa_section_id'];
       }
-
-      $saved_file = file_load($value->fid);
+      if (isset($element['fid']) && $element['fid'] > 0) {
+      $saved_file = file_load($element['fid']);
       $saved_file_name = substr($saved_file->filename, 0, strrpos($saved_file->filename, '.'));
       $new_file_node->title = $saved_file_name;
 
-      $new_file_node->field_uploaded_file['und'][0]['fid'] = $value->fid;
-      $new_file_node->field_uploaded_file['und'][0]['display'] = 1;
+      $new_file_node->field_upload_file_big_files['und'][0]['fid'] = $element['fid'];
+      $new_file_node->field_upload_file_big_files['und'][0]['display'] = 1;
       
       node_save($new_file_node);
       unset($new_file_node->nid);
       unset($new_file_node->vid);
       
       drupal_set_message(t('You have successfully saved the file @filename', array('@filename' => $saved_file_name)));
-
+    }
   }
 }
 
@@ -329,11 +355,11 @@ function bulk_file_upload_add_taxonomy_term_form($form, &$form_state, $parent_ti
  * Handles the validation for the add taxonomy form.
  */
 function bulk_file_upload_add_taxonomy_term_form_validate($form, &$form_state) {
-  
-  $term = taxonomy_term_load($form_state['values']['parent_tid']);
-  if ($term == FALSE || $term->vocabulary_machine_name != 'file_categories') {
-    form_set_error('term_name', t('Error: You are trying to add a folder under a restricted folder.'));
-  }
+
+  // $term = taxonomy_term_load($form_state['values']['parent_tid']);
+  // if ($term == FALSE || $term->vocabulary_machine_name != 'file_categories') {
+  //   form_set_error('term_name', t('Error: You are trying to add a folder under a restricted folder.'));
+  // }
 }
 
 /**

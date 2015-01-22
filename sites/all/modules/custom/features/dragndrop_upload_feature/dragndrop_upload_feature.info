@@ -1,0 +1,17 @@
+name = DragnDrop Upload
+description = Feature module adding drag and drop functionality for folders
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = dragndrop_upload_feature
+dependencies[] = defaultconfig
+dependencies[] = dragndrop_upload
+dependencies[] = dragndrop_upload_file
+dependencies[] = dragndrop_upload_multi
+dependencies[] = features
+dependencies[] = file
+features[defaultconfig][] = field_default_fields:node-file-field_drag_and_drop_upload
+features[features_api][] = api:2
+features[field_base][] = field_drag_and_drop_upload
+features[field_instance][] = node-file-field_drag_and_drop_upload
+project path = sites/all/modules/custom/features

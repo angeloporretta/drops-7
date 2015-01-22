@@ -78,17 +78,18 @@ function file_tracker_node_view($node, $view_mode, $langcode) {
     
     if ($user->uid != 0) {
       $file_fields = field_get_items('node', $node, 'field_uploaded_file');
-
-      db_insert('file_tracker_views') 
-      ->fields(
-        array(
-          'nid' =>  $node->nid,
-          'uid' => $user->uid,
-          'filename' => $file_fields[0]['filename'],
-          'viewed_timestamp' => time(),
+      if (!empty($file_fields)) {
+        db_insert('file_tracker_views') 
+        ->fields(
+          array(
+            'nid' =>  $node->nid,
+            'uid' => $user->uid,
+            'filename' => $file_fields[0]['filename'],
+            'viewed_timestamp' => time(),
+          )
         )
-      )
-      ->execute();
+        ->execute();
+      }
     }
   }
 }
