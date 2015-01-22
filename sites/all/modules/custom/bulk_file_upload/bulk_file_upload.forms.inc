@@ -76,7 +76,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
         '#title' => t('Space'),
         '#required' => TRUE,
         '#options' => $space_options,
-        '#default_value' => (isset($_SESSION['oa_space_id'])) ? $_SESSION['oa_space_id'] : '',
+        '#default_value' => '',
         '#empty_option' => '- ' . t('None') . ' -',
         '#weight' => -48,
         '#ajax' => array(
@@ -110,7 +110,7 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
         '#title' => t('Section'),
         '#required' => TRUE,
         '#options' => $section_options,
-        '#default_value' => (isset($_SESSION['oa_section_id'])) ? $_SESSION['oa_section_id'] : '',
+        '#default_value' => '',
         '#empty_option' => '- ' . t('None') . ' -',
         '#weight' => -47,
         '#validated' => TRUE,
