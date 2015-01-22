@@ -216,4 +216,9 @@ ul.spaces-section-dropdown li ul li:hover{
 
 .pane-og-menu-single-menu h3.pane-title a{
   border-top-color:@sidebar_menu_top_border;
+  display: block;
+  font-size: 22px;
+  font-weight: bold;
+  border-top: 5px solid;
+  padding-top: 6px;
 } 
