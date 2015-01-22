@@ -4,6 +4,7 @@ $info = array(
   // Available colors and color labels used in theme.
   'fields' => array(
     //'active' => t('Active menu top parent'),
+    'sidebar_menu_top_border' => t('Sidebar menu top border'),
    // 'inactive_menu_parent' => t('Main menu border top color'),
     //'inactive' => t('Color of the active top parent'),
     //'active_leaf' => t('Active menu item'),
@@ -41,6 +42,7 @@ $info = array(
        // 'inactive' => '#222222',
         //'active_leaf' => '#222222',
        // 'menu_links' => '#222222',
+        'sidebar_menu_top_border' => '#018fe2',
         'main_menu_hover_color' => '#fff',
         'top_menu_leafs' => '#9C0058',
         'main_menu_active_item' => '#9C0058',
