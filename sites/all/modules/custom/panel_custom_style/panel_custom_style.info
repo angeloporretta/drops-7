@@ -1,0 +1,5 @@
+name = Panel Custom Style
+description = Adds style to panels that allows for direct customisation of css elements.
+dependencies[] = panels
+package = custom
+core = 7.x
