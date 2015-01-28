@@ -64,19 +64,19 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     // Get the sections under the allowed spaces.
   if (!empty($allowed_space_nodes)) {
     //sort the spaces based on the og menu
-    for ($i = 0; $i < count($allowed_space_nodes); $i++) {
-      $allowed_space_nodes[$i] = (object)$allowed_space_nodes[$i];
-      $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', $allowed_space_nodes[$i]->mlid);
-      $allowed_space_nodes[$i]->section_nodes = array();
-       
-      if (!empty($submenu_items)) {
-        foreach ($submenu_items as $submenu_item) {
-          $section_node = menu_get_object('node', 1, $submenu_item['link_path']);
-          if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
-            $allowed_space_nodes[$i]->section_nodes[] = $section_node;
+    foreach ($allowed_space_nodes as $i => $value) {
+        $allowed_space_nodes[$i] = (object)$allowed_space_nodes[$i];
+        $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', $allowed_space_nodes[$i]->mlid);
+        $allowed_space_nodes[$i]->section_nodes = array();
+         
+        if (!empty($submenu_items)) {
+          foreach ($submenu_items as $submenu_item) {
+            $section_node = menu_get_object('node', 1, $submenu_item['link_path']);
+            if ($section_node != '' && node_access('view', $section_node) && $flag->is_flagged($section_node->nid) == "") {
+              $allowed_space_nodes[$i]->section_nodes[] = $section_node;
+            }
           }
         }
-      }
     }
   }
   if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
