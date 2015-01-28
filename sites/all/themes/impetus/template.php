@@ -65,15 +65,23 @@ function impetus_preprocess_page(&$vars) {
   if (user_is_logged_in() && arg(0) == 'user' && arg(1) == $user->uid && arg(2) == '') {
     drupal_goto('user/' . $user->uid . '/view');
   }
- 
+  drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/dummy-content.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/top-menu-fix.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix-anchors.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix.js');
+  drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/remove-white-space.js');
+  
   // General pages.
   if (module_exists('chosen')) {
     drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/select-searcher.js');
   }
    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+    $node = node_load(arg(1));
+    if (isset($node->field_hide_title) && !empty($node->field_hide_title) && $node->field_hide_title[LANGUAGE_NONE][0]['value'] == 1) {
+      $vars['hide'] = 1;
+    } else {
+      $vars['hide'] = 0;
+    }
     drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/remove-lightbox-menu.js');
   }
   // Taxonomy pages.
@@ -318,3 +326,4 @@ function impetus_preprocess_comment(&$variables) {
     }
   }
 }
+

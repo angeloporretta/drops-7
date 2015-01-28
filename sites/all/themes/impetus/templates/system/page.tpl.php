@@ -17,9 +17,11 @@
         <?php print $oa_toolbar_panel; ?>
       </div>
     </div>
-    <?php if (!empty($oa_banner)): ?>
-      <?php print $oa_banner; ?>
-    <?php endif; ?>
+    <?php
+		 if (!empty($oa_banner)):
+      print $oa_banner;
+    endif;
+		 ?>
   </div>
 <?php else: ?>
   <header id="header" class="header" role="header">
@@ -56,7 +58,7 @@
 
                 <?php if ($main_menu): ?>
                   <nav id="main-menu" class="main-menu" role="navigation">
-                    <?php print render($main_menu); ?>
+                    <?php //print render($main_menu); ?>
                   </nav> <!-- /#main-menu -->
                 <?php endif; ?>
               </div>
@@ -65,12 +67,17 @@
         </div>
       </div>
     </div>
-    <?php if (!empty($oa_banner)): ?>
-      <?php print $oa_banner; ?>
-    <?php endif; ?>
-    <?php if (!empty($oa_space_menu)): ?>
-      <?php print $oa_space_menu; ?>
-    <?php endif; ?>
+    <?php
+		/*
+		 if (!empty($oa_banner)):
+      print $oa_banner;
+    endif;
+
+		 if (!empty($oa_space_menu)): 
+      print $oa_space_menu;
+		 endif;
+		*/
+		 ?>
   </header>
 <?php endif; ?>
 
@@ -94,7 +101,7 @@
           <?php if (!empty($primarytabs)): ?><?php print $primarytabs; ?><?php endif; ?>
           <a id="main-content"></a>
           <?php print render($title_prefix); ?>
-          <?php if ($title): ?><h1 class="title" id="page-title"><?php print $title; ?></h1><?php endif; ?>
+          <?php if (isset($hide) && $hide == 0): ?><h1 class="title" id="page-title"><?php print $title; ?></h1><?php endif; ?>
           <?php print render($title_suffix); ?>
           <?php if (!empty($tabs['#primary']) || !empty($tabs['#secondary'])): ?><div class="tabs main-tabs"><?php print render($tabs); ?></div><?php endif; ?>
           <?php print render($page['help']); ?>
