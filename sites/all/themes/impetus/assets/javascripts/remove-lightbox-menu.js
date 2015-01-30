@@ -6,7 +6,7 @@ jQuery( document ).ready(function() {
      if (iframe_body.length > 0) {
       iframe_body.css("display" , "none");
       var body = jQuery("#lightboxFrame").contents().find("body");
-      body.css("margin-top" , 0);
+      body.attr('style' , "margin-top: 0px !important");
       body.css("padding-top" , 0);
       var main = jQuery("#lightboxFrame").contents().find("#main-wrapper");
       main.css("margin-top" , 0);
