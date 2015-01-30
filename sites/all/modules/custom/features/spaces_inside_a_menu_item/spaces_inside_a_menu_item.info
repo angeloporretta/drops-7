@@ -1,0 +1,15 @@
+name = Spaces inside a menu item
+description = Adds the field the stores whether a space should be displayed normally or inside a menu item
+core = 7.x
+package = IMPETUS
+version = 7.x-1.0
+project = spaces_inside_a_menu_item
+dependencies[] = features
+dependencies[] = list
+dependencies[] = options
+features[defaultconfig][] = field_default_fields:node-oa_space-field_display_in_top_menu
+features[features_api][] = api:2
+features[field_base][] = field_display_in_top_menu
+features[field_instance][] = node-oa_space-field_display_in_top_menu
+features_exclude[dependencies][defaultconfig] = defaultconfig
+project path = sites/all/modules/custom/features
