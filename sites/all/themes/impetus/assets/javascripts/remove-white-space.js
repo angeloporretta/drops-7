@@ -5,7 +5,7 @@ jQuery( document ).ready(function() {
       jQuery("body").css("padding-top" , 0);
   } , 1000);
   var title = jQuery("#page-title");
-  if (title.css("display") != "none") {
+  if (title.length > 0) {
   	var sidebar = jQuery(".burr-flipped-sidebar");
   	sidebar.css("margin-top" , -40);
   }
