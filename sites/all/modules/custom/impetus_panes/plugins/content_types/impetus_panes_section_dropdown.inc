@@ -92,28 +92,8 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
      $items_per_column = variable_get('column_items', '');
      $number_of_columns = ceil(sizeof($inside) / $items_per_column);
      // Create html structure.
-    $block->content .= '<ul class="spaces-section-dropdown">';
-    $block->content .= '<li class="dropdown">' . l(t("Keeping me sharp") , '' , array('fragment' => TRUE , 'external' => TRUE)) . '<ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
-    $block->content .= '<li class="close-button"><button>X</button></li>';
-    
-    if ($number_of_columns > 0) {
-      $width = 100/$number_of_columns;
-    } else {
-      $width = 100;
-    }
-    $this_column_items = 0;
-    foreach ($inside as $link) {
-      if($this_column_items == 0) {
-        $block->content .= '<div class="menu-column" style="width:' . $width . '%">';
-      }
-      $this_column_items++;
-      $block->content .= '<li>' . l($link['title'] , 'node/' . $link['nid']) . '</li>';
-      if ($this_column_items == $items_per_column) {
-        $this_column_items = 0;
-        $block->content .= "</div>";
-      }
-    }
-    $block->content .= "</ul></li>";
+     $block->content .= '<ul class="spaces-section-dropdown">';
+
     foreach ($allowed_space_nodes as $space_node) {
       $class = '';
       if (isset($current_node) && $current_node->nid == $space_node->nid) {
