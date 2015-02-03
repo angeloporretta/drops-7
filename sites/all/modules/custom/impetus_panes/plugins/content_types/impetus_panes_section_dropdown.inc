@@ -33,6 +33,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   drupal_add_css(drupal_get_path('module', 'impetus_panes') . '/css/impetus_panes_section_dropdown.css');
   drupal_add_js(drupal_get_path('module', 'impetus_panes') . '/js/impetus_panes_section_dropdown.js');
   $inside = array();
+  $master_item = '';
   $block = new stdClass();
   $block->title = ''; 
   $block->content = '';
@@ -49,6 +50,17 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $result = $menu->execute();
   while ($men = $result->fetchAssoc()) {
     $og_menu[] = $men;
+  }
+  $bucket_position = variable_get('bucket-position' , 2);
+  $bucket_title = variable_get('bucket-name' , '');
+
+  //build access for master bucket
+  $user_access = build_user_access(unserialize(variable_get('bucket-user-access')));
+  $group_access = build_group_access(unserialize(variable_get('bucket-groups-access')));
+  if ($user_access == 1 || $group_access == 1) {
+    $access = 1;
+  } else {
+    $access = 0;
   }
 
   $i = 0;
@@ -92,9 +104,36 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
      $items_per_column = variable_get('column_items', '');
      $number_of_columns = ceil(sizeof($inside) / $items_per_column);
      // Create html structure.
-     $block->content .= '<ul class="spaces-section-dropdown">';
-
+    $block->content .= '<ul class="spaces-section-dropdown">';
+    $master_item .= '<li class="dropdown">' . l($bucket_title , '' , array('fragment' => TRUE , 'external' => TRUE)) . '<ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+    $master_item .= '<li class="close-button"><button>X</button></li>';
+    
+    if ($number_of_columns > 0) {
+      $width = 100/$number_of_columns;
+    } else {
+      $width = 100;
+    }
+    $this_column_items = 0;
+    foreach ($inside as $link) {
+      if($this_column_items == 0) {
+        $master_item .= '<div class="menu-column" style="width:' . $width . '%">';
+      }
+      $this_column_items++;
+      $master_item .= '<li>' . l($link['title'] , 'node/' . $link['nid']) . '</li>';
+      if ($this_column_items == $items_per_column) {
+        $this_column_items = 0;
+        $master_item .= "</div>";
+      }
+    }
+    $master_item .= "</ul></li>";
+    $count = 0;
     foreach ($allowed_space_nodes as $space_node) {
+      if ($count == $bucket_position-1) {
+        if ($access == 1){
+          $block->content .= $master_item;
+        }
+      }
+      $count++;
       $class = '';
       if (isset($current_node) && $current_node->nid == $space_node->nid) {
         $class = ' active';
@@ -164,4 +203,26 @@ function impetus_panes_submenu_tree_all_data($menu_name, $plid) {
   }
 
   return $return;
+}
+
+function build_user_access($user_list) {
+  global $user;
+  foreach($user_list as $saved_user) {
+    if ($saved_user == $user->uid) {
+      return 1;
+    }
+  }
+  return 0;
+}
+
+function build_group_access($group_list) {
+  global $user;
+  foreach($group_list as $group) {
+    foreach($user->og_user_node[LANGUAGE_NONE] as $user_group) {
+      if ($group == $user_group) {
+        return 1;
+      }
+    }
+  }
+  return 0;
 }
