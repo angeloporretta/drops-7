@@ -211,16 +211,6 @@ function impetus_panes_menu() {
       'file' => 'impetus_panes.admin.inc',
       'file path' => drupal_get_path('module', 'impetus_panes') . '/inc',
       'type' => MENU_NORMAL_ITEM,
-    ),
-    'admin/config/master-bucket' => array(
-      'title' => t('Master Bucket Settings'),
-      'page callback' => 'drupal_get_form',
-      'page arguments' => array('impetus_master_settings_form'),
-      'access callback' => 'user_access',
-      'access arguments' => array('configure impetus panes settings'),
-      'file' => 'impetus_panes.admin.inc',
-      'file path' => drupal_get_path('module' , 'impetus_panes') . '/inc',
-      'type' => MENU_NORMAL_ITEM,
     )
   );
 }
