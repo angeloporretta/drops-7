@@ -6,7 +6,7 @@ jQuery( document ).ready(function() {
   } , 1000);
   var title = jQuery("#page-title");
   if (title.length > 0) {
-  	var sidebar = jQuery(".burr-flipped-sidebar");
+  	var sidebar = jQuery("#panels-ipe-regionid-sidebar");
   	sidebar.css("margin-top" , -40);
   }
 });
