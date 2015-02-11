@@ -35,16 +35,25 @@ function file_preview_menu() {
  * Implements hook_node_insert.
  */
 function file_preview_node_insert($node) {
-  
+  $fields = field_info_instances('node' , 'file');
   if ($node->type == 'file') {
-    $files = field_get_items('node', $node, 'field_uploaded_file');
-    $saved_file = NULL;
-
-    if ($files == FALSE) {
-      drupal_set_message(t('A file preview could not be created for @file_title because no file was found', array('@file_title' => $node->title)), 'error');
-    }
-    else {
-     // file_preview_send_file_to_groupdocs($files);
+    foreach ($fields as $field) {
+      if (isset($field['field_name'])) {
+        $field_name = $field['field_name'];
+        if (isset($node->$field_name)) {
+          $node_field = $node->$field_name;
+        }
+      }
+      if (isset($node_field) && isset($node_field[LANGUAGE_NONE][0]) && isset($field['settings']['file_extensions']) && $field['field_name'] != 'field_upload_file_big_files') {
+        $files = field_get_items('node', $node, $field['field_name']);
+        $saved_file = NULL;
+        if ($files == FALSE) {
+          drupal_set_message(t('A file preview could not be created for @file_title because no file was found', array('@file_title' => $node->title)), 'error');
+        }
+        else {
+          file_preview_send_file_to_groupdocs($files);
+        }
+      }
     }
   }
 }
@@ -53,13 +62,32 @@ function file_preview_node_insert($node) {
  * Implements hook_node_update.
  */
 function file_preview_node_update($node) {
-  
+
   if ($node->type == 'file') {
-    $old_files = field_get_items('node', $node->original, 'field_uploaded_file');
-    $new_files = field_get_items('node', $node, 'field_uploaded_file');
-    if ($old_files != FALSE && $new_files != FALSE && $old_files[0]['fid'] != $new_files[0]['fid']) {
-      file_preview_send_file_to_groupdocs($new_files);
+    $fields = field_info_instances('node' , 'file');
+    foreach ($fields as $field) {
+      if (isset($field['field_name'])) {
+        $field_name = $field['field_name'];
+        if (isset($node->$field_name)) {
+          $node_field = $node->$field_name;
+        }
+      }
+
+    if (isset($node_field) && isset($node_field[LANGUAGE_NONE][0]) && isset($field['settings']['file_extensions'])) {
+      $k = 0;
+      $old_files = field_get_items('node', $node->original, $field['field_name']);
+      $new_files = field_get_items('node', $node, $field['field_name']);
+
+      foreach ($old_files as $id => $file) {
+        if ($file['fid'] != $new_files[$id]['fid']) {
+          $k = 1;
+        }
+      }
+      if ($old_files != FALSE && $new_files != FALSE && $k == 1) {
+        file_preview_send_file_to_groupdocs($new_files);
+      }
     }
+  }
   }
 }
 
@@ -67,7 +95,7 @@ function file_preview_node_update($node) {
  * Implements hook_node_delete.
  */
 function file_preview_node_delete($node) {
-  
+
   if ($node->type == 'file') {
 
     // Include required libraries.
@@ -78,17 +106,14 @@ function file_preview_node_delete($node) {
     require_once $groupdocsphp_path . '/FileStream.php';
 
     $base_path = 'https://api.groupdocs.com/v2.0';
-    //$signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
-    $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', ''));
+    $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
     @$api_client = new APIClient($signer);
     $shared = new SharedApi($api_client);
     $shared->setBasePath($base_path);
     $result = "";
     $user_data = $shared->LoginUser(
-      //variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
-      variable_get('file_preview_groupdocs_username', ''), 
-      //variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
-      variable_get('file_preview_groupdocs_password', '')
+      variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
+      variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
     );
 
     if ($user_data->status == 'Ok') {
@@ -97,13 +122,22 @@ function file_preview_node_delete($node) {
       $api_storage = new StorageApi($api_client);
       $node_revision_ids = array_keys(node_revision_list($node));
 
+      $fields = field_info_instances('node' , 'file');
       foreach ($node_revision_ids as $node_revision_id) {
+        foreach ($fields as $field) {
+          if (isset($field['field_name'])) {
+            $field_name = $field['field_name'];
+            if (isset($node->$field_name)) {
+              $node_field = $node->$field_name;
+            }
+          }
         $file_node = node_load($node->nid, $node_revision_id);
-        $file_field = field_get_items('node', $file_node, 'field_uploaded_file');
-        
+        if (isset($node_field[LANGUAGE_NONE][0]['filename'])){
+        $file_field = field_get_items('node', $file_node, $field['field_name']);
+        foreach ($file_field as $field) {
         $guid_result = db_select('file_preview_preview_guids', 'g')
           ->fields('g', array('groupdocs_guid'))
-          ->condition('fid', $file_field[0]['fid'], '=')
+          ->condition('fid', $field['fid'], '=')
           ->execute()
           ->fetchAll();
         
@@ -116,12 +150,13 @@ function file_preview_node_delete($node) {
             'error'
           );
         }
+        }
       }
-
+      }
+    }
     } 
     else {
       drupal_set_message(t('A file preview could not be created for @file_title.' . $user_data->error_message, array('@file_title' => $node->title)), 'error');
-      drupal_set_message(t('You may want to double check your credentials ' . l('here' , 'admin/config/file-preview')) , 'error');
     }
   }
 }
@@ -142,7 +177,7 @@ function file_preview_file_delete($file) {
  *                            This assumes that there is only ONE file attached in this field per node.
  */
 function file_preview_send_file_to_groupdocs($file_field) {
-      
+
   // Include required libraries.
   $groupdocsphp_path = libraries_get_path('groupdocs-php');
   require_once $groupdocsphp_path . '/APIClient.php';
@@ -151,66 +186,62 @@ function file_preview_send_file_to_groupdocs($file_field) {
   require_once $groupdocsphp_path . '/FileStream.php';
 
   $base_path = 'https://api.groupdocs.com/v2.0';
-  //$signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
-  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', ''));
+  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
   @$api_client = new APIClient($signer);
   $shared = new SharedApi($api_client);
   $shared->setBasePath($base_path);
   $result = "";
   $user_data = $shared->LoginUser(
-    //variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
-    variable_get('file_preview_groupdocs_username', ''), 
-    //variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
-    variable_get('file_preview_groupdocs_password', '')
+    variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com'), 
+    variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7')
   );
+
   if ($user_data->status == 'Ok') {
     $result = $user_data->result->user;
     $user_id = $result->guid;
+    foreach($file_field as $field) {
+      $saved_file = file_load($field['fid']);
+      $file_path = drupal_realpath($saved_file->uri);
+      $name = $_SERVER['HTTP_HOST'] . '/' . substr($saved_file->uri, strrpos($saved_file->uri, '/') + 1);
 
-    $saved_file = file_load($file_field[0]['fid']);
-    $file_path = drupal_realpath($saved_file->uri);
-    $name = $_SERVER['HTTP_HOST'] . '/' . substr($saved_file->uri, strrpos($saved_file->uri, '/') + 1);
+      $file_stream = FileStream::fromFile($file_path);
+      $api_storage = new StorageApi($api_client);
+      $result = $api_storage->Upload(
+        variable_get('file_preview_groupdocs_client_id', NULL), 
+        $name, 
+        'uploaded', 
+        NULL, 
+        $file_stream
+      );
 
-    $file_stream = FileStream::fromFile($file_path);
-    $api_storage = new StorageApi($api_client);
-    $result = $api_storage->Upload(
-      variable_get('file_preview_groupdocs_client_id', NULL), 
-      $name, 
-      'uploaded', 
-      NULL, 
-      $file_stream
-    );
-    
-    if ($result->status != 'Ok') {
-      drupal_set_message(t('A file preview could not be created for @file_title.' . $result->error_message, array('@file_title' => $node->title)), 'error');
-      drupal_set_message(t('You may want to double check your credentials ' . l('here' , 'admin/config/file-preview')) , 'error');
-    }
-    else {
-      $guid_result = db_select('file_preview_preview_guids', 'g')
-        ->fields('g', array('groupdocs_guid'))
-        ->condition('groupdocs_guid', $result->result->guid, '=')
-        ->execute()
-        ->fetchAll();
-      
-      if (empty($guid_result)) {
-        $guid = db_insert('file_preview_preview_guids')
-        ->fields(
-          array(
-            'groupdocs_guid' => $result->result->guid,
-            'fid' => $file_field[0]['fid'],
+      if ($result->status != 'Ok') {
+        drupal_set_message(t('A file preview could not be created for @file_title.' . $result->error_message, array('@file_title' => $saved_file->filename)), 'error');
+      }
+      else {
+        $guid_result = db_select('file_preview_preview_guids', 'g')
+          ->fields('g', array('groupdocs_guid'))
+          ->condition('groupdocs_guid', $result->result->guid, '=')
+          ->execute()
+          ->fetchAll();
+        
+        if (empty($guid_result)) {
+          $guid = db_insert('file_preview_preview_guids')
+          ->fields(
+            array(
+              'groupdocs_guid' => $result->result->guid,
+              'fid' => $field['fid'],
+            )
           )
-        )
-        ->execute();
-        if ($guid === NULL) {
-          drupal_set_message(t('A file preview could not be created for @file_title. The GUID could not be saved in our database.'), 'error');
+          ->execute();
+          if ($guid === NULL) {
+            drupal_set_message(t('A file preview could not be created for @file_title. The GUID could not be saved in our database.'), 'error');
+          }
         }
       }
     }
-    
   } 
   else {
     drupal_set_message(t('A file preview could not be created for @file_title.' . $user_data->error_message, array('@file_title' => $node->title)), 'error');
-    drupal_set_message(t('You may want to double check your credentials ' . l('here' , 'admin/config/file-preview')) , 'error');
   }
 }
 
@@ -219,49 +250,41 @@ function file_preview_send_file_to_groupdocs($file_field) {
  */
 function file_preview_preprocess_field(&$variables) {
 
-  if (
-    $variables['element']['#entity_type'] == 'node' &&
-    $variables['element']['#object']->type == 'file' &&
-    $variables['element']['#field_name'] == 'field_uploaded_file' && 
-    !empty($variables['items']) && 
-    isset($variables['items'][0]['#file'])
-  ) {
-    $guid_result = db_select('file_preview_preview_guids', 'g')
-      ->fields('g', array('groupdocs_guid'))
-      ->condition('fid', $variables['items'][0]['#file']->fid, '=')
-      ->execute()
-      ->fetchAll();
+  if ($variables['element']['#field_type'] == 'file') {
+    if (isset($variables['element']['#items'])) {
+      foreach ($variables['element']['#items'] as $id => $item) {
+        $guid_result = db_select('file_preview_preview_guids', 'g')
+          ->fields('g', array('groupdocs_guid'))
+          ->condition('fid', $item['fid'], '=')
+          ->execute()
+          ->fetchAll();
+        if (!empty($guid_result)) {
+          $groupdocsphp_path = libraries_get_path('groupdocs-php');
+          require_once $groupdocsphp_path . '/APIClient.php';
+          require_once $groupdocsphp_path . '/StorageApi.php';
+          require_once $groupdocsphp_path . '/GroupDocsRequestSigner.php';
+          require_once $groupdocsphp_path . '/DocApi.php';
 
-    if (!empty($guid_result)) {
+          $base_path = 'https://api.groupdocs.com/v2.0';
+          $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
+          @$api_client = new APIClient($signer);
+          //$docsClient = new DocApi($api_client);
+          $shared = new SharedApi($api_client);
+          $shared->setBasePath($base_path);
+          $username = variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com');
+          $password = variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7');
+          $user_data = $shared->LoginUser($username, $password);
+          $url = 'https://apps.groupdocs.com/document-viewer/embed/' . $guid_result[0]->groupdocs_guid . '?referer=impetus-healthcare';
+          $url = $signer->signUrl($url);
 
-      $groupdocsphp_path = libraries_get_path('groupdocs-php');
-      require_once $groupdocsphp_path . '/APIClient.php';
-      require_once $groupdocsphp_path . '/StorageApi.php';
-      require_once $groupdocsphp_path . '/GroupDocsRequestSigner.php';
-      require_once $groupdocsphp_path . '/DocApi.php';
-
-      $base_path = 'https://api.groupdocs.com/v2.0';
-      //$signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
-      $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', ''));
-      @$api_client = new APIClient($signer);
-      //$docsClient = new DocApi($api_client);
-      $shared = new SharedApi($api_client);
-      $shared->setBasePath($base_path);
-      $username = variable_get('file_preview_groupdocs_username', '');
-      //$username = variable_get('file_preview_groupdocs_username', 'aporretta@impetushealthcare.com');
-      $password = variable_get('file_preview_groupdocs_password', '');
-      //$password = variable_get('file_preview_groupdocs_password', 'JSsK8s2Ks00J7');
-      $user_data = $shared->LoginUser($username, $password);
-
-      $url = 'https://apps.groupdocs.com/document-viewer/embed/' . $guid_result[0]->groupdocs_guid . '?referer=impetus-healthcare';
-      $url = $signer->signUrl($url);
-
-      $variables['items'][]['preview'] = array(
-        '#type' => 'markup',
-        '#prefix' => '<div id="document-preview">',
-        '#suffix' => '</div>',
-        '#markup' => '<iframe src="' . $url . '" frameborder="0" width="800" height="650"></iframe>',
-      );
+          $variables['items'][]['preview'] = array(
+            '#type' => 'markup',
+            '#prefix' => '<div id="document-preview">',
+            '#suffix' => '</div>',
+            '#markup' => '<iframe src="' . $url . '" frameborder="0" width="800" height="650"></iframe>',
+          );
+        }
+      }
     }
   }
 }
@@ -276,8 +299,7 @@ function file_preview_cron() {
   include_once $groupdocsphp_path . '/SystemApi.php';
   
   
-  //$signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
-  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', ''));
+  $signer = new GroupDocsRequestSigner(variable_get('file_preview_groupdocs_private_key', '2547'));
   @$api_client = new APIClient($signer);
   $system_api = new SystemApi($api_client);
   $plan_usage_response = $system_api->GetSubscriptionPlanUsage(variable_get('file_preview_groupdocs_client_id', NULL));

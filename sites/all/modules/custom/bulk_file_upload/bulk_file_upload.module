@@ -278,15 +278,30 @@ function bulk_file_upload_render_file_table($tid) {
       $file_downloads = field_get_items('node', $file_node, 'field_uploaded_file');
 
       $file_d = field_get_items('node' , $file_node , 'field_upload_file_big_files');
+      
+      $file_dd = field_get_items('node' , $file_node , 'field_drag_and_drop_upload');
+      if (empty($file_d)) {
+        $file_d = array();
+      } 
+      if (empty($file_dd)) {
+        $file_dd = array();
+      }
+       if (empty($file_downloads)) {
+        $file_downloads = array();
+      }
+      if (!empty($file_downloads) || !empty($file_d) || !empty($file_dd)){
+        // if (empty($file_downloads)) {
+        //   $file_downloads = array_merge($file_d , $file_dd);
+        // } else if (empty($file_d)) {
+        //   $file_downloads = array_merge($file_downloads , $file_dd);
+        // } else {
+        //    $file_downloads = array_merge($file_downloads , $file_d);
+        // }
+        $file_downloads = array_merge($file_downloads , $file_dd);
+        $file_downloads = array_merge($file_d , $file_downloads); 
+        
 
-      if (!empty($file_downloads) || !empty($file_d)){
-        if (empty($file_downloads)) {
-          $file_downloads = $file_d;
-        } else if (empty($file_d)) {
 
-        } else {
-           $file_downloads = array_merge($file_downloads , $file_d);
-        }
       foreach ($file_downloads as $f_downloads) {
         $file_object = (object) $f_downloads;
         $token_uri = file_entity_download_uri($file_object);

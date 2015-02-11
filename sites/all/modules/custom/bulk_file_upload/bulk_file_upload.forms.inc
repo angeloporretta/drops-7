@@ -51,39 +51,39 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
     );
 
 
-    if (in_array('impetus admin', $user->roles) || in_array('administrator', $user->roles) || $user->uid == 1) {
+    // if (in_array('impetus admin', $user->roles) || in_array('administrator', $user->roles) || $user->uid == 1) {
       
-      $space_options = array();
-      $section_options = array();
+    //   $space_options = array();
+    //   $section_options = array();
       
-      $space_query = new EntityFieldQuery();
-      $space_results = $space_query->entityCondition('entity_type', 'node')
-        ->entityCondition('bundle', 'oa_space')
-        ->propertyCondition('status', 1)
-        ->propertyOrderBy('title', 'ASC')
-        ->execute();
+    //   $space_query = new EntityFieldQuery();
+    //   $space_results = $space_query->entityCondition('entity_type', 'node')
+    //     ->entityCondition('bundle', 'oa_space')
+    //     ->propertyCondition('status', 1)
+    //     ->propertyOrderBy('title', 'ASC')
+    //     ->execute();
       
-      if (!empty($space_results)) {
-        $space_nodes = node_load_multiple(array_keys($space_results['node']));
+    //   if (!empty($space_results)) {
+    //     $space_nodes = node_load_multiple(array_keys($space_results['node']));
         
-        foreach ($space_nodes as $space_node) {
-          $space_options[$space_node->nid] = $space_node->title;
-        }
-      }
+    //     foreach ($space_nodes as $space_node) {
+    //       $space_options[$space_node->nid] = $space_node->title;
+    //     }
+    //   }
       
-      $form['new_upload_fields']['space'] = array(
-        '#type' => 'select',
-        '#title' => t('Space'),
-        '#required' => TRUE,
-        '#options' => $space_options,
-        '#default_value' => '',
-        '#empty_option' => '- ' . t('None') . ' -',
-        '#weight' => -48,
-        '#ajax' => array(
-          'callback' => 'bulk_file_upload_ajax_sections',
-          'wrapper' => 'section-field-wrapper',
-        ),
-      );
+      // $form['new_upload_fields']['space'] = array(
+      //   '#type' => 'select',
+      //   '#title' => t('Space'),
+      //   '#required' => TRUE,
+      //   '#options' => $space_options,
+      //   '#default_value' => '',
+      //   '#empty_option' => '- ' . t('None') . ' -',
+      //   '#weight' => -48,
+      //   '#ajax' => array(
+      //     'callback' => 'bulk_file_upload_ajax_sections',
+      //     'wrapper' => 'section-field-wrapper',
+      //   ),
+      // );
       
       // if (isset($_SESSION['oa_space_id'])) {
       //   $section_query = new EntityFieldQuery();
@@ -103,19 +103,19 @@ function bulk_file_upload_add_files_form($form, &$form_state, $tid) {
       //   }
       // }
       
-      $form['new_upload_fields']['section'] = array(
-        '#type' => 'select',
-        '#prefix' => '<div id="section-field-wrapper">',
-        '#suffix' => '</div>',
-        '#title' => t('Section'),
-        '#required' => TRUE,
-        '#options' => $section_options,
-        '#default_value' => '',
-        '#empty_option' => '- ' . t('None') . ' -',
-        '#weight' => -47,
-        '#validated' => TRUE,
-      );
-    }
+      // $form['new_upload_fields']['section'] = array(
+      //   '#type' => 'select',
+      //   '#prefix' => '<div id="section-field-wrapper">',
+      //   '#suffix' => '</div>',
+      //   '#title' => t('Section'),
+      //   '#required' => TRUE,
+      //   '#options' => $section_options,
+      //   '#default_value' => '',
+      //   '#empty_option' => '- ' . t('None') . ' -',
+      //   '#weight' => -47,
+      //   '#validated' => TRUE,
+      // );
+   // }
 
     // $form['new_upload_fields']['file'] = array(
     //     '#type' => 'file',
@@ -276,23 +276,23 @@ function bulk_file_upload_add_files_form_submit($form, &$form_state) {
   }
 
   foreach ($form_state['values']['dnd'][LANGUAGE_NONE] as $element) {
-      if (isset($form_state['values']['space']) && isset($form_state['values']['section'])) {
-        $new_file_node->og_group_ref['und'][0]['target_id'] = $form_state['values']['space'];
-        $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
-        $new_file_node->oa_section_ref['und'][0]['target_id'] = $form_state['values']['section'];
-      }
-      else if (isset($_SESSION['oa_space_id']) && isset($_SESSION['oa_section_id'])) {
-        $new_file_node->og_group_ref['und'][0]['target_id'] = $_SESSION['oa_space_id'];
-        $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
-        $new_file_node->oa_section_ref['und'][0]['target_id'] = $_SESSION['oa_section_id'];
-      }
+      // if (isset($form_state['values']['space']) && isset($form_state['values']['section'])) {
+      //   // $new_file_node->og_group_ref['und'][0]['target_id'] = $form_state['values']['space'];
+      //   // $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
+      //   // $new_file_node->oa_section_ref['und'][0]['target_id'] = $form_state['values']['section'];
+      // }
+      // else if (isset($_SESSION['oa_space_id']) && isset($_SESSION['oa_section_id'])) {
+      //   $new_file_node->og_group_ref['und'][0]['target_id'] = $_SESSION['oa_space_id'];
+      //   $new_file_node->og_group_ref['und'][0]['field_mode'] = 'default';
+      //   $new_file_node->oa_section_ref['und'][0]['target_id'] = $_SESSION['oa_section_id'];
+    //  }
       if (isset($element['fid']) && $element['fid'] > 0) {
       $saved_file = file_load($element['fid']);
       $saved_file_name = substr($saved_file->filename, 0, strrpos($saved_file->filename, '.'));
       $new_file_node->title = $saved_file_name;
 
-      $new_file_node->field_upload_file_big_files['und'][0]['fid'] = $element['fid'];
-      $new_file_node->field_upload_file_big_files['und'][0]['display'] = 1;
+      $new_file_node->field_drag_and_drop_upload['und'][0]['fid'] = $element['fid'];
+      $new_file_node->field_drag_and_drop_upload['und'][0]['display'] = 1;
       
       node_save($new_file_node);
       unset($new_file_node->nid);
