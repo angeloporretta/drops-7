@@ -15,15 +15,16 @@
     }
     
     if ($('form#bulk-file-upload-add-files-form').length > 0) {
-      $('form#bulk-file-upload-add-files-form .form-item-section select').chosen({'width': '250px'});
+      if ($('form#bulk-file-upload-add-files-form .form-item-section select').length >0) {
+        $('form#bulk-file-upload-add-files-form .form-item-section select').chosen({'width': '250px'});
       
-      setInterval(function(){
-        var selectWrapper = $('form#bulk-file-upload-add-files-form .form-item-section');
-        if ($(selectWrapper).find('#edit_section_chosen').length < 1) {
-          $(selectWrapper).find('select').chosen({'width': '250px'});
-        }
-      }, 1000);
-      
+        setInterval(function(){
+          var selectWrapper = $('form#bulk-file-upload-add-files-form .form-item-section');
+          if ($(selectWrapper).find('#edit_section_chosen').length < 1) {
+            $(selectWrapper).find('select').chosen({'width': '250px'});
+          }
+        }, 1000);
+      }      
     }
     
     if ($('div.view-admin-views-user').length > 0) {

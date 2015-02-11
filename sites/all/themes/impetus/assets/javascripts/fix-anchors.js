@@ -12,11 +12,13 @@ jQuery( document ).ready(function() {
 			// get the element with that id
 			var element = document.getElementById(id);
 			//get the position of the element in page
-			var position = jQuery(element).offset().top;
-			//get the size of the header
-			var header = jQuery('#oa-navbar').height();
-			//scroll window to the location of the element
-			jQuery(window).scrollTop(position-header);
+			if (element) {
+				var position = jQuery(element).offset().top;
+				//get the size of the header
+			    var header = jQuery('#oa-navbar').height();
+			    //scroll window to the location of the element
+			    jQuery(window).scrollTop(position-header);
+			}
 		}
 	});
 	jQuery("a").click(function(event){
