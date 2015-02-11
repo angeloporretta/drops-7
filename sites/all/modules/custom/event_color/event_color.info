@@ -1,0 +1,4 @@
+name = Event Color
+description = Custom module that builds a form to filter the calendar view
+package = custom
+core = 7.x

@@ -1,0 +1,101 @@
+<?php
+
+  function event_color_block_info() {
+    $blocks = array();
+    $blocks['event-color'] = array(
+      'info' => t('Event Color'),
+    );
+    return $blocks;
+  }
+
+  function event_color_block_view($delta = '') {
+    $block = array();
+
+    switch ($delta) {
+      case  "event-color":
+        $block['content'] = 'test';
+      break;
+    }
+
+    return $block;
+  }
+
+  function event_color_form($form, &$form_state) {
+    $new_options = array();
+    $list_of_colors = db_select('field_data_field_color_code' , 'f')
+      ->fields('f' , array('field_color_code_rgb'))
+      ->groupBy('field_color_code_rgb')
+      ->execute();
+    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+      $node = node_load(arg(1));
+      foreach ($node->panelizer['page_manager']->display->content as $panes) {
+        if ($panes->type == 'event_color_search') {
+          $colors = $panes->configuration['color'];
+        }
+      }
+    } else {
+      $panes = array();
+      foreach ($form_state['input']['panel']['pane'] as $panel) {
+         $pane = explode("," , $panel);
+         $pane = array_combine($pane, $pane);
+         $panes = array_merge($panes , $pane);
+      }
+      if (!empty($panes)) {
+      $panel = db_select('panels_pane' , 'p')
+        ->fields('p' , array('configuration'))
+        ->condition('type' , 'event_color_search' , '=')
+        ->condition('pid' , $panes , 'IN')
+        ->execute()
+        ->fetchAssoc();
+      $colors = unserialize($panel['configuration']);
+      $colors = $colors['color'];
+    }
+  }
+    $options = array();
+    $options['All'] = t('Any');
+    while ($color = $list_of_colors->fetchAssoc()) {
+      $color_code = explode("#" , $color['field_color_code_rgb']);
+      $color_value = $colors[$color_code[1]];
+      $options[$color['field_color_code_rgb']] = $color_value;
+    }
+    //build markup
+    $markup = '<div class="row">';
+    foreach ($colors as $key => $option) {
+      if ($option != 'Any') {
+        if ('#' . $key != $option) {
+          $markup .= '<span style="margin-right:5px;background-color:#' . $key . ';">' . $option . '</span>';
+          $new_options['#' . $key] = $option;
+        }
+        
+      }
+    }
+    $markup .= '</div>';
+
+    $form['markup'] = array(
+      '#markup' => $markup,
+    );
+
+    $form['search'] = array(
+      '#type' => 'select',
+      '#options' => $new_options,
+    );
+    $form['submit'] = array(
+      '#type' => 'submit',
+      '#value' => t('Apply'),
+    );
+
+    return $form;
+  }
+
+  function event_color_form_submit($form , &$form_state) {
+    drupal_goto(current_path() , array('query' => array('field_color_code_rgb' => $form_state['input']['search'])));
+  }
+
+  function event_color_ctools_plugin_directory($owner, $plugin_type) {
+
+    if ($owner == 'ctools' && $plugin_type == 'content_types') {
+      return 'plugins/' . $plugin_type;
+    }
+  }
+
+?>
