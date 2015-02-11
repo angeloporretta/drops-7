@@ -148,6 +148,7 @@ function theme_custom_attributes_style_render_pane($vars) {
     $title_style = array();
     $panel_style = array();
     $footer_style = array();
+    // add default values
 
     foreach($vars['settings'] as $key => $value) {
         if(isset($value) && !empty($value)) {
@@ -185,10 +186,24 @@ function theme_custom_attributes_style_render_pane($vars) {
                     $panel_style[] = "padding:".$value."px";
                     break;
             }
+        } else {
+            if ($key == 'title-background') {
+                $title_style[] = "background-color:" . variable_get('style_default_color' , '');
+            } else if ($key == 'title-text') {
+                $title_style[] = "color:#ffffff";
+            } else if ($key == 'panel-border') {
+                $panel_style[] = "border-color:#c4bfbf";
+            } else if ($key == 'border-width') {
+                $panel_style[] = "border-width:1px";
+            } else if ($key == 'panel-padding') {
+                $panel_style[] = "padding:5px";
+            }
         }
     }
     // add padding left 10 px for title
     $title_style[] = "padding-left:10px";
+    $title_style[] = "margin-bottom:0px";
+    $panel_style[] = "padding-left:10px";
     $style_attributes['style'] = implode(";", $panel_style);
     $style_attributes['style'] .= ";";
 

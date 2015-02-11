@@ -9,3 +9,43 @@ function panel_custom_style_ctools_plugin_directory($module, $plugin) {
         return 'plugins/' . $plugin;
     }
 }
+
+function panel_custom_style_menu() {
+  $items = array();
+
+  $items['admin/config/set-default-style'] = array(
+  	'title' => t('Set default style color'),
+  	'page callback' => 'drupal_get_form',
+  	'page arguments' => array('default_style_form'),
+  	'access callback' => 'user_access',
+  	'access arguments' => array('configure impetus panes settings'),
+  	'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function default_style_form($form , &$form_state) {
+  $form = array();
+
+  $form['color'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Default color'),
+    '#size' => 12,
+    '#required' => TRUE,
+    '#default_value' => variable_get('style_default_color' , ''),
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+function default_style_form_submit($form , &$form_state) {
+  if (isset($form_state['input']['color']) && !empty($form_state['input']['color'])) {
+  	variable_set('style_default_color' , $form_state['input']['color']);
+  }
+}
