@@ -299,3 +299,21 @@ background-color: #f2f2f2;
   padding-top: 6px;
   border-top-color: transparent;
 }
+
+.view-display-id-oa_calendar_month form {
+  /*display:none;*/
+}
+
+@media (max-width:480px) {
+  body {
+  	padding-top:0px;
+  	margin-top:0px !important;
+  }
+  #main-wrapper {
+  	margin-top:0px !important;
+  }
+}
+
+#lightboxFrame {
+width:100% !important;
+}
