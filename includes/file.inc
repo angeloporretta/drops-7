@@ -1969,6 +1969,21 @@ function file_transfer($uri, $headers) {
   foreach ($headers as $name => $value) {
     drupal_add_http_header($name, $value);
   }
+  if (isset($_SERVER['HTTPS']) && ($_SERVER['HTTPS'] == 'on')) {
+    $referer = $_SERVER['HTTP_REFERER'];
+    $host = $_SERVER['HTTP_HOST'];
+    $path = substr($referer, strpos($referer,$host)+strlen($host)+1);
+    $lookup = drupal_lookup_path('source' , $path);
+    $lookup_path = explode("/" , $lookup);
+    if (isset($lookup_path[1]) && is_numeric($lookup_path[1])) {
+      $node = node_load($lookup_path[1]);
+      if ($node->type == 'file') {
+        drupal_add_http_header('Cache-Control' , 'private');
+        drupal_add_http_header('Pragma' , 'private');
+        drupal_add_http_header('Content-Disposition' , 'attachment; filename="'.$uri.'"');
+      }
+    }
+  }
   drupal_send_headers();
   $scheme = file_uri_scheme($uri);
   // Transfer file in 1024 byte chunks to save memory usage.
