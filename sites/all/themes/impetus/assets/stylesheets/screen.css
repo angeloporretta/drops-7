@@ -317,3 +317,92 @@ background-color: #f2f2f2;
 #lightboxFrame {
 width:100% !important;
 }
+
+/* IE8 fixes */
+
+@media \0screen {
+.span12 {
+width:100% !important;
+}
+
+#main-wrapper #main {
+width:1200px !important;
+}
+
+ul.menu li.collapsed.dhtml-folder:before{
+width:25px;
+height:25px;
+background-position-x: -25px;
+background-size:auto;
+}
+
+ul.menu li.expanded.dhtml-folder:before{
+width:25px;
+height:25px;
+background-position-x: 0px !important;
+background-size:auto;
+}
+
+#oa-navbar .pane-impetus-panes-section-dropdown{
+width:80%;
+}
+
+#oa-navbar .pane-content .oa-navigation.clearfix{
+margin-left:20px !important;
+}
+
+#oa-navbar .pane-impetus-panes-section-dropdown .dropdown .menu-column{
+float:left;
+}
+}
+
+
+@media screen\0{
+#oa-navbar #mini-panel-oa_toolbar_panel {
+width:100% !important;
+}
+#oa-navbar .navbar-inner{
+padding-left:0px !important;
+padding-right:0px !important;
+}
+#oa-navbar .oa-banner.oa-menu-banner {
+margin-left:20px !important;
+}
+body.not-logged-in #oa-navbar .moscone-flipped-container.moscone-flipped-column-content.clearfix {
+display:none;
+}
+#oa-navbar .span4 {
+width:34% !important;
+margin-left:0px;
+}
+#oa-navbar .span8 {
+width:66% !important;
+}
+#oa-navbar .pane-impetus-panes-section-dropdown {
+float:left;
+width:80%;
+}
+
+#main #panels-ipe-control-container {
+width:auto;
+background-color: transparent;
+position: absolute;
+top: -25px;
+right: -12px;
+bottom: auto;
+z-index:999;
+box-shadow:none;
+}
+
+#main {
+position:relative;
+}
+
+#footer{
+overflow:hidden;
+}
+
+#oa-navbar .pane-impetus-panes-section-dropdown .dropdown .menu-column{
+float:left;
+}
+}
