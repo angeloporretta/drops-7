@@ -59,7 +59,7 @@
       $options[$color['field_color_code_rgb']] = $color_value;
     }
     //build markup
-    $markup = '<div class="row">';
+    $markup = '<div class="col-sm-12">';
     foreach ($colors as $key => $option) {
       if ($option != 'Any') {
         if ('#' . $key != $option) {
@@ -75,26 +75,103 @@
       '#markup' => $markup,
     );
 
-    $form['search'] = array(
-      '#type' => 'select',
-      '#options' => $new_options,
-    );
-    $form['submit'] = array(
-      '#type' => 'submit',
-      '#value' => t('Apply'),
-    );
-
     return $form;
   }
 
   function event_color_form_submit($form , &$form_state) {
-    drupal_goto(current_path() , array('query' => array('field_color_code_rgb' => $form_state['input']['search'])));
+    // $checked_values = array();
+    // foreach ($form_state['values']['search'] as $key => $checked) {
+    //   if ($checked > 0 || gettype($checked) == 'string') {
+    //     $checked_values[] = $key;
+    //   }
+    // }
+    // foreach($checked_values as $value) {
+    //   $search_index = 0;
+    //   while($index = current($form_state['values']['index'])) {
+    //     if 
+    //   }
+    // }
+    // dsm($form_state);dsm($checked_values);
+    // drupal_goto(current_path() , array('query' => array('field_color_code_rgb' => '#FCE1E1' , 'field_color_code_rgb' => '#BFFFE1')));
   }
 
   function event_color_ctools_plugin_directory($owner, $plugin_type) {
 
     if ($owner == 'ctools' && $plugin_type == 'content_types') {
       return 'plugins/' . $plugin_type;
+    }
+  }
+
+  function event_color_views_query_alter(&$view, &$query) {
+    $empty_array = array();
+    if ($view->name == 'oa_fullcalendar' && $view->current_display == 'oa_calendar_month') {
+      foreach ($query->where[1]['conditions'] as $key => $conditions) {
+        if ($conditions['field'] == 'field_data_field_color_code.field_color_code_rgb') {
+          $empty_array[] = $query->where[1]['conditions'][$key]['value'];
+          unset($query->where[1]['conditions'][$key]);
+        }
+      }
+      if (!empty($empty_array)) {
+        $query->where[1]['conditions'][] = array('field' => 'field_data_field_color_code.field_color_code_rgb' , 'value' => $empty_array , 'operator' => 'IN');
+      }
+    }
+  }
+
+  function event_color_form_alter(&$form, &$form_state, $form_id) {
+    global $user;
+    //if ($form_id == 'oa_event_node_form') {
+      // if ($user->uid > 1 && !isset($user->roles[3]) && !isset($user->roles[5])) {
+      //   $form['field_dummy_content']['#access'] = 0;
+      //   $form['field_hide_title']['#access'] = 0;
+      //   $form['field_rsvp_amount']['#access'] = 0;
+      //   $form['oa_section_ref']['#access'] = 0;
+      //   $form['oa_other_spaces_ref']['#access'] = 0;
+      //   $form['field_oa_media']['#access'] = 0;
+      //   $form['revision_information']['#access'] = 0;
+      //   drupal_add_js(drupal_get_path('module' , 'event_color') . '/js/remove-fieldsets.js');
+      // }
+   // }
+    if ($form['#form_id'] == 'views_exposed_form' && strpos($form['#id'] , 'views-exposed-form-oa-fullcalendar-oa-calendar-month') == 0) {
+      if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+      $node = node_load(arg(1));
+      foreach ($node->panelizer['page_manager']->display->content as $panes) {
+        if ($panes->type == 'event_color_search') {
+          $colors = $panes->configuration['color'];
+        }
+      }
+    } else {
+      $panes = array();
+      if (isset($form_state['input']['panel'])) {
+      foreach ($form_state['input']['panel']['pane'] as $panel) {
+         $pane = explode("," , $panel);
+         $pane = array_combine($pane, $pane);
+         $panes = array_merge($panes , $pane);
+      }
+      if (!empty($panes)) {
+      $panel = db_select('panels_pane' , 'p')
+        ->fields('p' , array('configuration'))
+        ->condition('type' , 'event_color_search' , '=')
+        ->condition('pid' , $panes , 'IN')
+        ->execute()
+        ->fetchAssoc();
+      $colors = unserialize($panel['configuration']);
+      $colors = $colors['color'];
+    }
+  }
+  }
+  if (isset($form['field_color_code_rgb']['#options'])) {
+  foreach($form['field_color_code_rgb']['#options'] as $key => $color) {
+    $color_nohash = explode("#" , $color);
+    $color_code = $color_nohash[1];
+    if (isset($colors[$color_code])) {
+      if ($colors[$color_code] == $color) {
+        unset($form['field_color_code_rgb']['#options'][$key]);
+      } else {
+        $form['field_color_code_rgb']['#options'][$key] = $colors[$color_code];
+      }
+    }
+  }
+}
     }
   }
 
