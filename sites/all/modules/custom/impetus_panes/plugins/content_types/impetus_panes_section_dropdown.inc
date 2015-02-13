@@ -121,7 +121,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         }
         $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->link_title . '</a>';
         if (!empty($space_node->section_nodes)) {
-          $block .= '<ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+          $block->content .= '<ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
           $block->content .= '<li class="close-button"><button>X</button></li>';
           $this_column_items = 0;
           foreach ($space_node->section_nodes as $section_node) {
