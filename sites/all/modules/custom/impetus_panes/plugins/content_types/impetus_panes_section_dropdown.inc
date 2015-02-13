@@ -119,21 +119,25 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
             }
           }
         }
-        $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->link_title . '</a><ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
-        $block->content .= '<li class="close-button"><button>X</button></li>';
-        $this_column_items = 0;
-        foreach ($space_node->section_nodes as $section_node) {
-          if($this_column_items == 0) {
-            $block->content .= '<div class="menu-column" style="width:' . $width . '%">';
+        $block->content .= '<li class="dropdown' . $class . '"><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '"' . '>' . $space_node->link_title . '</a>';
+        if (!empty($space_node->section_nodes)) {
+          $block .= '<ul class="nested hide" style="width:' . 200*$number_of_columns . 'px">';
+          $block->content .= '<li class="close-button"><button>X</button></li>';
+          $this_column_items = 0;
+          foreach ($space_node->section_nodes as $section_node) {
+            if($this_column_items == 0) {
+              $block->content .= '<div class="menu-column" style="width:' . $width . '%">';
+            }
+            $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $section_node->nid) . '">' . $section_node->title . '</a></li>';
+            $this_column_items++;
+            if ($this_column_items == $items_per_column) {
+              $this_column_items = 0;
+              $block->content .= "</div>";
+            }
           }
-          $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $section_node->nid) . '">' . $section_node->title . '</a></li>';
-          $this_column_items++;
-          if ($this_column_items == $items_per_column) {
-            $this_column_items = 0;
-            $block->content .= "</div>";
-          }
+          $block->content .= '</ul>';
         }
-        $block->content .= '</ul></li>';
+        $block->content .= '</li>';
       }
       else {
         $block->content .= '<li><a href="/' . drupal_get_path_alias('node/' . $space_node->nid) . '">' . $space_node->link_title . '</a></li>';
