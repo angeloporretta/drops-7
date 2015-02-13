@@ -422,4 +422,7 @@ float:left;
 	#panels-ipe-control-container{
 	z-index:50 !important;
   }
+  .pane-oa-dashboard-oa-user-badge a{
+  	margin-top:30px !important;
+  }
 }
