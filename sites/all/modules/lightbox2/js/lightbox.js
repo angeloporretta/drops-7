@@ -132,6 +132,9 @@ Lightbox = {
     var layout_class = (s.use_alt_layout ? 'lightbox2-alt-layout' : 'lightbox2-orig-layout');
     var output = '<div id="lightbox2-overlay" style="display: none;"></div>\
       <div id="lightbox" style="display: none;" class="' + layout_class + '">\
+        <div id="close-window">\
+          <a id="TopNavClose" title="Close" href="#" style="color: rgb(0, 0, 0); background-color: rgb(255, 255, 255);"></a>\
+        </div>\
         <div id="outerImageContainer"></div>\
         <div id="imageDataContainer" class="clearfix">\
           <div id="imageData"></div>\
@@ -600,6 +603,7 @@ Lightbox = {
     // Simultaneous.
     else {
       $('#outerImageContainer').animate({'width': widthNew, 'height': heightNew}, Lightbox.resizeSpeed, 'linear', function() { Lightbox.showData(); });
+      $("#close-window").css("width" , widthNew);
     }
 
     // If new and old image are same size and no scaling transition is necessary
