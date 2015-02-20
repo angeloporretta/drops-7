@@ -101,7 +101,6 @@ function file_tracker_file_download_access_alter(&$grants, $file, $entity_type, 
   
   if ($entity_type == 'node' && $entity->type == 'file') {
     global $user;
-    
       file_tracker_insert_download_record(
         array(
           'file_name' => $file['filename'],
@@ -119,7 +118,7 @@ function file_tracker_file_download_access_alter(&$grants, $file, $entity_type, 
  * @return int: The new record's primary key on success, false on failure.
  */
 function file_tracker_insert_download_record($args) {
-  
+  if (!empty($args['file_name'])) {
   $id = db_insert('file_tracker_downloads')
     ->fields(array(
       'filename' => $args['file_name'],
@@ -128,8 +127,8 @@ function file_tracker_insert_download_record($args) {
       'downloaded_timestamp' => REQUEST_TIME,
     ))
     ->execute();
-  
   return $id;
+  }
 }
 
 /**
