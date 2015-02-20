@@ -47,7 +47,9 @@ function bulk_file_upload_render_download_page() {
           foreach ($file_nodes as $file_node) {
             if (node_access('view', $file_node)) {
               $file_fields = field_get_items('node', $file_node, 'field_uploaded_file');
+              $dd_field = field_get_items('node' , $file_node , 'field_drag_and_drop_upload');
               $base_file_path = drupal_realpath($file_fields[0]['uri']);
+              $dd_base_path = drupal_realpath($dd_field[0]['uri']);
               //$base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
               if (!empty($file_fields[0]['filename'])){
                 $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
@@ -55,6 +57,14 @@ function bulk_file_upload_render_download_page() {
               if (module_exists('file_tracker')) {
                 global $user;
                 file_tracker_insert_download_record(array('nid' => $file_node->nid, 'uid' => $user->uid, 'file_name' => $file_fields[0]['filename']));
+              }
+            }
+            if (!empty($dd_field[0]['filename'])){
+                $zip_archive->addFile($dd_base_path, $dd_field[0]['filename']);
+              // If the file tracker module is enabled, then let's keep track of this downloaded file.
+              if (module_exists('file_tracker')) {
+                global $user;
+                file_tracker_insert_download_record(array('nid' => $file_node->nid, 'uid' => $user->uid, 'file_name' => $dd_field[0]['filename']));
               }
             }
             }
@@ -105,17 +115,27 @@ function get_files_from_children_folders($zip_archive , $tid) {
     foreach ($file_nodes as $file_node) {
       if (node_access('view', $file_node)) {
         $file_fields = field_get_items('node', $file_node, 'field_uploaded_file');
+        $dd_field = field_get_items('node' , $file_node , 'field_drag_and_drop_upload');
+        $dd_path = drupal_realpath($dd_field[0]['uri']);
         $base_file_path = drupal_realpath($file_fields[0]['uri']);
         //$base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
         if (!empty($file_fields[0]['filename'])) {
           $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
-        }
         // If the file tracker module is enabled, then let's keep track of this downloaded file.
         if (module_exists('file_tracker')) {
           global $user;
           file_tracker_insert_download_record(array('nid' => $file_node->nid, 'uid' => $user->uid, 'file_name' => $file_fields[0]['filename']));
         }
       }
+      if (!empty($dd_field[0]['filename'])) {
+          $zip_archive->addFile($dd_path, $dd_field[0]['filename']);
+        // If the file tracker module is enabled, then let's keep track of this downloaded file.
+        if (module_exists('file_tracker')) {
+          global $user;
+          file_tracker_insert_download_record(array('nid' => $file_node->nid, 'uid' => $user->uid, 'file_name' => $dd_field[0]['filename']));
+        }
+      }
+    }
     }
   }
   }
