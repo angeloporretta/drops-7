@@ -57,6 +57,11 @@ color: @toolbartext;
 .navbar .oa-space-menu .nav li > a {
   color: @menutext;
 }
+
+#panels-ipe-regionid-sidebar .panels-ipe-portlet-content .pane-content a {
+  color:@menu_links !important;
+}
+
 .navbar-inverse ul#oa_breadcrumb .btn.btn-inverse,
 .navbar-inner ul#oa_breadcrumb .btn,
 .navbar-inverse #oa-user-badge .user-badge,

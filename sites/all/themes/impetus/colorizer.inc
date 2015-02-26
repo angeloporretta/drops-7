@@ -8,7 +8,7 @@ $info = array(
    // 'inactive_menu_parent' => t('Main menu border top color'),
     //'inactive' => t('Color of the active top parent'),
     //'active_leaf' => t('Active menu item'),
-    //'menu_links' => t('Menu links'),
+    'menu_links' => t('Menu links'),
     'main_menu_hover_color' => t('Main menu border top color'),
     'top' => t('Toolbar top'),
     'bottom' => t('Toolbar bottom'),
@@ -41,7 +41,7 @@ $info = array(
         //'inactive_menu_parent' => '#222222',
        // 'inactive' => '#222222',
         //'active_leaf' => '#222222',
-       // 'menu_links' => '#222222',
+        'menu_links' => '#222222',
         'sidebar_menu_top_border' => '#018fe2',
         'main_menu_hover_color' => '#fff',
         'top_menu_leafs' => '#9C0058',
@@ -127,12 +127,12 @@ $info = array(
       'base' => '#019dbf',
       'colors' => array(
         /*
-				  'active' => '#222222',
+          'active' => '#222222',
         'inactive_menu_parent' => '#222222',
         'inactive' => '#222222',
         'active_leaf' => '#222222',
         'menu_links' => '#222222',
-				  */
+          */
         'top' => '#d0d0d0',
         'bottom' => '#c2c4c5',
         'toolbarbtn' => '#dedede',
@@ -156,13 +156,13 @@ $info = array(
       'title' => t('Plum'),
       'base' => '#4c1c58',
       'colors' => array(
-				  /*
+          /*
         'active' => '#222222',
         'inactive_menu_parent' => '#222222',
         'inactive' => '#222222',
         'active_leaf' => '#222222',
         'menu_links' => '#222222',
-					*/
+          */
         'top' => '#4c1c58',
         'bottom' => '#593662',
         'toolbarbtn' => '#401050',
@@ -185,13 +185,13 @@ $info = array(
       'title' => t('Forest'),
       'base' => '#28870d',
       'colors' => array(
-				  /*
+          /*
         'active' => '#222222',
         'inactive_menu_parent' => '#222222',
         'inactive' => '#222222',
         'active_leaf' => '#222222',
         'menu_links' => '#222222',
-					*/ 
+          */ 
         'top' => '#28870d',
         'bottom' => '#43b329',
         'toolbarbtn' => '#25830c',
@@ -214,13 +214,13 @@ $info = array(
       'title' => t('Slate'),
       'base' => '#0073b6',
       'colors' => array(
-				  /*
+          /*
         'active' => '#222222',
         'inactive_menu_parent' => '#222222',
         'inactive' => '#222222',
         'active_leaf' => '#222222',
         'menu_links' => '#222222',
-					*/
+          */
         'top' => '#4a4a4a',
         'bottom' => '#4e4e4e',
         'toolbarbtn' => '#464646',
@@ -244,13 +244,13 @@ $info = array(
       'title' => t('Phase2'),
       'base' => '#0073b6',
       'colors' => array(
-				  /*
+          /*
         'active' => '#222222',
         'inactive_menu_parent' => '#222222',
         'inactive' => '#222222',
         'active_leaf' => '#222222',
         'menu_links' => '#222222',
-					*/
+          */
         'top' => '#FE7900',
         'bottom' => '#FE7900',
         'toolbarbtn' => '#eb7407',
