@@ -467,18 +467,33 @@ function og_menu_single_children_items($plid, $max_depth = NULL) {
  * Helper function to populate the menu tree without loading the entire tree.
  */
 function _og_menu_single_children_items($plid, $current_depth, $max_depth) {
+
   $menu_links = &drupal_static(__FUNCTION__, array());
   $tree = array();
   // current depth should always be same for a given plid.
   if (!isset($menu_links[$plid])) {
     $menu_links[$plid] = menu_build_tree(OG_MENU_SINGLE_MENU_NAME, array('expanded' => array($plid), 'min_depth' => $current_depth));
-  }
-  foreach ($menu_links[$plid] as $key => $item) {
-    $tree[$key] = $item;
-    if ($current_depth < $max_depth) {
-      $tree[$key]['below'] = _og_menu_single_children_items($item['link']['mlid'], $current_depth+1, $max_depth);
+    if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+      $node = node_load(arg(1));
     }
-  }
+    if (isset($node)) {
+      $mlid = db_select('menu_links' , 'm')
+        ->fields('m' , array('mlid' , 'p1' , 'p2' , 'p3' , 'p4' , 'p5' , 'p6' , 'p7' , 'p8' , 'p9'))
+        ->condition('menu_name' , 'og-menu-single' , '=')
+        ->condition('link_path' , 'node/' . $node->nid , '=')
+        ->execute()
+        ->fetchAssoc();
+      $menu_link = menu_link_load($mlid['p1']);
+    foreach ($menu_links[$plid] as $key => $item) {
+   if (($item['link']['p1'] == $mlid['p1'] && $item['link']['p2'] == $mlid['p2']) || $mlid['p2'] == 0 || strpos($menu_link['link_title'] , "Keeping Me Sharp") !== false) {
+      $tree[$key] = $item;
+      if ($current_depth < $max_depth) {
+        $tree[$key]['below'] = _og_menu_single_children_items($item['link']['mlid'], $current_depth+1, $max_depth);
+       }
+   }
+    }
+  } 
+}
   return $tree;
 }
 
@@ -503,11 +518,27 @@ function og_menu_single_menu_link_load($mlid) {
  *   Current link ID if exists for that group.
  */
 function _og_menu_single_save_group_link($node, $mlid = null) {
+  if (!empty($mlid)) {
+    $link_weight = db_select('menu_links' , 'm')
+      ->fields('m' , array('weight'))
+      ->condition('mlid' , $mlid , '=')
+      ->execute()
+      ->fetchAssoc();
+    if (!empty($link_weight['weight'])) {
+      $weight = $link_weight['weight'];
+    }
+    else {
+      $weight = 0;
+    }
+  } else {
+    $weight = 0;
+  }
   if (og_menu_single_is_enabled_group('node', $node->type)) {
     $link = array(
       'mlid' => $mlid,
       'link_title' => $node->title,
       'link_path' => 'node/' . $node->nid,
+      'weight' => $weight,
       'menu_name' => OG_MENU_SINGLE_MENU_NAME,
       'options' => array(
         'attributes' => array(
