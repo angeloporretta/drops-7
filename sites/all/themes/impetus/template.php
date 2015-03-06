@@ -326,3 +326,4 @@ function impetus_preprocess_comment(&$variables) {
     }
   }
 }
+
