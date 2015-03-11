@@ -42,7 +42,8 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $menu->groupBy('m.link_title');
   $menu->fields('m' , array('link_title' , 'mlid' , 'weight'))
     ->condition('menu_name' , 'og-menu-single' , '=')
-    ->condition('plid' , '0' ,'=');
+    ->condition('plid' , '0' ,'=')
+    ->condition('customized' , '1' , '=');
   $menu->fields('n' , array('nid'))
     ->condition('type' , 'oa_space' , '=');
   $menu->orderBy('m.weight' , 'ASC');
@@ -50,7 +51,6 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   while ($men = $result->fetchAssoc()) {
     $og_menu[] = $men;
   }
-
   $i = 0;
   $allowed_space_nodes = $og_menu;
   foreach($allowed_space_nodes as $nodes) {
