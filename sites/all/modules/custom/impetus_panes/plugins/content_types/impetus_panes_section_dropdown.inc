@@ -37,19 +37,41 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   $block->title = ''; 
   $block->content = '';
   $flag = flag_get_flag('remove_from_top_nav');
-  $menu = db_select('menu_links' , 'm');
-  $menu->join('node' , 'n' , 'n.title = m.link_title');
-  $menu->groupBy('m.link_title');
-  $menu->fields('m' , array('link_title' , 'mlid' , 'weight'))
-    ->condition('menu_name' , 'og-menu-single' , '=')
-    ->condition('plid' , '0' ,'=');
-  $menu->fields('n' , array('nid'))
-    ->condition('type' , 'oa_space' , '=');
-  $menu->orderBy('m.weight' , 'ASC');
-  $result = $menu->execute();
-  while ($men = $result->fetchAssoc()) {
-    $og_menu[] = $men;
+
+  $menu_items_id = db_select('node' , 'n')
+    ->fields('n')
+    ->condition('type' , 'oa_space' , '=')
+    ->execute();
+
+  while ($menu_item = $menu_items_id->fetchAssoc()) {
+    $menu = db_select('menu_links' , 'm')
+      ->fields('m' , array('link_title' , 'mlid' , 'weight'))
+      ->condition('menu_name' , 'og-menu-single' , '=')
+      ->condition('plid' , 0 ,'=')
+      ->condition('link_path' , 'node/' . $menu_item['nid']);
+    $result = $menu->execute();
+    while ($men = $result->fetchAssoc()) {
+      $men['nid'] = $menu_item['nid'];
+      $og_menu[] = $men;
+    }
   }
+  usort($og_menu , "compare_weight_callback");
+
+  // $menu = db_select('menu_links' , 'm');
+  // $menu->join('node' , 'n' , 'n.title = m.link_title');
+  // $menu->groupBy('m.link_title');
+  // $menu->fields('m' , array('link_title' , 'mlid' , 'weight'))
+  //   ->condition('menu_name' , 'og-menu-single' , '=')
+  //   ->condition('plid' , '0' ,'=');
+  // $menu->fields('n' , array('nid'))
+  //   ->condition('type' , 'oa_space' , '=');
+  // $menu->condition('n.nid' )
+  // $menu->orderBy('m.weight' , 'ASC');
+  // $result = $menu->execute();
+  // while ($men = $result->fetchAssoc()) {
+  //   dsm($men);
+  //   $og_menu[] = $men;
+  // }
   $i = 0;
   $allowed_space_nodes = $og_menu;
   foreach($allowed_space_nodes as $nodes) {
@@ -167,4 +189,12 @@ function impetus_panes_submenu_tree_all_data($menu_name, $plid) {
   }
 
   return $return;
+}
+
+function compare_weight_callback($a , $b) {
+  if ($a['weight'] > $b['weight']) {
+    return 1;
+  } else {
+    return -1;
+  }
 }
