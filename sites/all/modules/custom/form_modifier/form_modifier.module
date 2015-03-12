@@ -13,6 +13,9 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   if ($form['#id'] == 'comment-form') {
     if (isset($form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'])) {
       $form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'] = '';
+      drupal_add_js('jQuery(document).ready(function(){
+        jQuery(".comment-form .form-type-mfw-managed-file .description").remove();
+      });' , array('type' => 'inline'));
     }
   }
   switch ($form_id) {
