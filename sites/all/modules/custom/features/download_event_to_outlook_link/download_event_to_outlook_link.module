@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Download event to outlook link feature.
+ */
+
+include_once 'download_event_to_outlook_link.features.inc';

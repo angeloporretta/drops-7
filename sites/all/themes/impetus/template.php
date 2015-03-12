@@ -82,6 +82,12 @@ function impetus_preprocess_page(&$vars) {
     } else {
       $vars['hide'] = 0;
     }
+    if ($node->type == 'oa_event') {
+      if (!isset($vars['page']['content']['#prefix']) || (empty($vars['page']['content']['#prefix']))) {
+        $vars['page']['content']['#prefix'] = '';
+      }
+      $vars['page']['content']['#prefix'] .= '<div class="export">' . l(t('Export this event') , "export/calendar/" . $node->nid) . '</div>';
+    }
     drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/remove-lightbox-menu.js');
   }
   // Taxonomy pages.
