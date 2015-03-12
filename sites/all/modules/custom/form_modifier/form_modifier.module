@@ -10,6 +10,11 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   
   drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.js');
   
+  if ($form['#id'] == 'comment-form') {
+    if (isset($form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'])) {
+      $form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'] = '';
+    }
+  }
   switch ($form_id) {
     case 'menu_edit_menu':
       
