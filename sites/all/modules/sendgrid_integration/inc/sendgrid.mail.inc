@@ -11,7 +11,9 @@ class SendGridMailSystem implements MailSystemInterface {
    */
   public function format(array $message) {
     // Join message array.
-    $message['body'] = implode("\n\n", $message['body']);
+    if (gettype($message['body']) == 'array') {
+      $message['body'] = implode("\n\n", $message['body']);
+    }
 
     return $message;
   }
