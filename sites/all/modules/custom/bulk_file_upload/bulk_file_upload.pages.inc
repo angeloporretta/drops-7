@@ -52,7 +52,8 @@ function bulk_file_upload_render_download_page() {
               $dd_base_path = drupal_realpath($dd_field[0]['uri']);
               //$base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
               if (!empty($file_fields[0]['filename'])){
-                $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
+                $extension = explode("." , $file_fields[0]['filename']);
+                $zip_archive->addFile($base_file_path, $file_node->title . "." . end($extension));
               // If the file tracker module is enabled, then let's keep track of this downloaded file.
               if (module_exists('file_tracker')) {
                 global $user;
@@ -60,7 +61,8 @@ function bulk_file_upload_render_download_page() {
               }
             }
             if (!empty($dd_field[0]['filename'])){
-                $zip_archive->addFile($dd_base_path, $dd_field[0]['filename']);
+              $extension = explode("." , $dd_field[0]['filename']);
+                $zip_archive->addFile($dd_base_path, $file_node->title . "." . end($extension));
               // If the file tracker module is enabled, then let's keep track of this downloaded file.
               if (module_exists('file_tracker')) {
                 global $user;
@@ -120,7 +122,8 @@ function get_files_from_children_folders($zip_archive , $tid) {
         $base_file_path = drupal_realpath($file_fields[0]['uri']);
         //$base_file_path = './sites/default/files/private/' . $file_folder_info['settings']['file_directory'] . '/' . $file_fields[0]['filename'];
         if (!empty($file_fields[0]['filename'])) {
-          $zip_archive->addFile($base_file_path, $file_fields[0]['filename']);
+          $extension = explode("." , $file_fields[0]['filename']);
+          $zip_archive->addFile($base_file_path, $file_node->title . "." . end($extension));
         // If the file tracker module is enabled, then let's keep track of this downloaded file.
         if (module_exists('file_tracker')) {
           global $user;
@@ -128,7 +131,8 @@ function get_files_from_children_folders($zip_archive , $tid) {
         }
       }
       if (!empty($dd_field[0]['filename'])) {
-          $zip_archive->addFile($dd_path, $dd_field[0]['filename']);
+          $extension = explode("." , $dd_field[0]['filename']);
+          $zip_archive->addFile($dd_path, $file_node->title . "." . end($extension));
         // If the file tracker module is enabled, then let's keep track of this downloaded file.
         if (module_exists('file_tracker')) {
           global $user;

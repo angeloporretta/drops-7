@@ -1962,6 +1962,21 @@ function file_unmanaged_save_data($data, $destination = NULL, $replace = FILE_EX
  *   An array of HTTP headers to send along with file.
  */
 function file_transfer($uri, $headers) {
+  $file_load = file_load_multiple(array() , array('uri' => $uri));
+  foreach($file_load as $file_loaded) {
+    if (isset($file_loaded->fid)) {
+      $node_id = db_select('file_usage' , 'f')
+        ->fields('f')
+        ->condition('type' , 'node' , '=')
+        ->condition('fid' , $file_loaded->fid , '=')
+        ->execute()
+        ->fetchAssoc();
+      if (!empty($node_id)) {
+        $node = node_load($node_id['id']);
+      }
+    }
+  }
+
   if (ob_get_level()) {
     ob_end_clean();
   }
@@ -1978,11 +1993,16 @@ function file_transfer($uri, $headers) {
     if (isset($lookup_path[1]) && is_numeric($lookup_path[1])) {
       $node = node_load($lookup_path[1]);
       if ($node->type == 'file') {
+        $extension = explode("." , $uri);
         drupal_add_http_header('Cache-Control' , 'private');
         drupal_add_http_header('Pragma' , 'private');
-        drupal_add_http_header('Content-Disposition' , 'attachment; filename="'.$uri.'"');
+        drupal_add_http_header('Content-Disposition' , 'attachment; filename="' . $node->title . "." . end($extension) . '"');
       }
     }
+  }
+  if (isset($node)) {
+    $extension = explode("." , $uri);
+    drupal_add_http_header('Content-Disposition' , 'attachment; filename="' . $node->title . "." . end($extension) . '"');
   }
   drupal_send_headers();
   $scheme = file_uri_scheme($uri);
