@@ -15,6 +15,7 @@ if (module_exists('comment')) {
     'defaults' => array(
       'mode' => variable_get('comment_default_mode', COMMENT_MODE_THREADED),
       'comments_per_page' => variable_get('comment_default_per_page', '50'),
+      'sort' => 'ASC',
     ),
   );
 }
@@ -40,6 +41,16 @@ function ctools_node_comments_content_type_render($subtype, $conf, $panel_args, 
 
 function ctools_node_comments_content_type_edit_form($form, &$form_state) {
   $conf = $form_state['conf'];
+  $form['sort'] = array(
+    '#type' => 'select',
+    '#title' => t('Sort'),
+    '#default_value' => $conf['sort'],
+    '#options' => array(
+      'ASC' => 'ASC',
+      'DESC' => 'DESC',
+    ),
+  );
+
   $form['mode'] = array(
     '#type' => 'select',
     '#title' => t('Mode'),
@@ -80,13 +91,15 @@ function ctools_comment_render($node, $conf) {
   if (!user_access('access comments') || !$node->comment) {
     return;
   }
-
   $mode = $conf['mode'];
   $comments_per_page = $conf['comments_per_page'];
+  $sort = $conf['sort'];
 
   $cids = comment_get_thread($node, $mode, $comments_per_page);
   $comments = comment_load_multiple($cids);
-
+  if ($sort == 'DESC') {
+    $comments = array_reverse($comments , TRUE);
+  }
   if ($comments) {
     drupal_add_css(drupal_get_path('module', 'comment') . '/comment.css');
     comment_prepare_thread($comments);
