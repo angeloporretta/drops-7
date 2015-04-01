@@ -72,7 +72,11 @@ class SendGridMailSystem implements MailSystemInterface {
     }
     else {
       $data['from'] = variable_get('site_mail');
-      $data['fromname'] = variable_get('site_name');
+    }
+    if (isset($message['fromname'])) {
+      $data['fromname'] = $message['fromname'];
+    } else {
+      $data['fromname'] = variable_get('smtp_fromname');
     }
 
     // Check Content-Type of message body.
