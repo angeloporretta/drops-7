@@ -1,0 +1,4 @@
+name = Allow file upload
+description = Custom module that builds the functionality to allow/deny the file upload for discussion forums
+package = custom
+core = 7.x

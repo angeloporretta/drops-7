@@ -1,0 +1,13 @@
+<?php
+
+function allow_file_upload_form_alter(&$form, &$form_state, $form_id) {
+  if ($form['#id'] == 'comment_form' || $form['#id'] == 'comment-form') {
+  	if (isset($form['nid']['#value']) && !empty($form['nid']['#value'])) {
+  	  $node = node_load($form['nid']['#value']);
+  	  if (isset($node->field_allow_file_upload[LANGUAGE_NONE][0]['value']) && $node->field_allow_file_upload[LANGUAGE_NONE][0]['value'] == 1) {
+  	  	unset($form['field_file_upload']);
+  	  	unset($form['field_video_upload']);
+  	  }
+  	}
+  }
+}
