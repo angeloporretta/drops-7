@@ -1,0 +1,4 @@
+name = Add user to groups
+description = Adds a certain user to all the groups
+package = custom
+core = 7.x

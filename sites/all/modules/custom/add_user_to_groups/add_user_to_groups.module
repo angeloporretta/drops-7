@@ -1,0 +1,71 @@
+<?php
+
+function add_user_to_groups_menu() {
+  $items = array();
+
+  $items['admin/config/add_user_to_group'] = array(
+    'title' => t('Add user to all groups'),
+    'description' => t('Adds a user to all the existing groups'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('add_user_to_all_groups'),
+    'access arguments' => array('add user to groups'),
+  );
+
+  return $items;
+}
+
+function add_user_to_groups_permission() {
+  return array(
+    'add user to groups' => array(
+      'title' => t('Add user to groups'),
+      'description' => t('Adds an user to all the existing groups'),
+    ),
+  );
+}
+
+function add_user_to_all_groups($form , &$form_state) {
+  drupal_add_js(drupal_get_path('module' , 'add_user_to_groups') . '/js/add_user_to_groups.js');
+  drupal_add_css(drupal_get_path('module' , 'add_user_to_groups') . '/css/add_user_to_groups.css');
+  $form['user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Name'),
+    '#required' => TRUE,
+    '#autocomplete_path' => 'user/autocomplete',
+  );
+
+  $form['submit'] = array(
+  	'#type' => 'submit',
+  	'#value' => t('Submit'),
+  );
+
+  $form['alert'] = array(
+    '#markup' => '<div id="dialogoverlay"></div>
+<div id="dialogbox">
+  <div>
+    <div id="dialogboxhead"></div>
+    <div id="dialogboxbody"></div>
+    <div id="dialogboxfoot"></div>
+  </div>
+</div>',
+  );
+
+  return $form;  
+}
+
+function add_user_to_all_groups_submit($form , &$form_state) {
+  if (!empty($form_state['values']['user'])) {
+  	$username = $form_state['values']['user'];
+  	$user = user_load_by_name($username);
+  	$groups = og_get_all_group("node");
+  	foreach ($groups as $gid) {
+  	  $membership = og_is_member('node' , $gid , 'user' , $user);
+  	  if(empty($membership)) {
+  	  	og_group('node' , $gid, array(
+          "entity type" => "user",
+          "entity" => $user,
+        ));
+  	  }
+  	}
+  }
+  drupal_set_message(t("Success!"));
+}
