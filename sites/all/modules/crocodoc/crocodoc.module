@@ -152,3 +152,20 @@ function _get_uuid_of_item($uri) {
   }
   return $item['uuid'];
 }
+
+function build_user_name($user) {
+  $name = '';
+  if (isset($user->field_first_name[LANGUAGE_NONE][0]['value']) && !empty($user->field_first_name[LANGUAGE_NONE][0]['value'])){
+    $name = $user->field_first_name[LANGUAGE_NONE][0]['value'];
+  }
+  if (isset($user->field_last_name[LANGUAGE_NONE][0]['value']) && !empty($user->field_last_name[LANGUAGE_NONE][0]['value'])) {
+    if (!empty($name)) {
+      $name .= ' ';
+    }
+    $name .= $user->field_last_name[LANGUAGE_NONE][0]['value'];
+  }
+  if ($name == '') {
+    $name = $user->name;
+  }
+  return $name;
+}
