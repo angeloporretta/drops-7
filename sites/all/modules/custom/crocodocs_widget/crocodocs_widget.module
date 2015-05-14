@@ -1,0 +1,37 @@
+<?php
+
+/**
+ * Implements hook_ctools_plugin_directory.
+ */
+function crocodocs_widget_ctools_plugin_directory($owner, $plugin_type) {
+  
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+function crocodocs_widget_menu() {
+  $items = array();
+
+  $items['crocodocs/autocomplete'] = array(
+  	'title' => 'Autocomplete for crocodocs',
+    'page callback' => '_crocodocs_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+function _crocodocs_autocomplete($string) {
+  $matches = array();
+  $result = db_select('node' , 'n')
+    ->fields('n')
+    ->condition('type' , 'crocodoc')
+    ->condition('title' , '%' . db_like($string) . '%' , 'LIKE')
+    ->execute();
+  foreach ($result as $row) {
+    $matches[$row->title] = check_plain($row->title);
+  }
+  drupal_json_output($matches);
+}

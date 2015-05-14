@@ -1,0 +1,4 @@
+name = Crocodocs Integration
+description = Adds the crocodocs integration functionality
+package = custom
+core = 7.x

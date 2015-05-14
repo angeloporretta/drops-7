@@ -1,0 +1,105 @@
+<?php
+
+// require_once DRUPAL_ROOT . ('/sites/all/libraries/crocodoc/Crocodoc.php');
+
+// function crocodocs_integration_menu() {
+//   $items = array();
+
+//   $items['admin/config/crocodocs'] = array(
+//   	'title' => t('Crocodocs Configuration'),
+//   	'page callback' => 'drupal_get_form',
+//   	'page arguments' => array('crocodocs_configuration'),
+// 	'access arguments' => array('administer crocodocs settings'),
+//   );
+
+//   $items['crocodoc-sample'] = array(
+//   	'title' => t('Crocodoc DEMO'),
+//   	'page callback' => 'drupal_get_form',
+//   	'page arguments' => array('crocodoc_demo'),
+//   	'access arguments' => TRUE,
+//   );
+
+//   return $items;
+// }
+
+// function crocodocs_integration_permissions() {
+//   return array(
+//     'administer crocodocs settings' => array(
+//       'title' => t('Administer crocodocs settings'),
+//       'description' => t('Allow users to edit the crocodocs settings'),
+//     ),
+//   );
+// }
+
+// function crocodocs_configuration() {
+//   $form = array();
+
+//   $form['token_api'] = array(
+//   	'#type' => 'textfield',
+//   	'#title' => t('Token API'),
+//   	'#default_value' => variable_get('crocodoc_api_token' , ''),
+//   );
+
+//   $form['submit'] = array(
+//   	'#type' => 'submit',
+//   	'#value' => t('Submit'),
+//   );
+
+//   return $form;
+// }
+
+// function crocodoc_demo() {
+//   $form = array();
+
+//   $form['file'] = array(
+//   	'#type' => 'managed_file',
+//   	'#title' => t('Upload your file'),
+//   	'#upload_location' => 'public://',
+//   	'#progress_message' => t('Please wait...'),
+//     '#progress_indicator' => 'bar',
+//   );
+
+//   $form['submit'] = array(
+//   	'#type' => 'submit',
+//   	'#value' => t('Submit'),
+//   );
+
+//   return $form;
+// }
+
+// function crocodoc_demo_submit($form , &$form_state) {
+//   dsm($form_state);
+//   $file = file_load($form_state['values']['file']);
+//   $token = variable_get('crocodoc_api_token', '');
+//   $uuid = $file->uuid;
+//   $url = file_create_url($file->uri);
+
+//   $request_url = 'https://crocodoc.com/api/v2/document/upload';
+//  //  $file->status = FILE_STATUS_PERMANENT;
+//  //  file_save($file);
+//   $options = array('token' => $token , "url" => $url);
+//   $croco = new Crocodoc();
+//   $curl = curl_init();
+//   curl_setopt($curl, CURLOPT_POST, 1);
+//   curl_setopt($curl, CURLOPT_URL, $request_url);
+//   curl_setopt($curl, CURLOPT_POSTFIELDS, $options);
+//   curl_setopt($curl, CURLOPT_RETURNTRANSFER, 1);
+//   $output = curl_exec($curl);
+//   curl_close($curl);
+
+//   dsm($output);
+//  //  $file = 'https://dev-janssen.pantheon.io/system/files/content-files/' . $file->filename;
+//  //  try {
+// 	// $uuid = CrocodocDocument::upload($file);
+// 	// drupal_set_message('success :)' . "\n");
+// 	// drupal_set_message('  UUID is ' . $uuid . "\n");
+//  //  } catch (CrocodocException $e) {
+// 	// drupal_set_message('failed :(' . "\n");
+// 	// drupal_set_message('  Error Code: ' . $e->errorCode . "\n");
+// 	// drupal_set_message('  Error Message: ' . $e->getMessage() . "\n");
+//  //  }
+// }
+
+// function crocodocs_configuration_submit($form , &$form_state) {
+//   variable_set('crocodoc_api_token' , $form_state['values']['token_api']);
+// }

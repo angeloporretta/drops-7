@@ -1,0 +1,33 @@
+<?php
+
+function crocodoc_schema() {
+  $schema = array();
+
+    $schema['crocodocs_docs'] = array(
+      'description' => 'Crocodocs files.',
+      'fields' => array(
+        'nid' => array(
+          'description' => 'The identifier for a node',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'uuid' => array(
+          'description' => 'The uuid of the file.',
+          'type' => 'varchar',
+          'not null' => TRUE,
+        ),
+        'delta' => array(
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => FALSE,
+        ),
+        'uri' => array(
+          'type' => 'varchar',
+          'not null' => TRUE,
+        ),
+      ),
+    );
+
+  return $schema;
+}

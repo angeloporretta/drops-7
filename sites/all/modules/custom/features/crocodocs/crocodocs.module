@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Crocodocs feature.
+ */
+
+include_once 'crocodocs.features.inc';
