@@ -15,7 +15,9 @@ function crocodoc_schema() {
         'uuid' => array(
           'description' => 'The uuid of the file.',
           'type' => 'varchar',
+          'length' => 100,
           'not null' => TRUE,
+          'default' => '',
         ),
         'delta' => array(
           'type' => 'int',
@@ -24,7 +26,10 @@ function crocodoc_schema() {
         ),
         'uri' => array(
           'type' => 'varchar',
+          'length' => 100,
           'not null' => TRUE,
+          'default' => '',
+
         ),
       ),
     );
