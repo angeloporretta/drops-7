@@ -140,7 +140,6 @@
       ->execute()
       ->fetchAssoc();
       //build array that will store the default values
-    $default_group_values_array = array();
 
     $retrieve_groups = db_select('custom_access_node' , 'a')
       ->fields('a')
@@ -153,7 +152,7 @@
       $default_values_array[] = $retrieved_group->title;
     }
 
-    if(empty($default_group_values_array)){
+    if(empty($default_values_array)){
       $node = node_load(arg(1));
       if (isset($node->field_file_category[LANGUAGE_NONE][0]['tid'])) {
         $groups = _get_parent_groups($node->field_file_category[LANGUAGE_NONE][0]['tid']);
@@ -670,6 +669,7 @@
      $user_groups = og_get_groups_by_user($user);
      $saved_name = build_saved_name_for_tid($tid);
      $saved_groups = build_saved_groups($tid);
+
      if ($user->uid != 1 && !isset($user->roles[5]) && !isset($user->roles[3]))
       if(_get_access_by_group($saved_groups , $user_groups['node'] , $tid) == 0 && _get_access_by_name($user->uid , $saved_name , $tid) == 0) {
        drupal_access_denied();
@@ -688,6 +688,9 @@
         $get_groups = build_saved_groups($tree[1]->tid);
         return _get_access_by_group($get_groups , $user_groups , $tree[1]->tid);
       }
+    }
+    if(empty($groups)) {
+      return 1;
     }
     foreach ($groups as $key => $value) {
       if (isset($user_groups[$value])) {
@@ -719,6 +722,9 @@
         $get_name = build_saved_name_for_tid($tree[1]->tid);
         return _get_access_by_name($uid , $get_name , $tree[1]->tid);
       }
+    }
+    if (empty($saved_name)) {
+      return 1;
     }
     if (in_array($uid , $saved_name)) {
       return 1;
