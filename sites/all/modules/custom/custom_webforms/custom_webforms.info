@@ -1,0 +1,4 @@
+name = Custom Webforms
+description = Adds custom functionality that is integrated with webforms
+package = custom
+core = 7.x

@@ -1,0 +1,5 @@
+name = Download Webform Changes
+description = Adds custom funtionality to alter the download webform table
+package = custom
+core = 7.x
+dependencies[] = webform

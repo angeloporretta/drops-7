@@ -1,24 +1,134 @@
 <?php
 /**
- * @file: Functionality of the module.
- */
-
-/**
  * Implements hook_form_alter.
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
-  
+  global $user;
+	// modify the node/add/ideas form
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+    $node = node_load(arg(1));
+    if ($node->type == 'webform') {
+      if ($form_id == 'webform_client_form_' . $node->nid) {
+        $loaded_user = user_load($user->uid);
+        foreach($form['submitted'] as $key => $item) {
+          // ordinary field type
+          if (isset($item['#type'])) {
+            if($item['#type'] == 'textfield' && $item['#title'] == 'First Name') {
+              $form['submitted'][$key]['#default_value'] = $loaded_user->field_first_name[LANGUAGE_NONE][0]['value'];
+            } else if($item['#type'] == 'textfield' && $item['#title'] == 'Last Name') {
+              $form['submitted'][$key]['#default_value'] = $loaded_user->field_last_name[LANGUAGE_NONE][0]['value'];
+            } else if($item['#type'] == 'textfield' && $item['#title'] == 'Email') {
+              $form['submitted'][$key]['#default_value'] = $loaded_user->mail;
+            } else if($item['#type'] == 'managed_file') {
+              $form['submitted'][$key]['#description'] = 'Files must be less than <strong>100 MB</strong>.';
+            }
+          } else { //layout box
+            if (isset($item['#webform_component']['type']) && $item['#webform_component']['type'] == 'layout_box') {
+              foreach($item['#webform_component']['children'] as $children) {
+                if ($children['name'] == 'First Name') {
+                  $layout_key = $children['form_key'];
+                  $form['submitted'][$key][$layout_key]['#default_value'] = $loaded_user->field_first_name[LANGUAGE_NONE][0]['value'];
+                } else if ($children['name'] == 'Last Name') {
+                  $layout_key = $children['form_key'];
+                  $form['submitted'][$key][$layout_key]['#default_value'] = $loaded_user->field_last_name[LANGUAGE_NONE][0]['value'];
+                } else if($children['name'] == 'Email') {
+                  $layout_key = $children['form_key'];
+                  $form['submitted'][$key][$layout_key]['#default_value'] = $loaded_user->mail;
+                } else if($children['type'] == 'file'){
+                  $layout_key = $children['form_key'];
+                  $form['submitted'][$key][$layout_key]['#description'] = 'Files must be less than <strong>100 MB</strong>.';
+                }
+              }
+            }
+          } 
+        }
+      }
+    }
+  }
+
   drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.js');
-  
   if ($form['#id'] == 'comment-form') {
     if (isset($form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'])) {
       $form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'] = '';
-      drupal_add_js('jQuery(document).ready(function(){
-        jQuery(".comment-form .form-type-mfw-managed-file .description").remove();
-      });' , array('type' => 'inline'));
     }
   }
   switch ($form_id) {
+    case "user_profile_form":
+      if(arg(0) == 'user' && is_numeric(arg(1)) && arg(2) == 'edit') {
+        if (arg(1) == 1418 || arg(1) == 1510) {
+          hide($form['account']['pass']);
+          hide($form['account']['mail']);
+        }
+      }
+    break;
+
+    case "registration_form":
+      $form['#submit'][] = "event_registration_form_submit";
+    break;
+
+    case 'innovation_node_form':
+        if (arg(0) == 'node' && arg(1) == 'add' && arg(2) == 'innovation') {
+          $form['#prefix'] = l('<button style="padding: 10px;
+  background-color: #a7d0e5;
+  color: white;
+  border-style: solid;
+  border-width: 2px;
+  border-color: #4e6e99;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: bold;">' . t('Back to the Centre of Excellence') . '</button>' , "node/" . variable_get('coe_page') , array('alias' => FALSE , 'html' => TRUE));
+        }
+        if (isset($form['title']['#title'])) {
+          $form['title']['#title'] .= '<span class="innovation-label-translate">(Titre du idée)</span>';
+        }
+        if (isset($form['field_employee_name'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_employee_name'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Nom de l’employé(s)</span>';
+        }
+        if (isset($form['field_title'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_title'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Titre (p. ex. chef de territoire)</span>';
+        }
+        if (isset($form['field_product'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_product'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Produit</span>';
+        }
+        if (isset($form['field_division'][LANGUAGE_NONE][0]['value']['#title'])) {
+          hide($form['field_division']);
+          $form['field_division'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Domaine thérapeutique</span>';
+        }
+        if (isset($form['field_keywords'][LANGUAGE_NONE]['#title'])) {
+          $form['field_keywords'][LANGUAGE_NONE]['#title'] .= '<span class="innovation-label-translate">Mots-clés</span>';
+        }
+        if (isset($form['field_nnovation_name'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_nnovation_name'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Nom de l’idée novatrice</span>';
+        }
+        if (isset($form['field_insights'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_insights'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Perspectives</span>';
+        }
+        if (isset($form['field_actions'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_actions'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Actions</span>';
+        }
+        if (isset($form['field_results'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_results'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Résultats</span>';
+        }
+        if (isset($form['field_benefits'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_benefits'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Avantages pour les intervenants</span>';
+        }
+        if (isset($form['field_key_learnings'][LANGUAGE_NONE][0]['value']['#title'])) {
+          $form['field_key_learnings'][LANGUAGE_NONE][0]['value']['#title'] .= '<span class="innovation-label-translate">Principaux éléments d’apprentissage</span>';
+        }
+        if (isset($form['field_innovation_image'][LANGUAGE_NONE][0]['#title'])) {
+          $form['field_innovation_image'][LANGUAGE_NONE][0]['#title'] .= '<span class="innovation-label-translate">Téléverser une image qui représente votre innovation</span>';
+        }
+        if (isset($form['field_innovation_image'][LANGUAGE_NONE][0]['#description'])) {
+          $form['field_innovation_image'][LANGUAGE_NONE][0]['#description'] .= '<span class="innovation-label-translate">La taille des fichiers doit être inférieure à 100 Mo.</span>';
+        }
+        if (isset($form['field_therapeutic_area'][LANGUAGE_NONE]['#title'])) {
+          $form['field_therapeutic_area'][LANGUAGE_NONE]['#title'] .= '<span class="innovation-label-translate">Domaine thérapeutique</span>';
+        }
+        if (isset($form['field_date'])) {
+          unset($form['field_date']);
+        }
+    break;
+
     case 'menu_edit_menu':
       
       if ($form['menu_name']['#default_value'] == 'og-menu-single') {
@@ -131,6 +241,22 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     case 'oa_section_node_form':
       form_modifier_fix_group_ref_verbiage($form);
     break;
+    case 'ideas_node_form':
+      if (isset($_GET['type']) && !empty($_GET['type'])) {
+        if($_GET['type'] == 'competitive') {
+          $form['field_page_type'][LANGUAGE_NONE]['#default_value'] = 'Competitively Differentiate CONCERTA vs. All Competition';
+          $form['field_ideas_markup'][LANGUAGE_NONE][0]['value']['#default_value'] = 'competitive markup';
+        } else if ($_GET['type'] == 'grow') {
+          $form['field_page_type'][LANGUAGE_NONE]['#default_value'] = 'Grow The Adult ADHD Market';
+          $form['field_ideas_markup'][LANGUAGE_NONE][0]['value']['#default_value'] = 'grow markup';
+        } else if ($_GET['type'] == 'ensure') {
+          $form['field_page_type'][LANGUAGE_NONE]['#default_value'] = 'Ensure All Patients Prescribed CONCERTA Receive CONCERTA';
+          $form['field_ideas_markup'][LANGUAGE_NONE][0]['value']['#default_value'] = 'ensure markup';
+        }
+        hide($form['field_page_type']);
+        hide($form['field_ideas_markup']);
+      }
+    break;
     case 'privatemsg_new':
 
       drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.privatemsg.js');
@@ -144,14 +270,14 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
         }
       }
       
-      $form['recipient']['#description'] = t('Enter the recipient, separate recipients with commas.');
+      $form['recipient']['#description'] = t('Start typing the name of a person you would like to send a message to.');
       $form['subject']['#required'] = TRUE;
       $form['subject']['#maxlength'] = 256;
       $form['subject']['#size'] = 128;
       $form['body']['#required'] = TRUE;
       $form['body']['#format'] = 'plain_text';
       $form['body']['#resizable'] = FALSE;
-      unset($form['recipient']['#autocomplete_path']);
+      // unset($form['recipient']['#autocomplete_path']);
       unset($form['actions']['cancel']);
       
       $form['redirection'] = array(
@@ -166,6 +292,15 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
         drupal_add_css(drupal_get_path('module', 'form_modifier') . '/css/form_modifier.block.css');
       }
     break;
+    case 'privatemsg_list':
+      $form['updated']['actions']['operation']['#options'][0] = 'Mark as...';
+    break;
+  }
+}
+
+function event_registration_form_submit($form , &$form_state) {
+  if(arg(0) == 'node' && is_numeric(arg(1))) {
+    drupal_goto('node/' . arg(1));
   }
 }
 

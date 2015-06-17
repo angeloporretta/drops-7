@@ -1,0 +1,33 @@
+<?php
+
+function custom_download_webform_schema() {
+  $schema = array();
+
+  $schema['webform_table_settings'] = array(
+    'description' => 'Webform table settings.',
+    'fields' => array(
+      'nid' => array(
+        'description' => 'Webform ID',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'config' => array(
+        'description' => 'The config data of the webform.',
+        'type' => 'varchar',
+        'length' => 1536,
+        'not null' => TRUE,
+      ),
+    ),
+    'foreign keys' => array(
+      'node' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+    ),
+  );
+
+  return $schema;
+}
+
+?>

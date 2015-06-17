@@ -1,0 +1,171 @@
+<?php
+
+module_load_include('inc', 'webform', 'includes/webform.report');
+module_load_include('inc', 'webform', 'includes/webform.export'); 
+
+function custom_download_webform_menu() {
+  $items = array();
+
+  $items['node/%/download-results'] = array(
+    'title' => t('Download webform table'),
+    // 'description' => t('Adds a user to all the existing groups'),
+    'page callback' => 'download_webform_results',
+    'page arguments' => array(1),
+    'access callback' => 'download_webform_results_callback',
+    'access arguments' => array(1),
+    'type' => MENU_CALLBACK,
+  );
+
+  return $items;
+}
+
+function download_webform_results_callback($webform_id) {
+  global $user;
+  $node = node_load($webform_id);
+  if ($node->type == 'webform') {
+    if ($user->uid > 0) {
+    return TRUE;
+    } else {
+    return FALSE;
+    }
+  }
+  return FALSE;
+}
+
+function download_webform_results($webform_id) {
+  $webform_settings = db_select('webform_table_settings', 'w')
+    ->fields('w')
+    ->condition('nid', $webform_id, '=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (!empty($webform_settings)) {
+    $webform_settings_values = unserialize($webform_settings['config']);
+    $node = node_load($webform_settings['nid']);
+    $format = $webform_settings_values['format'];
+    $delimiter = $webform_settings_values['delimiter'];
+    $header_keys = $webform_settings_values['header_keys'];
+    $select_keys = $webform_settings_values['select_keys'];
+    $select_format = $webform_settings_values['select_format'];
+    $range_type = $webform_settings_values['range']['range_type'];
+    $range = $webform_settings_values['range'];
+    $latest = $webform_settings_values['range']['latest'];
+    $start = $webform_settings_values['range']['start'];
+    $end = $webform_settings_values['range']['end'];
+    $download = $webform_settings_values['download'];
+    $components = $webform_settings_values['components'];
+
+    $options = array(
+      'delimiter' => $delimiter,
+      'components' => $components,
+      'header_keys' => $header_keys,
+      'select_keys' => $select_keys,
+      'select_format' => $select_format,
+      'range' => $range,
+      'download' => $download,
+    );
+
+    if ($options['range']['range_type'] != 'all') {
+     $options['sids'] = webform_download_sids($node->nid, $options['range']);
+    }
+
+    // Determine an appropriate batch size based on the form and server specs.
+  if (!isset($options['range']['batch_size'])) {
+    // Start the batch size at 50,000 per batch, but divide by number of
+    // components in the form. e.g. If a form had 10 components, it would
+    // export 5,000 submissions at a time.
+    $batch_size = ceil(50000 / max(1, count($node->webform['components'])));
+
+    // Every 32MB of additional memory after 64MB adds a multiplier in size.
+    $memory_limit = parse_size(ini_get('memory_limit'));
+    $mb = 1048576;
+    $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
+    $batch_size = ceil($batch_size * $memory_modifier);
+    $options['range']['batch_size'] = $batch_size;
+  }
+
+  $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
+
+  // Set up a batch to export the results.
+  $batch = webform_results_export_batch($node, $format, $options);
+  batch_set($batch);
+  batch_process("node/" . $webform_id . "/webform-results/download");
+  drupal_goto("<front>");
+  }
+
+}
+
+function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'webform_results_download_form') {
+
+  	$webform_settings = db_select('webform_table_settings', 'w')
+      ->fields('w')
+      ->condition('nid', arg(1), '=')
+      ->execute()
+      ->fetchAssoc();
+
+    if (!empty($webform_settings)) {
+      global $base_url;
+      $new_components = array();
+      $webform_settings_values = unserialize($webform_settings['config']);
+      $form['format']['#default_value'] = $webform_settings_values['format'];
+      foreach ($form['components']['#default_value'] as $key => $value) {
+        if ($webform_settings_values['components'][$value] > 0 || !is_numeric($webform_settings_values['components'][$value])) {
+          $new_components[$webform_settings_values['components'][$value]] = $value;
+        }
+      }
+      $form['delimiter']['#default_value'] = $webform_settings_values['delimiter'];
+      $form['header_keys']['#default_value'] = $webform_settings_values['header_keys'];
+      $form['select_options']['select_keys']['#default_value'] = $webform_settings_values['select_keys'];
+      $form['select_options']['select_format']['#default_value'] = $webform_settings_values['select_format'];
+      $form['range']['range_type']['#default_value'] = $webform_settings_values['range']['range_type'];
+      $form['range']['latest']['#default_value'] = $webform_settings_values['range']['latest'];
+      $form['range']['start']['#default_value'] = $webform_settings_values['range']['start'];
+      $form['range']['end']['#default_value'] = $webform_settings_values['range']['end'];
+      $form['download']['#default_value'] = $webform_settings_values['download'];
+      $form['components']['#default_value'] = $new_components;
+    }
+    $form['markup'] = array(
+      '#markup' => t('Download your link') . l(t(' here'), 'node/' . arg(1) . '/download-results', array('attributes' => array('target' => '_blank'))),
+      '#suffix' => '</br ><span>Give the following link to your users: ' . url($base_url . '/node/' . arg(1) . '/download-results') . '</span></br >',
+    );
+
+  	$form['save-config'] = array(
+  	  '#type' => 'submit',
+  	  '#value' => t('Save config'),
+  	  '#submit' => array('save_table_config'),
+  	);
+  }
+}
+
+function save_table_config($form, &$form_state) {
+  unset($form_state['values']['node']);
+  unset($form_state['values']['submit']);
+  unset($form_state['values']['form_build_id']);
+  unset($form_state['values']['form_token']);
+  unset($form_state['values']['form_id']);
+  unset($form_state['values']['op']);
+  $config = serialize($form_state['values']);
+
+  $webform_setting = db_select('webform_table_settings', 'w')
+    ->fields('w')
+    ->condition('nid', arg(1), '=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (empty($webform_setting)) {
+  	db_insert('webform_table_settings')
+      ->fields(array(
+        'nid' => arg(1),
+        'config' => $config,
+      ))
+      ->execute();
+  } else {
+  	db_update('webform_table_settings')
+  	  ->fields(array(
+  	  	'config' => $config, 
+	  ))
+	  ->condition('nid', arg(1), '=')
+	  ->execute();
+  }
+}
