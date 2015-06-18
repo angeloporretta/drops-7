@@ -4435,6 +4435,9 @@ function webform_email_html_capable() {
   }
   // Build a list of HTML-capable mail systems.
   $systems = array();
+  if(module_exists('sendgrid_integration')) {
+    $systems[] = 'SendGridMailSystem';
+  }
   if (module_exists('mandrill')) {
     $systems[] = 'MandrillMailSystem';
   }
