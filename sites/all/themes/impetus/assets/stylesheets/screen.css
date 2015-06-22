@@ -448,3 +448,18 @@ float:left;
 	height: 26px;
 	width: 26px;
 }
+
+.split-2-col > div {
+	width:50% !important;
+	float:left;
+}
+
+.split-3-col > div {
+	width:33.3% !important;
+	float:left;
+}
+
+.multi-col-select {
+	clear:both;
+	float:left;
+}
