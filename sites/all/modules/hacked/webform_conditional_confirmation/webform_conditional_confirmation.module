@@ -288,9 +288,11 @@ function _webform_conditional_confirmation_test_match($input_value, $conditional
  */
 function webform_conditional_confirmation_form_webform_client_form_alter(&$form, &$form_state) {
 
-  $form['#node']->webform_conditional_confirmation['redirect_url'] = $form['#node']->webform['redirect_url'];
-  $form['#node']->webform['redirect_url'] = '<confirmation>';
-  $form['#submit'][] = 'webform_conditional_confirmation_webform_client_form_submit';
+  if ($form['#node']->webform['redirect_url'] == '<confirmation>') {
+    $form['#node']->webform_conditional_confirmation['redirect_url'] = $form['#node']->webform['redirect_url'];
+    $form['#node']->webform['redirect_url'] = '<confirmation>';
+    $form['#submit'][] = 'webform_conditional_confirmation_webform_client_form_submit';
+  }
 }
 
 /**
@@ -325,7 +327,6 @@ function webform_conditional_confirmation_webform_client_form_submit($form, &$fo
   $redirect = $form_state['redirect'];
   $external_url = FALSE;
   $message = FALSE;
-
   if (isset($form['actions']['draft']['#value']) && $form_state['values']['op'] == $form['actions']['draft']['#value']) {
     $message = t('Submission saved. You may return to this form later and it will restore the current values.');
   }

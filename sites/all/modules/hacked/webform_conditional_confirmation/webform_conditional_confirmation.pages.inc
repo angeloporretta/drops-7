@@ -411,7 +411,7 @@ function webform_conditional_confirmation_edit_confirmation_form_validate($form,
     form_set_value($form['message_settings']['redirection']['redirect_url'], '<confirmation>', $form_state);
   }
   else {
-    form_set_value($form['message_settings']['redirection']['redirect_url'], '<none>', $form_state);
+    form_set_value($form['message_settings']['redirection']['redirect_url'], 'node/' . arg(1), $form_state);
   }
 }
 
