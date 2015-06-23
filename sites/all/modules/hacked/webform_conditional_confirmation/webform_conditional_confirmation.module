@@ -302,7 +302,7 @@ function webform_conditional_confirmation_webform_client_form_submit($form, &$fo
 
   $node = $form['#node'];
   $sid = $form_state['values']['details']['sid'];
-  $is_draft = !empty($form_state['save_draft']);
+  $is_draft = !empty($form_state['save_draft']) ? $form_state['save_draft'] : FALSE;
 
   // Don't trigger this if the webform isn't completed, i.e. final step of a
   // multi-step form.
@@ -352,8 +352,9 @@ function webform_conditional_confirmation_webform_client_form_submit($form, &$fo
     );
   }
 
+  $confirmation = $node->webform['confirmation'];
   // Show a message if manually set.
-  if (isset($message)) {
+  if (isset($message) && $message) {
     drupal_set_message($message);
   }
   // If redirecting and we have a confirmation message, show it as a message.
