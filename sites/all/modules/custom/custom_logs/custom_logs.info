@@ -1,0 +1,4 @@
+name = Login logs
+description = Provides a page with the most recent logins
+package = custom
+core = 7.x

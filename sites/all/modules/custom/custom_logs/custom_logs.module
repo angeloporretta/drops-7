@@ -1,0 +1,38 @@
+<?php
+
+function custom_logs_menu() {
+  $items = array();
+
+  $items['admin/recent-logs'] = array(
+  	'title' => t('Recent logins'),
+  	'description' => 'My Profile',
+  	'page callback' => 'recent_logs',
+    'page arguments' => array(),
+    'access callback' => TRUE,
+    'type' => MENU_NORMAL_ITEM,
+  );
+  return $items;
+}
+
+function recent_logs() {
+  $logins_array = array();
+  $logins = db_select('watchdog' , 'w')
+    ->fields('w')
+    ->condition('type', 'user', '=')
+    ->condition('message', 'Session opened for %name.', '=')
+    ->execute();
+
+  while($login = $logins->fetchAssoc()) {
+  	$variables = unserialize($login['variables']);
+  	$user = user_load_by_name($variables['%name']);
+  	$logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $user->field_first_name[LANGUAGE_NONE][0]['value'] . " " . $user->field_last_name[LANGUAGE_NONE][0]['value']);
+  }
+
+  $output = "<table><thead><th>Name</th><th>Date</th></thead><tbody>";
+  foreach($logins_array as $logins) {
+  	$output .= '<tr><td>' . $logins['user'] . '</td><td>' . date("Y, F j H:i", $logins['timestamp']) . '</td></tr>';
+  }
+  $output .= "</tbody></table>";
+
+  return $output;
+}
