@@ -25,7 +25,11 @@ function recent_logs() {
   while($login = $logins->fetchAssoc()) {
   	$variables = unserialize($login['variables']);
   	$user = user_load_by_name($variables['%name']);
-  	$logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $user->field_first_name[LANGUAGE_NONE][0]['value'] . " " . $user->field_last_name[LANGUAGE_NONE][0]['value']);
+    if (!empty($user)) {
+  	  $logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $user->field_first_name[LANGUAGE_NONE][0]['value'] . " " . $user->field_last_name[LANGUAGE_NONE][0]['value']);
+    } else {
+      $logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $variables['%name']);
+    }
   }
 
   $output = "<table><thead><th>Name</th><th>Date</th></thead><tbody>";
