@@ -1,0 +1,5 @@
+name = Custom Access Statistics
+description = Custom module that adds statistics per user
+package = custom
+core = 7.x
+dependencies[] = statistics

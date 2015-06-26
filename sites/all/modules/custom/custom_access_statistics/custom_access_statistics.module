@@ -1,0 +1,157 @@
+<?php
+
+function custom_access_statistics_menu() {
+  $items = array();
+
+  $items['admin/get-statistics'] = array(
+    'title' => t('User statistics'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('get_statistics_form'),
+    'access arguments' => array('see access statistics'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  $items['admin/get-statistics/%/%'] = array(
+    'title' => t('User statistics'),
+    'page callback' => 'user_statistics',
+    'page arguments' => array(2,3),
+    'access arguments' => array('see access statistics'),
+    'type' => MENU_NORMAL_ITEM,
+  );
+
+  return $items;
+}
+
+function custom_access_statistics_permission() {
+  return array(
+    'see access statistics' => array(
+      'title' => t('See access statistics'),
+      'description' => t('Access the page where you can see access statistics for a certain user.'),
+    ),
+  );
+}
+
+function get_statistics_form() {
+  $form = array();
+
+  $form['user'] = array(
+    '#type' => 'textfield',
+    '#title' => t('User'),
+    '#required' => TRUE,
+    '#autocomplete_path' => 'user/autocomplete',
+  );
+
+  $form['period'] = array(
+    '#type' => 'textfield',
+    '#title' => t('Period'),
+    '#description' => t('Enter the number of months to be displayed in the report'),
+    '#required' => TRUE,
+  );
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+
+  return $form;
+}
+
+function user_statistics($uid, $period) {
+  $logins = _get_number_of_logins($uid, $period);
+  $downloads = _get_number_of_downloads($uid, $period);
+  $page_visits = _get_visited_pages($uid, $period);
+  $output = '<div>Number of logins: ' . $logins . '</div>';
+  $output .= '<div>Number of file downloads: ' . $downloads . '</div>';
+
+  if (!empty($page_visits)) {
+    $output .= '<table><thead><th>Path</th><th>Date</th></thead><tbody>';
+    foreach($page_visits as $visit) {
+      $output .= '<tr><td>' . $visit['path'] . '</td><td>' . date("Y, F j H:i", $visit['timestamp']) . '</td></tr>';
+    }
+    $output .= '</tbody></table>';
+  }
+  return $output;
+}
+
+function get_statistics_form_validate($form, &$form_state) {
+  if(!is_numeric($form_state['values']['period'])) {
+    form_set_error('period', t('Period must be a number'));
+  }
+}
+
+function get_statistics_form_submit($form, &$form_state) {
+  $period = $form_state['values']['period'];
+  $user = user_load_by_name($form_state['values']['user']);
+  drupal_goto("admin/get-statistics/" . $user->uid . "/" . $period);
+}
+
+function _get_number_of_logins($uid, $period) {
+  $min_period = strtotime("-" . $period . " month");
+  $logins = db_select('accesslog', 'a')
+    ->fields('a', array('aid'))
+    ->condition('path', 'user/login' , '=')
+    ->condition('uid', $uid, '=')
+    ->condition('timestamp', $min_period, '>=')
+    ->countQuery()
+    ->execute()
+    ->fetchAssoc();
+
+  return $logins['expression'];
+}
+
+function _get_number_of_downloads($uid, $period) {
+  $min_period = strtotime("-" . $period . " month");
+  $downloads = db_select('file_tracker_downloads', 'f')
+    ->fields('f', array('nid'))
+    ->condition('uid', $uid, '=')
+    ->condition('downloaded_timestamp', $min_period, '>=')
+    ->countQuery()
+    ->execute()
+    ->fetchAssoc();
+
+  return $downloads['expression'];
+}
+
+function _get_visited_pages($uid, $period) {
+  $min_period = strtotime("-" . $period . " month");
+  $pages = array();
+  $visited_pages = db_select('accesslog', 'a')
+    ->fields('a', array('path', 'timestamp'))
+    ->condition('uid', $uid, '=')
+    ->condition('timestamp', $min_period, '>=')
+    ->condition('title', 'File download', '!=')
+    ->execute();
+
+  while($page = $visited_pages->fetchAssoc()) {
+    $pages[] = array('path' => $page['path'], 'timestamp' => $page['timestamp']);
+  }
+
+  return $pages;
+}
+
+// function recent_logs() {
+//   $logins_array = array();
+//   $logins = db_select('watchdog' , 'w')
+//     ->fields('w')
+//     ->condition('type', 'user', '=')
+//     ->condition('message', 'Session opened for %name.', '=')
+//     ->execute();
+
+//   while($login = $logins->fetchAssoc()) {
+//    $variables = unserialize($login['variables']);
+//    $user = user_load_by_name($variables['%name']);
+//     if (!empty($user)) {
+//      $logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $user->field_first_name[LANGUAGE_NONE][0]['value'] . " " . $user->field_last_name[LANGUAGE_NONE][0]['value']);
+//     } else {
+//       $logins_array[] = array('timestamp' => $login['timestamp'], 'user' => $variables['%name']);
+//     }
+//   }
+
+//   $output = "<table><thead><th>Name</th><th>Date</th></thead><tbody>";
+//   foreach($logins_array as $logins) {
+//    $output .= '<tr><td>' . $logins['user'] . '</td><td>' . date("Y, F j H:i", $logins['timestamp']) . '</td></tr>';
+//   }
+//   $output .= "</tbody></table>";
+
+//   return $output;
+// }
