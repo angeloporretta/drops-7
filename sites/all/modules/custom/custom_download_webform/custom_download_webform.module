@@ -41,6 +41,7 @@ function download_webform_results($webform_id) {
 
   if (!empty($webform_settings)) {
     $webform_settings_values = unserialize($webform_settings['config']);
+    // dsm($webform_settings_values);
     $node = node_load($webform_settings['nid']);
     $format = $webform_settings_values['format'];
     $delimiter = $webform_settings_values['delimiter'];
@@ -54,7 +55,12 @@ function download_webform_results($webform_id) {
     $end = $webform_settings_values['range']['end'];
     $download = $webform_settings_values['download'];
     $components = $webform_settings_values['components'];
-
+    foreach($components as $key => $component) {
+      
+      if ($component == '0'){
+        unset($components[$key]);
+      }
+    }
     $options = array(
       'delimiter' => $delimiter,
       'components' => $components,
@@ -64,7 +70,6 @@ function download_webform_results($webform_id) {
       'range' => $range,
       'download' => $download,
     );
-
     if ($options['range']['range_type'] != 'all') {
      $options['sids'] = webform_download_sids($node->nid, $options['range']);
     }
@@ -85,12 +90,10 @@ function download_webform_results($webform_id) {
   }
 
   $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
-
   // Set up a batch to export the results.
   $batch = webform_results_export_batch($node, $format, $options);
   batch_set($batch);
   batch_process($_SERVER['HTTP_REFERER']);
-  drupal_goto("<front>");
   }
 
 }
@@ -98,7 +101,7 @@ function download_webform_results($webform_id) {
 function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'webform_results_download_form') {
 
-  	$webform_settings = db_select('webform_table_settings', 'w')
+    $webform_settings = db_select('webform_table_settings', 'w')
       ->fields('w')
       ->condition('nid', arg(1), '=')
       ->execute()
@@ -130,11 +133,11 @@ function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
       '#suffix' => '</br ><span>Give the following link to your users: ' . url($base_url . '/node/' . arg(1) . '/download-results') . '</span></br >',
     );
 
-  	$form['save-config'] = array(
-  	  '#type' => 'submit',
-  	  '#value' => t('Save config'),
-  	  '#submit' => array('save_table_config'),
-  	);
+    $form['save-config'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save config'),
+      '#submit' => array('save_table_config'),
+    );
   }
 }
 
@@ -154,18 +157,18 @@ function save_table_config($form, &$form_state) {
     ->fetchAssoc();
 
   if (empty($webform_setting)) {
-  	db_insert('webform_table_settings')
+    db_insert('webform_table_settings')
       ->fields(array(
         'nid' => arg(1),
         'config' => $config,
       ))
       ->execute();
   } else {
-  	db_update('webform_table_settings')
-  	  ->fields(array(
-  	  	'config' => $config, 
-	  ))
-	  ->condition('nid', arg(1), '=')
-	  ->execute();
+    db_update('webform_table_settings')
+      ->fields(array(
+        'config' => $config, 
+    ))
+    ->condition('nid', arg(1), '=')
+    ->execute();
   }
 }
