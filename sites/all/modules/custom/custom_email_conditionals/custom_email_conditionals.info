@@ -1,0 +1,6 @@
+name = Email conditionals
+description = Allows the ability to add conditions for emails sent on webform submission.
+dependencies[] = webform
+dependencies[] = webform_conditional_confirmation
+package = custom
+core = 7.x

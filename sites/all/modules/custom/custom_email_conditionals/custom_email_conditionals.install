@@ -1,0 +1,55 @@
+<?php
+/**
+ * @file: Set up constants, schemas, text formats, and other resources that will be used in .module and .inc files.
+ */
+
+/**
+ * Implements hook_schema.
+ */
+function custom_email_conditionals_schema() {
+  
+  $schema = array();
+  
+  $schema['email_conditionals'] = array(
+    'description' => 'Stores group and node notifications settings for the Group Message Notifications module.',
+    'fields' => array(
+      'cid' => array(
+        'description' => 'A simple unique identifier.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'nid' => array(
+        'description' => 'The nid of the webform node that this setting belongs to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'eid' => array(
+        'description' => 'The email id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,  
+      ),
+      'config' => array(
+        'description' => 'Serialized config.',
+        'type' => 'varchar',
+        'length' => 1024,
+        'not null' => TRUE,
+      )
+    ),
+    'foreign keys' => array(
+      'nid' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+      'eid' => array(
+        'table' => 'webform_emails',
+        'columns' => array('eid' => 'eid'),
+      ),
+    ),
+    'primary key' => array('cid'),
+  );
+
+  return $schema;
+}

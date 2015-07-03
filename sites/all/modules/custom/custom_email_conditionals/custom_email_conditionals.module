@@ -1,0 +1,146 @@
+<?php
+
+function custom_email_conditionals_form_webform_email_edit_form_alter(&$form, &$form_state, $form_id) {
+  
+  $node = node_load(arg(1));
+
+    module_load_include("module","webform_conditional_confirmation");
+    module_load_include("inc","webform_conditional_confirmation","webform_conditional_confirmation.pages");
+    // Generate list of conditional fields.
+  $conditional_components = _webform_conditional_confirmation_get_conditional_components($node);
+  if (empty($conditional_components)) {
+    drupal_set_message(t('No conditional components found.  You need to add some conditional components to your webform before you can configure conditional confirmation messages.'), 'error');
+    return $form;
+  }
+  
+  // Conditional rule.
+  $form['conditionals'] = array(
+    '#prefix' => '<div id="conditional-email-conditionals">',
+    '#suffix' => '</div>',
+    '#type' => 'fieldset',
+    '#title' => t('Conditional rules'),
+    '#collapsible' => FALSE,
+    '#description' => t('Create a series of rules to control when this confirmation message is used.'),
+    '#weight' => -20,
+  );
+
+  // Grab the operators first, save generating this list for each conditional.
+  $operators = _webform_conditional_confirmation_conditional_operators_options();
+  for ($i = 0; $i <= $form_state['conditionals']; $i++) {
+    $form['conditionals'][] = _webform_conditional_confirmation_conditional_fieldset($i, $node, $conditional_components, $operators, $defaults);
+  }
+
+  $condition_setting = load_email_conditional($node->nid, $form['eid']['#value']);
+  if (!empty($condition_setting)) {
+  	$unserialized_value = unserialize($condition_setting['config']);
+  	$form['conditionals'][0]['conditional_component_0']['#default_value'] = $unserialized_value['conditional_component_0'];
+  	$form['conditionals'][0]['conditional_operator_0']['#default_value'] = $unserialized_value['conditional_operator_0'];
+  	$form['conditionals'][0]['conditional_values_0']['#default_value'] = $unserialized_value['conditional_values_0'];
+  }
+
+  $new = array("webform_email_conditional_form_submit");
+  $form['#submit'] = array_merge($new, $form['#submit']);
+
+}
+
+function custom_email_conditionals_webform_submission_insert($node, $submission) {
+
+  foreach($node->webform['emails'] as $email_id => $email) {
+  	$setting = load_email_conditional($node->nid, $email['eid']);
+  	if (!empty($setting)) {
+  	  $unserialized_value = unserialize($setting['config']);
+  	  $component_submission = $unserialized_value['conditional_component_0'];
+  	  $component_submission_value = $submission->data[$component_submission];
+      if ($node->webform['components'][$component_submission]['type'] == 'select') {
+        $value = $component_submission_value[0];
+        if($unserialized_value['conditional_operator_0'] == '=') {
+          if($value != $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == '!=') {
+          if($value == $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == '<') {
+          if ($value >= $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == '<=') {
+          if ($value > $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == '>') {
+          if ($value <= $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == '>=') {
+          if ($value < $unserialized_value['conditional_values_0']) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        } else if ($unserialized_value['conditional_operator_0'] == 'LIKE') {
+          if (strpos($value, $unserialized_value['conditional_values_0']) !== FALSE) {
+            unset($node->webform['emails'][$email_id]);
+          }
+        }
+      }
+  	}
+  }
+}
+
+function webform_email_conditional_form_submit($form, &$form_state) {
+  $node_id = arg(1);
+  $eid = $form_state['values']['eid'];
+  $condition = $form_state['values']['conditionals'][0];
+  $condition_setting = load_email_conditional($node_id, $eid);
+
+  if (empty($condition_setting)) {
+    if (!empty($eid)) {
+  	  db_insert('email_conditionals')
+  	    ->fields(array(
+  	  	  'nid' => $node_id,
+  	  	  'eid' => $eid,
+  	  	  'config' => serialize($condition),
+  	    ))
+  	    ->execute();
+    } else {
+      $last_id = db_select("webform_emails", 'e')
+        ->fields("e", array('eid'))
+        ->condition('nid', $node_id, '=')
+        ->orderBy('eid', 'DESC')//ORDER BY created
+        ->range(0,1)
+        ->execute()
+        ->fetchAssoc();
+      if (!empty($last_id)) {
+        $eid = $last_id['eid'];
+      } else {
+        $eid = 1;
+      }
+      db_insert('email_conditionals')
+        ->fields(array(
+          'nid' => $node_id,
+          'eid' => $eid,
+          'config' => serialize($condition),
+        ))
+        ->execute();
+    }
+  } else {
+  	db_update('email_conditionals')
+  	  ->fields(array(
+  	  	'config' => serialize($condition), 
+  	  ))
+  	  ->condition('nid', $node_id, '=')
+  	  ->condition('eid', $eid, '=')
+  	  ->execute();
+  }
+}
+
+function load_email_conditional($nid, $eid) {
+  $condition = db_select('email_conditionals','e')
+    ->fields('e')
+    ->condition('nid', $nid, '=')
+    ->condition('eid', $eid, '=')
+    ->execute()
+    ->fetchAssoc();
+
+  return $condition;
+}
