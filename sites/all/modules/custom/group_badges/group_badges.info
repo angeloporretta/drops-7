@@ -1,0 +1,4 @@
+name = Group Badges
+description = Custom module that extends the userbadges module to associate them with a group
+package = custom
+core = 7.x

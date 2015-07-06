@@ -1,0 +1,186 @@
+<?php
+
+function group_badges_views_api() {
+  return array(
+    'api' => 3,
+    'path' => drupal_get_path('module', 'group_badges') . '/includes/views',
+  );
+}
+
+/**
+ * Implements hook_ctools_plugin_directory.
+ */
+function  group_badges_ctools_plugin_directory($owner, $plugin_type) {
+  
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+function group_badges_form_alter(&$form, &$form_state, $form_id) {
+  if ($form_id == 'user_badges_edit_form') {
+    if (isset($form['bid']['#value']) && !empty($form['bid']['#value'])) {
+      $bid = $form['bid']['#value'];
+    }
+    $default_values = array();
+    // build default values
+    if (!empty($bid)) {
+      $default = db_select('badges_group' , 'b')
+        ->fields('b' , array('nid'))
+        ->condition('bid' , $bid , '=')
+        ->execute();
+
+      foreach ($default as $default_group) {
+        $group_node = node_load($default_group->nid);
+        $default_values[] = $group_node->title;
+      }
+    }
+    $form['#tree'] = TRUE;
+
+    $form['groups_fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Groups that can access this term'),
+      '#prefix' => '<div id="groups-fieldset-wrapper">',
+      '#suffix' => '</div>',
+      '#weight' => -9,
+    );
+
+    if (empty($form_state['num_groups'])) {
+      if (!empty($default_values)) {
+        $form_state['num_groups'] = sizeof($default_values);
+      } else {
+        $form_state['num_groups'] = 1;
+      }
+    }
+
+  	if (isset($form_state['build_info']['args'][0]->bid)) {
+  	   $badge_group = _get_badge_group_title($form_state['build_info']['args'][0]->bid);
+  	  //$badge_group = _get
+  	} else {
+  	  $badge_group = '';
+  	}
+
+  	for ($i = 0 ; $i < $form_state['num_groups'] ; $i++) {
+      $form['groups_fieldset']['group'][$i] = array(
+        '#type' => 'textfield',
+        '#title' => t('Group Name'),
+        '#default_value' => isset($default_values[$i]) ? $default_values[$i] : '',
+        '#autocomplete_path' => 'groups/autocomplete',
+      );
+    }
+
+    $form['groups_fieldset']['add_more_groups'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add more groups'),
+      '#submit' => array('add_more_group_ajax_button'),
+      '#validate' => array('add_more_group_validate'),
+      '#ajax' => array(
+        'callback' => 'group_ajax_callback',
+        'wrapper' => 'groups-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_groups'] > 1) {
+      $form['groups_fieldset']['remove_group'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove group'),
+        '#submit' => array('add_more_group_ajax_remove'),
+        '#validate' => array('remove_group_validate'),
+        '#ajax' => array(
+          'callback' => 'group_remove_ajax_callback',
+          'wrapper' => 'groups-fieldset-wrapper',
+        ),
+      );
+    }
+  }
+}
+
+function add_more_group_validate($form , $form_state) {
+
+}
+
+function remove_group_validate($form , $form_state) {
+
+}
+
+function group_badges_user_badges_edit_badge($badge) {
+  if (isset($badge['bid'])) {
+    db_delete('badges_group')
+      ->condition('bid' , $badge['bid'] , '=')
+      ->execute();
+  } else {
+    $query = db_query("SELECT `AUTO_INCREMENT`
+      FROM  INFORMATION_SCHEMA.TABLES
+      WHERE TABLE_SCHEMA = 'pantheon'
+      AND   TABLE_NAME   = 'user_badges_badges';");
+    foreach ($query as $result) {
+      $badge['bid'] = $result->AUTO_INCREMENT;
+    }
+  }
+
+	if (!empty($badge['groups_fieldset']['group'])) {
+    foreach($badge['groups_fieldset']['group'] as $group) {
+      if (!empty($group)) {
+    	  $group_id = _get_group_by_title($group);
+
+    	  db_insert('badges_group')
+    	    ->fields(array(
+    	      'bid' => $badge['bid'],
+    	      'nid' => $group_id,
+    		  ))
+    		  ->execute();
+      }
+    }
+	}
+}
+
+function group_badges_user_badges_delete($badge) {
+  db_delete('badges_group')
+    ->condition('bid' , $badge->bid , '=')
+    ->execute();
+}
+
+function _is_badge_assigned_to_group($bid , $gid) {
+  $badges = db_select('badges_group' , 'b')
+    ->fields('b')
+    ->condition('bid' , $bid , '=')
+    ->condition('nid' , $gid , '=')
+    ->execute()
+    ->fetchAssoc();
+  if (empty($badges)) {
+  	return 0;
+  } else {
+  	return 1;
+  }
+}
+
+function _get_badge_group_title($bid) {
+  $query = db_select('badges_group' , 'b');
+
+  $query->join('node' , 'n' , 'n.nid = b.nid');
+
+  $query->fields('n' , array('title'));
+  $query->condition('b.bid' , $bid , '=');
+  $result = $query->execute();
+
+  $record = $result->fetchAssoc();
+  if (!empty($record)) {
+  	return $record['title'];
+  } else {
+  	return '';
+  }  
+}
+
+function _get_group_by_title($group_title) {
+  $or = db_or();
+  $or->condition('type' , 'oa_group' , '=');
+  $or->condition('type' , 'oa_space' , '=');
+  
+  $group = db_select('node' , 'n')
+    ->fields('n' , array('nid'))
+    ->condition('title' , $group_title , '=')
+    ->condition($or)
+    ->execute()
+    ->fetchAssoc();
+  return $group['nid'];
+}

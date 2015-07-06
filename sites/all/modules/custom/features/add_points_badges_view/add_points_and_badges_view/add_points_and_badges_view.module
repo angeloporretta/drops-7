@@ -1,0 +1,7 @@
+<?php
+/**
+ * @file
+ * Code for the Add points and badges view feature.
+ */
+
+include_once 'add_points_and_badges_view.features.inc';

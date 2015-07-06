@@ -1,0 +1,39 @@
+<?php
+
+function group_badges_schema() {
+  $schema = array();
+
+  $schema['badges_group'] = array(
+  	'description' => 'Save the group a badge belongs to',
+  	'fields' => array(
+  	  'bid' => array(
+  	  	'description' => 'The badge id.',
+  	  	'type' => 'int',
+  	  	'unsigned' => TRUE,
+  	  	'not null' => TRUE,
+  	  ),
+  	  'nid' => array(
+  	  	'description' => 'The group id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+  	  ),
+  	),
+  	'foreign keys' => array(
+  	  'bid' => array(
+  	  	'table' => 'user_badges_badges',
+  	  	'columns' => array('bid' => 'bid'),
+  	  ),
+      'nid' => array(
+        'table' => 'node',
+        'columns' => array('nid' => 'nid'),
+      ),
+  	),
+  	'indexes' => array(
+  	  'bid' => array('bid'),
+      'nid' => array('nid'),
+  	),
+  );
+
+  return $schema;
+}
