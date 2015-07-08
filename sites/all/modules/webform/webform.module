@@ -2783,6 +2783,7 @@ function webform_client_form_validate($form, &$form_state) {
  * a different property to ensure that validation has occurred.
  */
 function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL, $input_values = NULL) {
+  
   // Webform-specific enhancement, only validate the field if it was used in
   // this submission. This both skips validation on the field and sets the value
   // of the field to NULL, preventing any dangerous input.
@@ -2809,6 +2810,12 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
       // length if it's a string, and the item count if it's an array. For
       // radios, FALSE means that no value was submitted, so check that too.
       if ($elements['#required'] && (!count($elements['#value']) || (is_string($elements['#value']) && strlen(trim($elements['#value'])) == 0) || $elements['#value'] === FALSE)) {
+
+        $form_key = $elements['#webform_component']['form_key'];
+        if (empty($form_state['values']['submitted'][$form_key]) && !empty($form_state['input']['submitted'][$form_key])) {
+          $form_state['values']['submitted'][$form_key] = $form_state['input']['submitted'][$form_key];
+        }
+        if (empty($form_state['values']['submitted'][$form_key]))
         form_error($elements, t('!name field is required.', array('!name' => $elements['#title'])));
       }
 
