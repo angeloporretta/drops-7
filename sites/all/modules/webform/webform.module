@@ -2809,12 +2809,21 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
       // checkboxes, can return a valid value of '0'. Instead, check the
       // length if it's a string, and the item count if it's an array. For
       // radios, FALSE means that no value was submitted, so check that too.
-      if ($elements['#required'] && (!count($elements['#value']) || (is_string($elements['#value']) && strlen(trim($elements['#value'])) == 0) || $elements['#value'] === FALSE)) {
+      $form_state['values']['submitted'] = $form_state['input']['submitted'];
+      $form_key = $elements['#webform_component']['form_key'];
 
-        $form_key = $elements['#webform_component']['form_key'];
-        if (empty($form_state['values']['submitted'][$form_key]) && !empty($form_state['input']['submitted'][$form_key])) {
-          $form_state['values']['submitted'][$form_key] = $form_state['input']['submitted'][$form_key];
+      foreach ($form_state['input']['submitted'] as $key => $items) {
+        if ($key == $form_key) {
+          $elements['#value'] = $items;
+        } else {
+          foreach($items as $key_1 => $value_1) {
+            if ($key_1 == $form_key) {
+              $elements['#value'] = $value_1;
+            }
+          }
         }
+      }
+      if ($elements['#required'] && (!count($elements['#value']) || (is_string($elements['#value']) && strlen(trim($elements['#value'])) == 0) || $elements['#value'] === FALSE)) { 
         if (empty($form_state['values']['submitted'][$form_key]))
         form_error($elements, t('!name field is required.', array('!name' => $elements['#title'])));
       }
