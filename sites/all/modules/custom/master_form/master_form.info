@@ -1,0 +1,4 @@
+name = Master Form
+description = Adds master form functionality
+package = custom
+core = 7.x

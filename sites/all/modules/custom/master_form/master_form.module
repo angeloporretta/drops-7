@@ -1,0 +1,48 @@
+<?php
+
+/**
+ * Implements hook_ctools_plugin_directory.
+ */
+function master_form_ctools_plugin_directory($owner, $plugin_type) {
+  
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+function master_form_menu() {
+  $items = array();
+
+  $items['webform/autocomplete'] = array(
+  	'title' => 'Autocomplete for webforms',
+    'page callback' => '_webform_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+function _webform_autocomplete($string) {
+  $matches = array();
+  $result = db_select('node' , 'n')
+    ->fields('n')
+    ->condition('type' , 'webform', '=')
+    ->execute();
+  foreach ($result as $row) {
+    $matches[$row->title] = check_plain($row->title);
+  }
+  drupal_json_output($matches);
+}
+
+function load_webform_node_by_title($title) {
+  $node = db_select('node' , 'n')
+    ->fields('n' , array('nid'))
+    ->condition('title' , $title , '=')
+    ->condition('type' , 'webform' , '=')
+    ->execute()
+    ->fetchAssoc();
+
+  $node_object = node_load($node['nid']);
+  return $node_object;
+}
