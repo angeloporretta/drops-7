@@ -1522,7 +1522,7 @@ function webform_node_defaults() {
     'redirect_url' => '<confirmation>',
     'block' => '0',
     'allow_draft' => '0',
-    'auto_save' => '1',
+    'auto_save' => '0',
     'submit_notice' => '1',
     'submit_text' => '',
     'next_serial' => 1,
@@ -2783,7 +2783,7 @@ function webform_client_form_validate($form, &$form_state) {
  * a different property to ensure that validation has occurred.
  */
 function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL, $input_values = NULL) {
-  
+
   // Webform-specific enhancement, only validate the field if it was used in
   // this submission. This both skips validation on the field and sets the value
   // of the field to NULL, preventing any dangerous input.
@@ -2841,6 +2841,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
           $options = $elements['#options'];
         }
         if (is_array($elements['#value'])) {
+          if (isset($elements['#type'])) {
           $value = $elements['#type'] == 'checkboxes' ? array_keys(array_filter($elements['#value'])) : $elements['#value'];
           foreach ($value as $v) {
             if (!isset($options[$v])) {
@@ -2848,6 +2849,7 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
               watchdog('form', 'Illegal choice %choice in !name element.', array('%choice' => $v, '!name' => empty($elements['#title']) ? $elements['#parents'][0] : $elements['#title']), WATCHDOG_ERROR);
             }
           }
+        }
         }
         elseif ($elements['#value'] !== '' && !isset($options[$elements['#value']])) {
           form_error($elements, t('An illegal choice has been detected. Please contact the site administrator.'));
