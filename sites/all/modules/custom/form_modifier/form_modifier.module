@@ -4,6 +4,11 @@ function form_modifier_webform_email_edit_form_submit($form, &$form_state) {
     $form_state['values']['template'] = $form_state['values']['template']['value'];
 }
 
+function form_modifier_webform_node_defaults_alter(&$defaults) {
+  $defaults['auto_save'] = '1';
+  $defaults['submit_notice'] = '0';
+}
+
 function form_modifier_form_webform_email_edit_form_alter(&$form, &$form_state, $form_id) {
   // WYSIWYG TEMPLATE
     $form['template']['template']["#wysiwyg"] = true;
