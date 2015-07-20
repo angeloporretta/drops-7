@@ -199,10 +199,12 @@ function webform_conditional_confirmation_message_save($message) {
  * Delete confirmation message.
  */
 function webform_conditional_confirmation_message_delete($nid, $msgid) {
-  db_delete('webform_conditional_confirmation')
-    ->condition('nid', $nid)
-    ->condition('msgid', $msgid)
-    ->execute();
+  if(!is_object($nid)) {
+    db_delete('webform_conditional_confirmation')
+      ->condition('nid', $nid)
+      ->condition('msgid', $msgid)
+      ->execute();
+  }
 }
 
 /**
