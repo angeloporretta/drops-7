@@ -1,0 +1,4 @@
+name = Webform Table
+description = Adds a configurable webform table
+package = custom
+core = 7.x

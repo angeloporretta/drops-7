@@ -463,3 +463,35 @@ float:left;
 	clear:both;
 	float:left;
 }
+
+.hide-item{
+	display:none;
+}
+
+body.node-type-webform-report #edit-export .form-item-delim {
+	display:none;
+}
+
+body.node-type-webform-report #edit-export legend {
+	display:none;
+}
+
+body.node-type-webform-report .content.clearfix {
+	width:100%;
+	overflow:auto;
+}
+
+body.node-type-webform-report .content.clearfix .dummy-wrapper {
+	width:100%;
+	overflow-x:scroll;
+	height:20px;
+}
+
+body.node-type-webform-report .content.clearfix .dummy-content {
+	width:100%;
+	height:20px;
+}
+
+.webform-submission-navigation {
+	display:none;
+}

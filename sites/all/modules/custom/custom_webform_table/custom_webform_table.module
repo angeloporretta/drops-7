@@ -1,0 +1,53 @@
+<?php
+
+/**
+ * Implements hook_ctools_plugin_directory.
+ */
+function custom_webform_table_ctools_plugin_directory($owner, $plugin_type) {
+  
+  if ($owner == 'ctools' && $plugin_type == 'content_types') {
+    return 'plugins/' . $plugin_type;
+  }
+}
+
+function custom_webform_table_menu() {
+  $items = array();
+
+  $items['webform_report/autocomplete'] = array(
+  	'title' => 'Autocomplete for webform reports',
+    'page callback' => '_webform_report_autocomplete',
+    'access arguments' => array('access content'),
+    'type' => MENU_CALLBACK
+  );
+
+  return $items;
+}
+
+function _webform_report_autocomplete($string) {
+  $matches = array();
+  $result = db_select('node' , 'n')
+    ->fields('n')
+    ->condition('title' , '%' . db_like($string) . '%' , 'LIKE')
+    ->condition('type', 'webform_report', '=')
+    ->execute();
+  foreach ($result as $row) {
+    $matches[$row->nid] = check_plain($row->title);
+  }
+  drupal_json_output($matches);
+}
+
+function custom_webform_table_entity_info_alter(&$entity_info) {
+  $entity_info['node']['view modes']['webform_report_view'] = array(
+    'label' => t('Webform Report View'),
+    'custom settings' => TRUE,
+  );
+}
+
+function custom_webform_table_preprocess_node(&$vars) {
+  if ($vars['view_mode'] == 'webform_report_view') {
+  	if (isset($vars['nid']) && !empty($vars['nid'])) {
+  	}
+  }
+}
+
+?>

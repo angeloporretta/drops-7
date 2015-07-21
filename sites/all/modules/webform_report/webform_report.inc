@@ -305,9 +305,21 @@ function _webform_report_get_body_content($node, $view_mode) {
     $output .= filter_xss_admin($node->description) . 
                ' (' . count($report['rows']) . ' ' . t('results') . ') ';
     if (!$node->options['hide_csv']) {
-      $output .= l(t('Download as CSV'), 'node/' . arg(1) . '/csv') . '</p>';
+      $form_output = drupal_get_form('webform_report_export_form', $node);
+      $form_output['export']['format']['#default_value'] = "excel";
+      $form_output['export']['format']['excel']['#default_value'] = "excel";
+      $form_output['export']['format']['text']['#default_value'] = "excel";
+      $form_output['export']['format']['excel']['#value'] = "excel";
+      $form_output['export']['format']['text']['#value'] = "excel";
+      $form_output['export']['format']['#value'] = "excel";
+      $form_output['export']['delim']['#default_value'] = ",";
+      $form_output['export']['delim']['#value'] = ",";
+      unset($form_output['return']);
+      hide($form_output['export']['format']);
+      $output .= render($form_output);
     }
-    
+    $output .= '<div class="dummy-wrapper"><div class="dummy-content"></div></div>';
+    drupal_add_js(drupal_get_path('module', 'webform_report') . '/js/fix.js');
     // output current page
     $output .= _webform_report_pager($report['headers'], $report['rows'], $node);
 
@@ -871,7 +883,7 @@ function _webform_report_format_data($raw, $column) {
       if (!empty($file->fid)) {
         $text = webform_file_name(check_plain(webform_file_name($file->uri)));
         $path = webform_file_url($file->uri);        
-        $link = '<a href="' . $path . '">' . 
+        $link = '<a href="' . $path . '" download>' . 
                 $text . '</a>' . 
                 ' (' . (int) ($file->filesize/1024) . ' KB)';
       }
@@ -1285,7 +1297,6 @@ function _webform_report_pager($headers, $rows, $node) {
  *   the fields
  */
 function webform_report_format_submissions($headers, $rows) {
-
   $out = array();
   foreach ($rows as $row) {
     $output = '';
@@ -1339,7 +1350,6 @@ function webform_report_csv($node) {
  *   an array of form elements
  */
  function webform_report_export_form($form, $form_state, $node) {
-  
   $form = array();
 
   // export fieldset  

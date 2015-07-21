@@ -29,7 +29,7 @@ function webform_report_criteria_form($form, &$form_state, $node) {
   if (isset($node->wnid)) {  
   
     $webform_components = _webform_report_get_components($node->wnid);
-    
+
     $form['nid'] = array(
       '#type' => 'value',
       '#value' => $node->nid
@@ -74,7 +74,7 @@ function webform_report_criteria_form($form, &$form_state, $node) {
     );
   
     $columns = _webform_report_get_columns($node, $webform_components);
-  
+
     // column fieldset  
     $form['columns'] = array(
       '#type' => 'fieldset', 
@@ -433,7 +433,7 @@ function webform_report_criteria_form($form, &$form_state, $node) {
  *   the filter value
  */
 function webform_report_criteria_filter_value_field(&$form, $index, $type, $ftype, $value) {
-  
+
   // use a date popup for dates if date_popup module is enabled
   $fieldtype = 'textfield';
   if ($type == 'date') {
@@ -806,7 +806,6 @@ function webform_report_criteria_form_list_submit($form_id, $form_state) {
  *   drupal form state and values
  */
 function webform_report_criteria_form_submit($form_id, $form_state) {
-
   // load the node
   $nid = $form_state['values']['nid'];
   $node = node_load($nid);
@@ -833,7 +832,9 @@ function webform_report_criteria_form_submit($form_id, $form_state) {
       }
     }
   }
-  usort($node->columns, 'sort_by_weight_cmp');
+  if($node->columns[0]['weight'] != 0) {
+    usort($node->columns, 'sort_by_weight_cmp');
+  }
 
   foreach (element_children($form_state['values']['filters']) as $index) {
     if (is_numeric($index)) {
