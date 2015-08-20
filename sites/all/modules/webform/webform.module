@@ -4642,7 +4642,7 @@ function _webform_submission_serial_next_value($nid, $do_increment = TRUE) {
   // at the same time do not have duplicate numbers.
   // Do not lock unless incrementing.
   if ($do_increment) {
-    db_transaction();
+    $transaction = db_transaction();
   }
 
   // Get the next_serial value.
