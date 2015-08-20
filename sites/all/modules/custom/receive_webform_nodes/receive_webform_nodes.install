@@ -1,0 +1,59 @@
+<?php
+
+function receive_webform_nodes_schema() {
+  $schema = array();
+
+  $schema['webform_mapping'] = array(
+    'description' => 'Webform mapping.',
+    'fields' => array(
+      'wid' => array(
+        'description' => 'The identifier for this row.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'node' => array(
+        'description' => 'Current node id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'old_node' => array(
+        'description' => 'Old node id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('wid'),
+  );
+
+  $schema['webform_submissions_mapping'] = array(
+    'description' => 'Webform submisisons mapping.',
+    'fields' => array(
+      'wid' => array(
+        'description' => 'The identifier for this row.',
+        'type' => 'serial',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'sid' => array(
+        'description' => 'Current submission id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'old_sid' => array(
+        'description' => 'Old submission id.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+    ),
+    'primary key' => array('wid'),
+  );
+
+  return $schema;
+}
+
+?>

@@ -1,0 +1,4 @@
+name = Receive webform nodes
+description = receive nodes via cURL
+package = custom
+core = 7.x
