@@ -433,7 +433,7 @@ function _webform_report_get_report_data($node) {
         
           // process data for this submission, if any
           if ($csid != 0) {
-          
+
             // test submission against filters
             if (_webform_report_test_filters($data, $filters, $columns)) {
               // output row if filters pass
@@ -863,7 +863,6 @@ function _webform_report_test_filters($data, $filters, $columns) {
  *   array of formatted table data
  */
 function _webform_report_format_data($raw, $column) {
-
   $out = '';
   
   // handle file type
@@ -1034,7 +1033,9 @@ function _webform_report_format_data($raw, $column) {
   if ($column['hidden'] == TRUE) {
     $out['hidden'] = TRUE;
   }
-
+  if(isset($out['sort']) && !empty($out['sort']) && isset($out['data']) && empty($out['data'])) {
+    $out['data'] = $out['sort'];
+  }
   // return formatted data
   return $out;
 }
@@ -1251,7 +1252,6 @@ function _webform_report_pager($headers, $rows, $node) {
   if (array_key_exists('layout', $node->options)) {
     $layout = $node->options['layout'];
   }
-
   // filter out hidden columns
   $out = array();
   if (count($rows) > 0 && is_array($pages[$page])) {
@@ -1260,10 +1260,15 @@ function _webform_report_pager($headers, $rows, $node) {
       foreach ($row as $cell) {
         $hide = isset($cell['hidden']) ? $cell['hidden'] : FALSE;
         if (!$hide) {
+          if (!empty($cell)) {
+            if (empty($cell['data']) && !empty($cell['sort'])) {
+              $cell['data'] = $cell['sort'];
+            }
           // remove cell attributes
-          unset($cell['hidden']);
-          unset($cell['sort']);
-          unset($cell['field']);
+            unset($cell['hidden']);
+            unset($cell['sort']);
+            unset($cell['field']);
+          }
           $outrow[] = $cell;
         }
       }
