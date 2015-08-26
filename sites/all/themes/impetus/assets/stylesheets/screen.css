@@ -495,3 +495,7 @@ body.node-type-webform-report .content.clearfix .dummy-content {
 .webform-submission-navigation {
 	display:none;
 }
+
+.pane-og-menu-single-menu ul {
+    list-style: none !important;
+}
