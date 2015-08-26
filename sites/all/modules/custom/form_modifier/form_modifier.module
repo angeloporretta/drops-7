@@ -40,7 +40,8 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
             } else if($item['#type'] == 'textfield' && $item['#title'] == 'Email') {
               $form['submitted'][$key]['#default_value'] = $loaded_user->mail;
             } else if($item['#type'] == 'managed_file') {
-              $form['submitted'][$key]['#description'] = 'Files must be less than <strong>100 MB</strong>.';
+              $splitted_description = explode("<br />", $form['submitted'][$key]['#description']);
+              $form['submitted'][$key]['#description'] = $splitted_description[0] . "<br />" . 'Files must be less than <strong>100 MB</strong>.';
             }
           } else { //layout box
             if (isset($item['#webform_component']['type']) && $item['#webform_component']['type'] == 'layout_box') {
