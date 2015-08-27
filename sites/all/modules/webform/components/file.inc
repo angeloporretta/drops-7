@@ -395,7 +395,10 @@ function theme_webform_display_file($variables) {
 
   $file = $element['#value'];
   $url = !empty($file) ? webform_file_url($file->uri) : t('no upload');
-  return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url)) : ' ';
+  if (isset($variables['element']['#value']->fid)) {
+    return l($file->filename, $url, array('attributes' => array('download' => 'download')));
+  }
+  return !empty($file) ? ($element['#format'] == 'text' ? $url : l($file->filename, $url, array('download' => 'download'))) : ' ';
 }
 
 /**
@@ -462,7 +465,7 @@ function _webform_table_file($component, $value) {
   $output = '';
   $file = webform_get_file($value[0]);
   if (!empty($file->fid)) {
-    $output = '<a href="' . webform_file_url($file->uri) . '">' . check_plain(webform_file_name($file->uri)) . '</a>';
+    $output = '<a href="' . webform_file_url($file->uri) . '" download>' . check_plain(webform_file_name($file->uri)) . '</a>';
     $output .= ' (' . (int) ($file->filesize/1024) . ' KB)';
   }
   return $output;
