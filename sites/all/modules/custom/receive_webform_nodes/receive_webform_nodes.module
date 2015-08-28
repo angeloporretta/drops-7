@@ -150,12 +150,12 @@ function _receive_submission_for_webform($node, $sid) {
     $submission_obj->old_sid = $sid;
     $submission->serial = $exists_submission->serial;
     webform_submission_update($node, $submission_obj);
-    webform_submission_send_mail($node, $submission_obj);
+    // webform_submission_send_mail($node, $submission_obj);
 
   } else {
     watchdog('debug', '<pre>'. print_r($exists_submission, TRUE) .'</pre>');
     webform_submission_insert($node, $submission_obj);
-    webform_submission_send_mail($node, $submission_obj);
+    // webform_submission_send_mail($node, $submission_obj);
   }
 
 }
