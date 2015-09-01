@@ -499,3 +499,11 @@ body.node-type-webform-report .content.clearfix .dummy-content {
 .pane-og-menu-single-menu ul {
     list-style: none !important;
 }
+
+ul {
+	list-style: none;
+}
+
+#main-wrapper .pane-content ul {
+	list-style: initial;
+}
