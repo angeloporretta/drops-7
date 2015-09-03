@@ -209,7 +209,7 @@ function webform_report_load($nodes) {
       array(':nid' => $node->nid))->fetchObject();
     
     if (empty($report)) {
-      $report = stdClass();
+      $report = new stdClass();
       $report->wnid = 0;
       $report->columns = array();
       $report->sorton = array();
