@@ -112,6 +112,13 @@ function webform_report_menu() {
 
   $items = array();
 
+  $items['autocomplete/webform_report_nodes'] = array(
+    'title' => 'Autocomplete for webforms',
+    'page callback' => '_webform_report_autocomplete_field',
+    'access callback' => TRUE,
+    'type' => MENU_CALLBACK
+  );
+
   $items['admin/content/webform_report'] = array(
     'title' => t('Webform Reports'),
     'description' => t('View and edit Webform reports.'),
@@ -150,6 +157,22 @@ function webform_report_menu() {
     'type' => MENU_CALLBACK
   );
   return $items;
+}
+
+function _webform_report_autocomplete_field($string) {
+  $nodes = db_select('node', 'n')
+    ->fields('n', array('title', 'nid'))
+    ->condition('type', 'webform', '=')
+    ->condition('title' , '%' . db_like($string) . '%' , 'LIKE')
+    ->execute();
+
+  $return = array();
+
+  while ($node = $nodes->fetchAssoc()) {
+    $return[$node['nid']] = $node['title'];
+  }
+
+  return drupal_json_output($return);
 }
 
 /**
@@ -349,11 +372,12 @@ function webform_report_form($node) {
   // if adding a new report, ask for the webform
   if (!isset($node->nid)) {
     $form['wnid'] = array(
-      '#type' => 'select',
+      '#type' => 'textfield',
       '#title' => t('Webform'),
-      '#options' => array('' => t('Select a Webform')) + _webform_report_get_webforms(),
+      // '#options' => array('' => t('Select a Webform')) + _webform_report_get_webforms(),
       '#required' => TRUE,
       '#weight' => 3,
+      '#autocomplete_path' => 'autocomplete/webform_report_nodes',
       '#description' => t('Select a webform for this report.'),
     );
   }
