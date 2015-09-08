@@ -507,3 +507,7 @@ ul {
 #main-wrapper .pane-content ul {
 	list-style: initial;
 }
+
+.webform-component-matrix tr.odd .form-type-item, .webform-component-matrix tr.even .form-type-item {
+white-space:normal;
+}
