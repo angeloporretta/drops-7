@@ -4,7 +4,7 @@ function receive_webform_nodes_menu() {
   $items = array();
 
   $items['receive/webform-nodes/%'] = array(
-  	'title' => 'Save webform nodes',
+    'title' => 'Save webform nodes',
     'page callback' => '_save_webform_nodes',
     'page arguments' => array(2),
     'access callback' => TRUE,
@@ -39,7 +39,7 @@ function _save_webform_nodes($node) {
   $output = curl_exec($ch1);
   $output1 = json_decode($output);
   $output = unserialize($output1->node);
-   
+
   $select_node = db_select('webform_mapping', 'w')
     ->fields('w')
     ->condition('old_node', $node, '=')
@@ -52,7 +52,6 @@ function _save_webform_nodes($node) {
     unset($output->vid);
     unset($output->path);
   } else {
-    watchdog('debug', '<pre>'. print_r($output, TRUE) .'</pre>');
     $output->nid = $old_node->nid;
     unset($output->vid);
     unset($output->path);
@@ -103,7 +102,6 @@ function _receive_submission_for_webform($node, $sid) {
   $output1 = json_decode($output);
 
   $output = unserialize($output1->submission);
-  // watchdog('debug', '<pre>'. print_r($output, TRUE) .'</pre>');
   //build serial
   $select_node = db_select('webform_mapping', 'w')
     ->fields('w')
@@ -123,11 +121,6 @@ function _receive_submission_for_webform($node, $sid) {
     ->execute()
     ->fetchAssoc();
 
-  // if (!empty($select_sid)) {
-  //   $new_sid = $select_sid['sid'];
-  // } else {
-  //   $new_sid = $sid;
-  // }
   $data = array();
   foreach ($output->data as $cid => $value) {
     $data[$cid]['0'] = $value[0];
@@ -150,12 +143,9 @@ function _receive_submission_for_webform($node, $sid) {
     $submission_obj->old_sid = $sid;
     $submission->serial = $exists_submission->serial;
     webform_submission_update($node, $submission_obj);
-    // webform_submission_send_mail($node, $submission_obj);
 
   } else {
-    watchdog('debug', '<pre>'. print_r($exists_submission, TRUE) .'</pre>');
     webform_submission_insert($node, $submission_obj);
-    // webform_submission_send_mail($node, $submission_obj);
   }
 
 }
@@ -172,14 +162,40 @@ function receive_webform_nodes_webform_submission_insert($node, $submission) {
 }
 
 function receive_webform_nodes_node_insert($node) {
-	// dsm($node);
   if($node->type == 'webform' && isset($node->old_nid)) {
-	db_insert('webform_mapping')
-	  ->fields(array(
-	  	'node' => $node->nid,
-	  	'old_node' => $node->old_nid,
-	  ))
-	  ->execute();
+    db_insert('webform_mapping')
+      ->fields(array(
+        'node' => $node->nid,
+        'old_node' => $node->old_nid,
+      ))
+      ->execute();
 
+    //receive the submissions for this webform
+    
+    $url = "http://live-connect-impetus.pantheon.io/api/webform/{$node->old_nid}/send_submissions";
+    $ch1 = curl_init();
+    curl_setopt($ch1, CURLOPT_URL, $url);
+    curl_setopt($ch1, CURLOPT_RETURNTRANSFER, true);
+    $output = curl_exec($ch1);
+    $output1 = json_decode($output);
+    $output = unserialize($output1);
+    foreach ($output as $submission) {
+      $data = array();
+      foreach ($submission->data as $cid => $value) {
+        $data[$cid]['0'] = $value[0];
+      }
+      $submission_obj = (object) array(
+        'nid' => $node->nid,
+        'uid' => $submission->uid,
+        'submitted' => REQUEST_TIME,
+        'remote_addr' => $submission->remote_addr,
+        'is_draft' => FALSE,
+        'serial' => $submission->serial,
+        'data' => $data,
+        'old_sid' => $submission->sid,
+      );
+
+      webform_submission_insert($node, $submission_obj);
+    }
   }
 }
