@@ -67,6 +67,22 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == 'edit') {
+    if (isset($form['field_allow_file_upload'])) {
+      $field = $form['field_allow_file_upload'];
+      unset($form['field_allow_file_upload']);
+      $form['comment_settings']['field_allow_file_upload'] = $field;
+    }
+  }
+
+  if (arg(0) == 'node' && arg(1) == 'add') {
+    if (isset($form['field_allow_file_upload'])) {
+      $field = $form['field_allow_file_upload'];
+      unset($form['field_allow_file_upload']);
+      $form['comment_settings']['field_allow_file_upload'] = $field;
+    }
+  }
+
   drupal_add_js(drupal_get_path('module', 'form_modifier') . '/js/form_modifier.js');
   if ($form['#id'] == 'comment-form') {
     if (isset($form['field_file_upload'][LANGUAGE_NONE]['#file_upload_description'])) {
