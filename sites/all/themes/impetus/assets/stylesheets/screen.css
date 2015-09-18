@@ -511,3 +511,11 @@ ul {
 .webform-component-matrix tr.odd .form-type-item, .webform-component-matrix tr.even .form-type-item {
 white-space:normal;
 }
+
+.page-node-add ul.vertical-tabs-list, .page-node-edit ul.vertical-tabs-list {
+	list-style: none !important;
+}
+
+#tab-members ul {
+	list-style: none !important;
+}
