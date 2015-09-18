@@ -516,6 +516,6 @@ white-space:normal;
 	list-style: none !important;
 }
 
-#tab-members ul {
+#tab-members ul, #tab-owners ul {
 	list-style: none !important;
 }
