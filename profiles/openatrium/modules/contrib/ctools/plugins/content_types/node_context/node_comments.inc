@@ -87,20 +87,41 @@ function ctools_node_comments_content_type_admin_title($subtype, $conf, $context
  * difficult to modify this.
  */
 function ctools_comment_render($node, $conf) {
+  $setting = node_sort_value($node->nid);
   $output = '';
   if (!user_access('access comments') || !$node->comment) {
     return;
   }
   $mode = $conf['mode'];
   $comments_per_page = $conf['comments_per_page'];
-  $sort = $conf['sort'];
+  if (isset($conf['sort'])) {
+    $sort = $conf['sort'];
+  }
 
   $cids = comment_get_thread($node, $mode, $comments_per_page);
   $comments = comment_load_multiple($cids);
-  if ($sort == 'DESC') {
+  if (isset($setting) && $setting) {
+    if ($setting == 'new') {
+      $comments = array_reverse($comments , TRUE);
+    }
+  } else if (isset($sort) && $sort == 'DESC') {
     $comments = array_reverse($comments , TRUE);
   }
   if ($comments) {
+    global $user;
+    if (!in_array('comment reply manager', $user->roles)) {
+      $video_settings = _get_video_setting($node->nid);
+      if ($video_settings['reply_state'] == 1) {
+        foreach($comments as $key => $value) {
+          if (is_numeric($key)) {
+            if ($value->uid != $user->uid && $value->pid > 0) {
+              // unset($build[$key]);
+              unset($comments[$key]);
+            }
+          }
+        }
+      }
+    }
     drupal_add_css(drupal_get_path('module', 'comment') . '/comment.css');
     comment_prepare_thread($comments);
     $build = comment_view_multiple($comments, $node);

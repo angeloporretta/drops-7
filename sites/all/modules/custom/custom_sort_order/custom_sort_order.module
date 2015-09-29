@@ -1,0 +1,83 @@
+<?php
+
+function custom_sort_order_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
+  	$form['comment_settings']['comment_sort'] = array(
+  	  '#type' => 'select',
+  	  '#title' => '<strong>' . t('Sort comments by:') . '</strong>',
+  	  '#options' => array(
+        'old' => t('Date (oldest on top)'),
+  	  	'new' => t('Date (newest on top)'),
+  	  ),
+  	  '#weight' => 100,
+  	);
+  	if (is_numeric(arg(1))) {
+  	  $default = node_sort_value(arg(1));
+
+  	  if ($default) {
+  	  	$form['comment_settings']['comment_sort']['#default_value'] = $default;
+  	  } else {
+        $form['comment_settings']['comment_sort']['#default_value'] = 'old';
+      }
+  	}
+  }
+}
+
+function custom_sort_order_node_insert($node) {
+  $nid = $node->nid;
+  $option = $node->comment_sort;
+  if (isset($option) && !empty($option)) {
+    db_insert('sort_order')
+      ->fields(array(
+        'nid' => $nid,
+        'option' => $option,
+      ))
+      ->execute();
+  }
+}
+
+function custom_sort_order_node_delete($node) {
+  $nid = $node->nid;
+  db_delete('sort_order')
+    ->condition('nid', $nid, '=')
+    ->execute();
+}
+
+function custom_sort_order_node_update($node) {
+  $nid = $node->nid;
+	if(isset($node->comment_sort)) {
+	  $option = $node->comment_sort;	
+	}
+
+  $exists = node_sort_value($node->nid);
+  if (isset($option)) {
+    if (!$exists) {
+    	db_insert('sort_order')
+        ->fields(array(
+          'nid' => $nid,
+          'option' => $option,
+        ))
+        ->execute();
+
+    } else {
+  	db_update('sort_order')
+  	  ->fields(array(
+  	    'option' => $option,
+  	  ))
+  	  ->condition('nid', $nid, '=')
+  	  ->execute();
+    }
+  }
+}
+
+function node_sort_value($node) {
+  $option = db_select('sort_order', 's')
+    ->fields('s')
+    ->condition('nid', $node, '=')
+    ->execute()
+    ->fetchAssoc();
+  if (!empty($option)) {
+  	return $option['option'];
+  }
+  return FALSE;
+}

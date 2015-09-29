@@ -1,0 +1,28 @@
+<?php
+
+function custom_sort_order_schema() {
+  $schema = array();
+
+  $schema['sort_order'] = array(
+  	'description' => 'Save sort option for nodes',
+  	'fields' => array(
+  	  'nid' => array(
+  	  	'description' => 'The node id.',
+  	  	'type' => 'int',
+  	  	'unsigned' => TRUE,
+  	  	'not null' => TRUE,
+  	  ),
+  	  'option' => array(
+  	  	'description' => 'The sort option.',
+  	  	'type' => 'varchar',
+  	  	'length' => 100,
+  	  	'not null' => TRUE,
+  	  ),
+  	),
+  	'unique keys' => array(
+  	  'nid' => array('nid'),
+  	),
+  );
+
+  return $schema;
+}

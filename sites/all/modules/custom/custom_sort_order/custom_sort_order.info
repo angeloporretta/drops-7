@@ -1,0 +1,4 @@
+name = Custom Sort Order
+description = Provides a sort option for comments
+package = custom
+core = 7.x
