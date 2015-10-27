@@ -16,8 +16,6 @@ function add_points_and_badges_view_taxonomy_default_vocabularies() {
       'hierarchy' => 1,
       'module' => 'userpoints',
       'weight' => 0,
-      'language' => 'und',
-      'i18n_mode' => 0,
     ),
   );
 }

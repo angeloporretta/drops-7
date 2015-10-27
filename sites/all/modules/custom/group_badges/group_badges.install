@@ -35,5 +35,21 @@ function group_badges_schema() {
   	),
   );
 
+  $schema['leaderboard_points'] = array(
+    'description' => 'Save the point category a badge belongs to',
+    'fields' => array(
+      'lid' => array(
+        'description' => 'The leaderboard nid.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'points_category' => array(
+        'description' => 'Points category.',
+        'type' => 'text',
+      ),
+    ),
+  );
+
   return $schema;
 }

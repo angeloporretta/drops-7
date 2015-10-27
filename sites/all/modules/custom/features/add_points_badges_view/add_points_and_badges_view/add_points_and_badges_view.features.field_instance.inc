@@ -49,6 +49,12 @@ function add_points_and_badges_view_field_default_field_instances() {
         'type' => 'hidden',
         'weight' => 0,
       ),
+      'webform_report_view' => array(
+        'label' => 'above',
+        'settings' => array(),
+        'type' => 'hidden',
+        'weight' => 0,
+      ),
     ),
     'entity_type' => 'node',
     'field_name' => 'field_add_points',
