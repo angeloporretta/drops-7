@@ -1,0 +1,4 @@
+name = IMPETUS Points System
+description = Adds points based on users actions
+package = custom
+core = 7.x

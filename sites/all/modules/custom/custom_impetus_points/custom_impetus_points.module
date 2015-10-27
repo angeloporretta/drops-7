@@ -1,0 +1,196 @@
+<?php
+
+/**
+ * Implements hook_form_alter.
+ */
+function custom_impetus_points_form_alter(&$form, &$form_state, $form_id) {
+  if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
+    if (isset($form['field_add_points'])) {
+      $field = $form['field_add_points'];
+      unset($form['field_add_points']);
+      $form['comment_settings']['field_add_points'] = $field;
+    }
+  }
+
+  // if ($form_id == 'webform_configure_form') {
+  //   $points = _get_points_setting($form['nid']['#value']);
+  //   $form['points'] = array(
+  //     '#type' => 'textfield',
+  //     '#title' => t('Points earned on form submit'),
+  //     '#required' => FALSE,
+  //     '#weight' => -10,
+  //   );
+
+  //   if ($points) {
+  //     $form['points']['#default_value'] = $points;
+  //   }
+  //   $form['#submit'][] = 'save_points_settings';
+  // }
+
+  if (strpos($form_id, "webform_client_form_") !== FALSE) {
+    $form['#submit'][] = "add_webform_points";
+  }
+}
+
+function add_webform_points($form, $form_state) {
+  global $user;
+  $nid = $form_state['values']['details']['nid'];
+  $webform_node = node_load($nid);
+  $section_id = $webform_node->oa_section_ref[LANGUAGE_NONE][0]['target_id'];
+  $points = _get_points_setting($nid);
+  $setting = db_select('leaderboard_points', 'l')
+      ->fields('l')
+      ->condition('lid', $section_id, '=')
+      ->execute()
+      ->fetchAssoc();
+  if (isset($setting['points_category']) && !empty($setting['points_category'])) {
+    if (!empty($points) && $points > 0) {
+      $params = array(
+        'uid' => $user->uid,
+        'points' => $points,
+        'tid' => $setting['points_category'],
+      );
+      userpoints_userpointsapi($params);
+    }
+  }
+}
+
+function save_points_settings($form, $form_state) {
+  if (empty($form_state['input']['points'])) {
+    $points = 0;
+  } else {
+    $points = $form_state['input']['points'];
+  }
+  $overwrite = _setting_saved($form_state['values']['nid']);
+  if($overwrite) {
+    db_update("impetus_webform_points")
+      ->fields(array(
+        'points' => $points,
+      ))
+      ->condition('nid', $form_state['values']['nid'], '=')
+      ->execute();
+  } else {
+    db_insert("impetus_webform_points")
+      ->fields(array(
+        'nid' => $form_state['values']['nid'],
+        'points' => $points,
+      ))
+      ->execute();
+  }
+}
+
+function _setting_saved($nid) {
+  $settings = db_select("impetus_webform_points", "i")
+    ->fields('i')
+    ->condition('nid', $nid, '=')
+    ->execute()
+    ->fetchAssoc();
+  if (empty($settings)) {
+    return FALSE;
+  } else {
+    return TRUE;
+  }
+}
+
+function _get_points_setting($nid) {
+  $settings = db_select("impetus_webform_points", "i")
+    ->fields('i')
+    ->condition('nid', $nid, '=')
+    ->execute()
+    ->fetchAssoc();
+
+  if (isset($settings['points'])) {
+    return $settings['points'];
+  }
+
+  return FALSE;
+}
+
+function custom_impetus_points_comment_insert($comment) {
+  $node = node_load($comment->nid);
+  if (isset($comment->ziggeo_comment) && $comment->ziggeo_comment) {
+    if ($node->nid == 1052) {
+      $points = 10;
+      $params = array(
+        'uid' => $comment->uid,
+        'points' => $points,
+      );
+    }
+  } else if (isset($node->field_add_points[LANGUAGE_NONE][0]['value']) && !empty($node->field_add_points[LANGUAGE_NONE][0]['value'])) {
+  	$points = $node->field_add_points[LANGUAGE_NONE][0]['value'];
+    if (isset($node->oa_section_ref[LANGUAGE_NONE][0]['target_id']) && !empty($node->oa_section_ref[LANGUAGE_NONE][0]['target_id'])) {
+      //get userpoints category
+      $category = db_select('leaderboard_points', 'l')
+        ->fields('l')
+        ->condition('lid', $node->oa_section_ref[LANGUAGE_NONE][0]['target_id'], '=')
+        ->execute()
+        ->fetchAssoc();
+
+      if (!empty($category['points_category'])) {
+        $tid = $category['points_category'];
+      }
+    }
+  	$params = array(
+      'uid' => $comment->uid,
+      'points' => $points,
+    );
+
+    if (isset($tid)) {
+      $params['tid'] = $tid;
+    }
+  }
+	userpoints_userpointsapi($params); 
+}
+
+function custom_impetus_points_menu() {
+  $items = array();
+
+  $items['admin/add-points-retroactively'] = array(
+    'title' => t('Add points retroactively'),
+    'page callback' => 'drupal_get_form',
+    'page arguments' => array('add_points_retroactively'),
+    'access arguments' => array('add user to groups'),
+  );
+
+  return $items;
+}
+
+function add_points_retroactively($form, &$form_state) {
+
+  $form['submit'] = array(
+    '#type' => 'submit',
+    '#value' => t('Submit'),
+  );
+  
+  return $form;
+}
+
+function add_points_retroactively_submit($form, &$form_state) {
+  $users = db_select("users", "u")
+    ->fields("u")
+    ->condition('uid', 0, '>')
+    ->execute();
+
+  while ($user = $users->fetchAssoc()) {
+    $idea_points = _get_points_from_created_ideas($user['uid']);
+    $params = array(
+      'uid' => $user['uid'],
+      'points' => $idea_points,
+    );
+      userpoints_userpointsapi($params); 
+  }
+}
+
+function _get_points_from_created_ideas($uid) {
+  $points = db_select('node', 'n')
+    ->fields('n')
+    ->condition('type', 'ideas', '=')
+    ->condition('uid', $uid, '=')
+    ->countQuery()
+    ->execute()
+    ->fetchField();
+
+  return $points * 5;
+}
+
+?>
