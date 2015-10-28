@@ -68,6 +68,14 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   }
 
   if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == 'edit') {
+    if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
+      if (isset($form['og_group_ref']['und'][0]['default']['#title'])) {
+        $form['og_group_ref']['und'][0]['default']['#title'] = t('Your Spaces');
+      }
+      if (isset($form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'])) {
+        $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'] = t('Other Spaces');
+      }
+    }
     if (isset($form['field_allow_file_upload'])) {
       $field = $form['field_allow_file_upload'];
       unset($form['field_allow_file_upload']);
@@ -76,6 +84,14 @@ function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   }
 
   if (arg(0) == 'node' && arg(1) == 'add') {
+    if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
+      if (isset($form['og_group_ref']['und'][0]['default']['#title'])) {
+        $form['og_group_ref']['und'][0]['default']['#title'] = t('Your Spaces');
+      }
+      if (isset($form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'])) {
+        $form['og_group_ref']['und'][0]['admin'][0]['target_id']['#title'] = t('Other Spaces');
+      }
+    }
     if (isset($form['field_allow_file_upload'])) {
       $field = $form['field_allow_file_upload'];
       unset($form['field_allow_file_upload']);
