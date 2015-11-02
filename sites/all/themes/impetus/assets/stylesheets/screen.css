@@ -519,3 +519,7 @@ white-space:normal;
 #tab-members ul, #tab-owners ul {
 	list-style: none !important;
 }
+
+.comment .media, .comment .media-body {
+	overflow: visible;
+}
