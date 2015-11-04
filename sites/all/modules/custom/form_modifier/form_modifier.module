@@ -24,6 +24,20 @@ function form_modifier_form_webform_email_edit_form_alter(&$form, &$form_state, 
  */
 function form_modifier_form_alter(&$form, &$form_state, $form_id) {
   global $user;
+  if (arg(0) == 'comment' && arg(1) == 'reply') {
+    if ($form['#id'] == 'comment-form') {
+      hide($form['actions']['preview']);
+      $form['actions']['cancel'] = array(
+        '#type' => 'link',
+        '#title' => t('Cancel'),
+        '#href' => "node/" . arg(2),
+        '#weight' => 20,
+        '#attributes' => array(
+          'class' => array('btn'),
+        ),
+      );
+    }
+  }
   if ($form_id == 'webform_component_edit_form') {
     if (isset($form['display']['field_suffix']['#title'])) {
       $form['display']['field_suffix']['#title'] = t('Suffix text placed to the right of the textfield');
