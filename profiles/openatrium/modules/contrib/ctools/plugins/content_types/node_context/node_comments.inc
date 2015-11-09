@@ -109,7 +109,7 @@ function ctools_comment_render($node, $conf) {
   }
   if ($comments) {
     global $user;
-    if (!in_array('comment reply manager', $user->roles)) {
+    if (!in_array('comment reply manager', $user->roles) && module_exists("ziggeo_integration")) {
       $video_settings = _get_video_setting($node->nid);
       if ($video_settings['reply_state'] == 1) {
         foreach($comments as $key => $value) {
