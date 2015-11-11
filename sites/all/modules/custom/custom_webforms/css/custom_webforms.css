@@ -1,0 +1,7 @@
+.hide-item {
+	display:none !important;
+}
+
+#ranking-labels-fieldset input, #ranking-row-labels-fieldset input {
+	margin-right: 10px;
+}

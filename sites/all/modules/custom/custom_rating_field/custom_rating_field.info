@@ -1,0 +1,4 @@
+name = Custom Rating Field
+description = Adds rating webform field
+package = custom
+core = 7.x

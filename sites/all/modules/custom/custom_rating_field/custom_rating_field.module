@@ -1,65 +1,19 @@
 <?php
 
-module_load_include('inc', 'custom_webforms', '/components/webform-ranking');
 module_load_include('inc', 'webform', '/includes/webform.components');
-
-
-/**
- * Implements hook_ctools_plugin_directory.
- */
-function custom_webforms_ctools_plugin_directory($owner, $plugin_type) {
-  
-  if ($owner == 'ctools' && $plugin_type == 'content_types') {
-    return 'plugins/' . $plugin_type;
-  }
-}
-
-function custom_webforms_menu() {
-  $items = array();
-
-  $items['force-download/%'] = array(
-    'page callback' => 'force_download_of_file',
-    'page arguments' => array(1),
-    'access callback' => TRUE,
-    'type' => MENU_LOCAL_TASK,
-  );
-
-  return $items;
-}
-
-function force_download_of_file($fid) {
-  $file = file_load(arg(1));
-  header("Content-Disposition: attachment;Filename=" . $file->filename);
-  return $file;
-}
 
 /**
  * Implements _webform_theme_component().
  */
-function custom_webforms_theme() {
+function custom_rating_field_theme() {
   return
-    array(
-      'webform_ranking_table' => array(
-        'render element' => 'element',
-      ),
-      'webform_template' => array(
-        'path' => drupal_get_path('module', 'custom_webforms') . '/templates',
-        'template' => 'webforms_template',
-      ),
-    );
-}
-
-/**
- * Implements hook_node_view().
- *
- */
-function custom_webforms_node_view($node, $view_mode, $langcode) {
-  if ($node->type == 'webform') {
-    if ($view_mode == 'full' || $view_mode == 'print') {
-      module_load_include('inc', 'webform');
-      module_load_include('inc', 'theme');
-    }
-  } 
+          array(
+              'webform_rating_table' => array(
+                  'render element' => 'element',
+              //'file' => 'components/matrix.inc',
+              //'path' => drupal_get_path('module', 'webform_matrix_component'),
+              ),
+  );
 }
 
 /**
@@ -67,12 +21,12 @@ function custom_webforms_node_view($node, $view_mode, $langcode) {
  * @see webform.api.php
  * @see webform_components()
  */
-function custom_webforms_webform_component_info() {
+function custom_rating_field_webform_component_info() {
   $components = array();
 
-  $components['ranking'] = array(
-      'label' => t('Ranking Question'),
-      'description' => t('Basic ranking question'),
+  $components['rating'] = array(
+      'label' => t('Rating Question'),
+      'description' => t('Basic rating question'),
       'features' => array(
           // This component supports defmatault values. Defaults to TRUE.
           'default_value' => FALSE,
@@ -94,20 +48,19 @@ function custom_webforms_webform_component_info() {
           // Add content to CSV downloads. Defaults to TRUE.
           'csv' => TRUE,
       ),
-      'file' => 'components/ranking.inc',
-      'file path' => drupal_get_path('module', 'custom_webforms'),
+      'file' => 'components/rating.inc',
+      'file path' => drupal_get_path('module', 'custom_rating_field'),
   );
   return $components;
 }
 
-function custom_webforms_form_alter(&$form, &$form_state, $form_id) {
-  
+function custom_rating_field_form_alter(&$form, &$form_state, $form_id) {
   if(strpos($form_id, 'webform_client_form_') === 0) {
     foreach($form['#node']->webform['components'] as $cid => $component) {
-      if ($component['type'] == 'ranking' && $component['form_key']) {
-          
-          $form['#validate'][] = 'custom_webforms_form_validate';
-          
+      if ($component['type'] == 'rating' && $component['form_key']) {
+
+        $form['#validate'][] = 'rating_field_validate';
+
         $nid = $component['nid'];
         $value = array();
 
@@ -141,13 +94,13 @@ function custom_webforms_form_alter(&$form, &$form_state, $form_id) {
         $element['#weight'] = $component['weight'];
         $element['#webform_component'] = $component;
         $columns = array();
-        if ($component['extra']['ranking_col_type'] == 0) {
-          $column_number = sizeof($component['extra']['ranking_fieldset']['num_labels']);
-          foreach($component['extra']['ranking_fieldset']['num_labels'] as $labels) {
+        if ($component['extra']['rating_col_type'] == 0) {
+          $column_number = sizeof($component['extra']['rating_fieldset']['num_labels']);
+          foreach($component['extra']['rating_fieldset']['num_labels'] as $labels) {
             $column[] = $labels;
           }
         } else {
-          $column_number = $component['extra']['ranking_col'];
+          $column_number = $component['extra']['rating_col'];
           for($i = 1; $i <= $column_number; $i++) {
             $column[] = $i;
           }
@@ -165,12 +118,11 @@ function custom_webforms_form_alter(&$form, &$form_state, $form_id) {
             //   'class' => array('')
             // ),
           );
-
           $parent_element = _webform_matrix_component_fieldset_parents($component['cid'], $form['submitted']);
           $parent_element[] = $formkey;
           drupal_array_set_nested_value($form['submitted'], $parent_element, $element);
           $parent_element[] = '#theme';
-          drupal_array_set_nested_value($form['submitted'], $parent_element, array('webform_ranking_table'));
+          drupal_array_set_nested_value($form['submitted'], $parent_element, array('webform_rating_table'));
         }
 
       }
@@ -178,14 +130,10 @@ function custom_webforms_form_alter(&$form, &$form_state, $form_id) {
   }
 }
 
-
-/**
- * Additional handler for validation.
- */
-function custom_webforms_form_validate($form, &$form_state) {
+function rating_field_validate($form, &$form_state) {
   foreach($form['#node']->webform['components'] as $cid => $component) {
     $sum = 1;
-    if ($component['type'] == 'ranking' && $component['form_key']) {
+    if ($component['type'] == 'rating' && $component['form_key']) {
       $nid = $component['nid'];
       $value = array();
       //get ranking question rows
@@ -210,8 +158,8 @@ function custom_webforms_form_validate($form, &$form_state) {
       $empty = FALSE;
 
       if (isset($form_state['input']['submitted'][$component['form_key']])) {
-        foreach($form_state['input']['submitted'][$component['form_key']] as $ranking_values) {
-          if ($ranking_values == '') {
+        foreach($form_state['input']['submitted'][$component['form_key']] as $rating_values) {
+          if ($rating_values == '') {
             $empty = TRUE;
           }
         }
@@ -230,46 +178,45 @@ function custom_webforms_form_validate($form, &$form_state) {
   }
 }
 
-
 /**
  * Implements hook_form_formid_alter().
  */
-function custom_webforms_form_webform_component_edit_form_alter(&$form, &$form_state, $formid) {
-  if ($form['type']['#value'] == 'ranking') {
+function custom_rating_field_form_webform_component_edit_form_alter(&$form, &$form_state, $formid) {
+
+  if ($form['type']['#value'] == 'rating') {
     $component = $form_state['build_info']['args'][1];
-    $ranking_form = _webform_ranking_component_get_form($form, $form_state, $component);
-    $form = array_merge($form, $ranking_form);
+    $rating_form = _webform_rating_component_get_form($form, $form_state, $component);
+    $form = array_merge($form, $rating_form);
   }
 }
 
 /**
  * Theme for webform matrix.
  */
-function theme_webform_ranking_table($variables) {
+function theme_webform_rating_table($variables) {
   $columns = array();
   $output = '';
-  drupal_add_js(drupal_get_path('module', 'custom_webforms') . '/js/ranking.js');
-  if ($variables['element']['#webform_component']['extra']['ranking_col_type'] == 0) {
-    $column_number = sizeof($variables['element']['#webform_component']['extra']['ranking_fieldset']['num_labels']);
-    foreach($variables['element']['#webform_component']['extra']['ranking_fieldset']['num_labels'] as $labels) {
+  // drupal_add_js(drupal_get_path('module', 'custom_rating_field') . '/js/ranking.js');
+  if ($variables['element']['#webform_component']['extra']['rating_col_type'] == 0) {
+    $column_number = sizeof($variables['element']['#webform_component']['extra']['rating_fieldset']['num_labels']);
+    foreach($variables['element']['#webform_component']['extra']['rating_fieldset']['num_labels'] as $labels) {
       $columns[] = $labels;
     }
   } else {
-    $column_number = $variables['element']['#webform_component']['extra']['ranking_col'];
+    $column_number = $variables['element']['#webform_component']['extra']['rating_col'];
     for($i = 1; $i <= $column_number; $i++) {
       $columns[] = $i;
     }
   }
-  
   if (isset($variables['element']['#webform_component']['name']) && !empty($variables['element']['#webform_component']['name'])) {
     $required = '';
     if($variables['element']['#webform_component']['required'] == 1) {
       $required = '<span class="form-required" title="This field is required.">*</span>';
     }
-    $output .= '<label>' . $variables['element']['#webform_component']['name'] . $required . '</label>';
+    $output .= '<label>' . $variables['element']['#webform_component']['name'] . " " . $required . '</label>';
   }
 
-  $output .= '<table class="ranking-table">';
+  $output .= "<table>";
   $output .= '<thead><th></th>';
   foreach($columns as $column) {
     $output .= '<th>' . $column . '</th>';
@@ -298,27 +245,27 @@ function theme_webform_ranking_table($variables) {
   }
   $output .= '</tbody>';
   $output .= "</table>";
-
   if (isset($variables['element']['#webform_component']['extra']['description']) && !empty($variables['element']['#webform_component']['extra']['description'])) {
     $output .= '<div class="description" style="font-size: 0.85em;">' . $variables['element']['#webform_component']['extra']['description'] . "</div>";
   }
+  
   return $output;
 }
 
-function add_more_labels_validate($form , $form_state) {
+function add_more_labels_rating_validate($form , $form_state) {
 
 }
 
-function remove_label_validate($form , $form_state) {
+function remove_label_rating_validate($form , $form_state) {
 
 }
 
-/* COLUMN AJAX */
+// /* COLUMN AJAX */
 
-function add_more_labels_ajax($form, &$form_state) {
+function add_more_labels_rating_ajax($form, &$form_state) {
   if (!isset($form_state['num_labels'])) {
-    if (isset($form_state['input']['extra']['ranking_fieldset']['num_labels'])) {
-      $form_state['num_labels'] = sizeof($form_state['input']['extra']['ranking_fieldset']['num_labels']);
+    if (isset($form_state['input']['extra']['rating_fieldset']['num_labels'])) {
+      $form_state['num_labels'] = sizeof($form_state['input']['extra']['rating_fieldset']['num_labels']);
     } else {
       $form_state['num_labels'] = 0;
       $form_state['num_labels']++;
@@ -328,25 +275,25 @@ function add_more_labels_ajax($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
-function label_ajax_callback($form , $form_state) {
-  return $form['extra']['ranking_fieldset'];
+function label_rating_ajax_callback($form , $form_state) {
+  return $form['extra']['rating_fieldset'];
 }
 
-function add_more_labels_ajax_remove($form , &$form_state) {
+function add_more_rating_labels_ajax_remove($form , &$form_state) {
   if (!isset($form_state['num_labels'])) {
-    $form_state['num_labels'] = sizeof($form_state['input']['extra']['ranking_fieldset']['num_labels']);
+    $form_state['num_labels'] = sizeof($form_state['input']['extra']['rating_fieldset']['num_labels']);
   }
   $form_state['num_labels']--;
   $form_state['rebuild'] = TRUE;
 }
 
-function label_remove_ajax_callback($form , $form_state) {
-  return $form['extra']['ranking_fieldset'];
+function label_rating_remove_ajax_callback($form , $form_state) {
+  return $form['extra']['rating_fieldset'];
 }
 
-/* ROW AJAX */
+// /* ROW AJAX */
 
-function add_more_row_labels_ajax($form, &$form_state) {
+function add_more_rating_row_labels_ajax($form, &$form_state) {
   if (!isset($form_state['num_row_labels'])) {
     if (isset($form_state['input']['extra']['row_fieldset']['num_row_labels'])) {
       $form_state['num_row_labels'] = sizeof($form_state['input']['extra']['row_fieldset']['num_row_labels']);
@@ -359,11 +306,11 @@ function add_more_row_labels_ajax($form, &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
-function row_label_ajax_callback($form , $form_state) {
+function row_label_rating_ajax_callback($form , $form_state) {
   return $form['extra']['row_fieldset'];
 }
 
-function add_more_row_labels_ajax_remove($form , &$form_state) {
+function add_more_row_rating_labels_ajax_remove($form , &$form_state) {
   if (!isset($form_state['num_row_labels'])) {
     $form_state['num_row_labels'] = sizeof($form_state['input']['extra']['row_fieldset']['num_row_labels']);
   }
@@ -371,6 +318,6 @@ function add_more_row_labels_ajax_remove($form , &$form_state) {
   $form_state['rebuild'] = TRUE;
 }
 
-function row_label_remove_ajax_callback($form , $form_state) {
+function row_label_rating_remove_ajax_callback($form , $form_state) {
   return $form['extra']['row_fieldset'];
 }
