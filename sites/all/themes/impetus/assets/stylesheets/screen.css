@@ -523,3 +523,7 @@ white-space:normal;
 .comment .media, .comment .media-body {
 	overflow: visible;
 }
+
+#main-wrapper #main {
+	margin-top:80px !important;
+}
