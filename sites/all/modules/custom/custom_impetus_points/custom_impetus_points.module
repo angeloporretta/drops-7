@@ -12,20 +12,20 @@ function custom_impetus_points_form_alter(&$form, &$form_state, $form_id) {
     }
   }
 
-  // if ($form_id == 'webform_configure_form') {
-  //   $points = _get_points_setting($form['nid']['#value']);
-  //   $form['points'] = array(
-  //     '#type' => 'textfield',
-  //     '#title' => t('Points earned on form submit'),
-  //     '#required' => FALSE,
-  //     '#weight' => -10,
-  //   );
+  if ($form_id == 'webform_configure_form') {
+    $points = _get_points_setting($form['nid']['#value']);
+    $form['points'] = array(
+      '#type' => 'textfield',
+      '#title' => t('Points earned on form submit'),
+      '#required' => FALSE,
+      '#weight' => -10,
+    );
 
-  //   if ($points) {
-  //     $form['points']['#default_value'] = $points;
-  //   }
-  //   $form['#submit'][] = 'save_points_settings';
-  // }
+    if ($points) {
+      $form['points']['#default_value'] = $points;
+    }
+    $form['#submit'][] = 'save_points_settings';
+  }
 
   if (strpos($form_id, "webform_client_form_") !== FALSE) {
     $form['#submit'][] = "add_webform_points";
