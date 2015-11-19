@@ -51,15 +51,15 @@ function group_leaderboard_edit($form , &$form_state) {
     ->execute();
 
   foreach ($groups as $group) {
-  	$options[$group->nid] = $group->title;
+    $options[$group->nid] = $group->title;
   }
 
   $form['groups'] = array(
-  	'#type' => 'select',
+    '#type' => 'select',
     '#multiple' => TRUE,
-  	'#title' => t('Select a group'),
-  	'#options' => $options,
-  	'#default_value' => $form_state['conf']['groups'],
+    '#title' => t('Select a group'),
+    '#options' => $options,
+    '#default_value' => $form_state['conf']['groups'],
   );
 
   $form['nid'] = array(
