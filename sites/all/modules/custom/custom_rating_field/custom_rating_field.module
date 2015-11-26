@@ -56,11 +56,15 @@ function custom_rating_field_webform_component_info() {
 
 function custom_rating_field_form_alter(&$form, &$form_state, $form_id) {
   if(strpos($form_id, 'webform_client_form_') === 0) {
+    $index = 0;
     foreach($form['#node']->webform['components'] as $cid => $component) {
+      
       if ($component['type'] == 'rating' && $component['form_key']) {
 
-        $form['#validate'][] = 'rating_field_validate';
-
+        if ($index == 0) {
+          $form['#validate'][] = 'rating_field_validate';
+          $index++;
+        }
         $nid = $component['nid'];
         $value = array();
 
@@ -156,8 +160,17 @@ function rating_field_validate($form, &$form_state) {
       }
 
       $empty = FALSE;
-
-      if (isset($form_state['input']['submitted'][$component['form_key']])) {
+      if ($component->pid != '0') {
+        //current component is in a fieldset
+        $fieldset_key = $form['#node']->webform['components'][$component['pid']]['form_key'];
+        if (isset($form_state['input']['submitted'][$fieldset_key][$component['form_key']])) {
+          foreach($form_state['input']['submitted'][$fieldset_key][$component['form_key']] as $rating_values) {
+            if ($rating_values == '') {
+              $empty = TRUE;
+            }
+          }
+        }
+      } else if (isset($form_state['input']['submitted'][$component['form_key']])) {
         foreach($form_state['input']['submitted'][$component['form_key']] as $rating_values) {
           if ($rating_values == '') {
             $empty = TRUE;
@@ -166,9 +179,15 @@ function rating_field_validate($form, &$form_state) {
       } else if ($component['required'] == 1) {
         $empty = TRUE;
       }
-
-      if ($row_number > sizeof($form_state['input']['submitted'][$component['form_key']])) {
-        $empty = TRUE;
+      if ($component->pid != '0') {
+        $fieldset_key = $form['#node']->webform['components'][$component['pid']]['form_key'];
+        if ($row_number > sizeof($form_state['input']['submitted'][$fieldset_key][$component['form_key']])) {
+          $empty = TRUE;
+        }
+      } else {
+        if ($row_number > sizeof($form_state['input']['submitted'][$component['form_key']])) {
+          $empty = TRUE;
+        }
       }
      
       if($component['required'] == 1 && $empty) {
