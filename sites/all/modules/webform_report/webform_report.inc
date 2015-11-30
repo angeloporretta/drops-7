@@ -318,11 +318,12 @@ function _webform_report_get_body_content($node, $view_mode) {
       hide($form_output['export']['format']);
       $output .= render($form_output);
     }
-    $output .= '<div class="dummy-wrapper"><div class="dummy-content"></div></div>';
+    $output .= '<div id="doubleScroll">';
+    drupal_add_js(drupal_get_path('theme', 'impetus') . '/assets/javascripts/doubleScroll/jquery.doubleScroll.js');
     drupal_add_js(drupal_get_path('module', 'webform_report') . '/js/fix.js');
     // output current page
     $output .= _webform_report_pager($report['headers'], $report['rows'], $node);
-
+    $output .= '</div>';
     // no submissions met criteria
     if (count($report['rows']) == 0) {
       $output .= t('There are no submissions that match the criteria for the selected webform.');
