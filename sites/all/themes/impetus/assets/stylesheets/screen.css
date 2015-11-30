@@ -527,3 +527,7 @@ white-space:normal;
 #main-wrapper #main {
 	margin-top:80px !important;
 }
+
+.suwala-doubleScroll-scroll, .suwala-doubleScroll-scroll-wrapper {
+	max-width: initial !important;
+}
