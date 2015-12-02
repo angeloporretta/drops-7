@@ -100,6 +100,13 @@ function custom_node_vote_form_alter(&$form, &$form_state, $form_id) {
         $default_value = 0;
       }
       $form['comment_settings']['comment']['comment_like'] = array('#type' => 'checkbox' , '#title' => t('Allow voting for this node') , '#description' => t('Allow users to like comments for this node') , '#prefix' => '<div class="comment-like-setting"><label><strong>Comment Like Settings</strong></label>' , '#suffix' => '</div>' , '#default_value' => $default_value , '#weight' => 2000);
+    } else if (arg(2) == 'clone' && arg(3) == 'confirm') {
+      if (_node_vote_get_settings_state(arg(1)) == 1) {
+        $default_value = 1;
+      } else {
+        $default_value = 0;
+      }
+      $form['comment_settings']['comment']['comment_like'] = array('#type' => 'checkbox' , '#title' => t('Allow voting for this node') , '#description' => t('Allow users to like comments for this node') , '#prefix' => '<div class="comment-like-setting"><label><strong>Comment Like Settings</strong></label>' , '#suffix' => '</div>' , '#default_value' => $default_value , '#weight' => 2000);
     } else {
       $form['comment_settings']['comment']['comment_like'] = array('#type' => 'checkbox' , '#title' => t('Allow voting for this node') , '#description' => t('Allow users to like comments for this node') , '#prefix' => '<div class="comment-like-setting"><label><strong>Comment Like Settings</strong></label>' , '#suffix' => '</div>' , '#default_value' => 0 , '#weight' => 2000);
     }
