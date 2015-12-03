@@ -99,7 +99,7 @@ class SendGridMailSystem implements MailSystemInterface {
     else {
       $data['html'] = $message['body'];
     }
-
+    $data['html'] = $message['body'];
     // Options for drupal_http_request.
     $options = array(
       'method' => 'POST',
