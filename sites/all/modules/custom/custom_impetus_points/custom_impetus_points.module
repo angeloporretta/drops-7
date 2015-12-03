@@ -4,25 +4,47 @@
  * Implements hook_form_alter.
  */
 function custom_impetus_points_form_alter(&$form, &$form_state, $form_id) {
+  global $base_url;
   if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
     if (isset($form['field_add_points'])) {
       $field = $form['field_add_points'];
       unset($form['field_add_points']);
       $form['comment_settings']['field_add_points'] = $field;
+      $form['comment_settings']['field_add_points'][LANGUAGE_NONE][0]['#prefix'] = "<strong>Points for comment submission:</strong>";
+    }
+    if (isset($form['field_points_category'])) {
+      $term = $form['field_points_category'];
+      unset($form['field_points_category']);
+      $form['comment_settings']['field_points_category'] = $term;
     }
   }
 
   if ($form_id == 'webform_configure_form') {
-    $points = _get_points_setting($form['nid']['#value']);
+    $settings = _get_webform_setting($form['nid']['#value']);
+    $category_string = '';
+    $categories = unserialize($settings['categories']);
+    foreach($categories as $category) {
+      $category_string .= $category . ",";
+    }
+    rtrim($category_string, ",");
     $form['points'] = array(
       '#type' => 'textfield',
       '#title' => t('Points earned on form submit'),
       '#required' => FALSE,
       '#weight' => -10,
     );
+    $form['categories'] = array(
+      '#type' => 'autocomplete_deluxe',
+      '#autocomplete_deluxe_path' => $base_url . '/autocomplete_deluxe/taxonomy/field_points_category',
+      '#not_found_message' => t("The term '@term' will be added."),
+      '#title' => t('Points Category'),
+      '#default_value' => $category_string,
+      '#multiple' => TRUE,
+      '#weight' => -10,
+    );
 
-    if ($points) {
-      $form['points']['#default_value'] = $points;
+    if ($settings) {
+      $form['points']['#default_value'] = $settings['points'];
     }
     $form['#submit'][] = 'save_points_settings';
   }
@@ -36,36 +58,55 @@ function add_webform_points($form, $form_state) {
   global $user;
   $nid = $form_state['values']['details']['nid'];
   $webform_node = node_load($nid);
-  $section_id = $webform_node->oa_section_ref[LANGUAGE_NONE][0]['target_id'];
-  $points = _get_points_setting($nid);
-  $setting = db_select('leaderboard_points', 'l')
-      ->fields('l')
-      ->condition('lid', $section_id, '=')
-      ->execute()
-      ->fetchAssoc();
-  if (isset($setting['points_category']) && !empty($setting['points_category'])) {
-    if (!empty($points) && $points > 0) {
-      $params = array(
-        'uid' => $user->uid,
-        'points' => $points,
-        'tid' => $setting['points_category'],
-      );
-      userpoints_userpointsapi($params);
-    }
+  $settings = _get_webform_setting($nid);
+  $points = $settings['points'];
+  $categories = unserialize($settings['categories']);
+  $params = array(
+    'uid' => $user->uid,
+    'points' => $points,
+  );
+  foreach($categories as $tid => $category) {
+    $params['tid'] = $tid;
+    userpoints_userpointsapi($params);
   }
 }
 
 function save_points_settings($form, $form_state) {
+  $tids = array();
   if (empty($form_state['input']['points'])) {
     $points = 0;
   } else {
     $points = $form_state['input']['points'];
   }
+  if (isset($form_state['input']['categories']['value_field']) && !empty($form_state['input']['categories']['value_field'])) {
+    $terms = explode('""', $form_state['input']['categories']['value_field']);
+    foreach($terms as $term) {
+      if (!empty($term) && $term != ' ') {
+        // $term = str_replace('""', "", $term);
+        if (!empty($term)) {
+          $term_object = taxonomy_get_term_by_name($term, "userpoints");
+          if (!empty($term_object)) {
+            $term_object_name = reset($term_object);
+            $tids[$term_object_name->tid] = $term_object_name->name;
+          } else {
+            $save_term = new stdClass();
+            $vocab = taxonomy_vocabulary_machine_name_load("userpoints");
+            $save_term->name = $term;
+            $save_term->vid = $vocab->vid;
+            taxonomy_term_save($save_term);
+            $tids[$save_term->tid] = $save_term->name;
+          }
+        }
+      }
+    }
+  }
+  $tids_ser = serialize($tids);
   $overwrite = _setting_saved($form_state['values']['nid']);
   if($overwrite) {
     db_update("impetus_webform_points")
       ->fields(array(
         'points' => $points,
+        'categories' => $tids_ser,
       ))
       ->condition('nid', $form_state['values']['nid'], '=')
       ->execute();
@@ -74,6 +115,7 @@ function save_points_settings($form, $form_state) {
       ->fields(array(
         'nid' => $form_state['values']['nid'],
         'points' => $points,
+        'categories' => $tids_ser,
       ))
       ->execute();
   }
@@ -92,7 +134,7 @@ function _setting_saved($nid) {
   }
 }
 
-function _get_points_setting($nid) {
+function _get_webform_setting($nid) {
   $settings = db_select("impetus_webform_points", "i")
     ->fields('i')
     ->condition('nid', $nid, '=')
@@ -100,7 +142,7 @@ function _get_points_setting($nid) {
     ->fetchAssoc();
 
   if (isset($settings['points'])) {
-    return $settings['points'];
+    return $settings;
   }
 
   return FALSE;
@@ -118,28 +160,24 @@ function custom_impetus_points_comment_insert($comment) {
     }
   } else if (isset($node->field_add_points[LANGUAGE_NONE][0]['value']) && !empty($node->field_add_points[LANGUAGE_NONE][0]['value'])) {
   	$points = $node->field_add_points[LANGUAGE_NONE][0]['value'];
-    if (isset($node->oa_section_ref[LANGUAGE_NONE][0]['target_id']) && !empty($node->oa_section_ref[LANGUAGE_NONE][0]['target_id'])) {
-      //get userpoints category
-      $category = db_select('leaderboard_points', 'l')
-        ->fields('l')
-        ->condition('lid', $node->oa_section_ref[LANGUAGE_NONE][0]['target_id'], '=')
-        ->execute()
-        ->fetchAssoc();
-
-      if (!empty($category['points_category'])) {
-        $tid = $category['points_category'];
+    if (isset($node->field_points_category[LANGUAGE_NONE][0]['tid']) && !empty($node->field_points_category[LANGUAGE_NONE][0]['tid'])) {
+      foreach($node->field_points_category[LANGUAGE_NONE] as $tid) {
+        $category_id = $tid['tid'];
+        $params = array(
+          'uid' => $comment->uid,
+          'points' => $points,
+          'tid' => $category_id,
+        );
+        userpoints_userpointsapi($params); 
       }
-    }
-  	$params = array(
-      'uid' => $comment->uid,
-      'points' => $points,
-    );
-
-    if (isset($tid)) {
-      $params['tid'] = $tid;
+    } else {
+      $params = array(
+        'uid' => $comment->uid,
+        'points' => $points,
+      );
+      userpoints_userpointsapi($params); 
     }
   }
-	userpoints_userpointsapi($params); 
 }
 
 function custom_impetus_points_menu() {

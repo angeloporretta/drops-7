@@ -24,25 +24,16 @@ function group_leaderboard($subtype, $conf, $args, $contexts) {
       $argument .= '+' . $group;
     }
   }
-  if (is_numeric(arg(1))) {
-    $node = node_load(arg(1));
-    $section_id = $node->oa_section_ref[LANGUAGE_NONE][0]['target_id'];
-    $setting = db_select('leaderboard_points', 'l')
-      ->fields('l')
-      ->condition('lid', $section_id, '=')
-      ->execute()
-      ->fetchAssoc();
-    if (!empty($setting['points_category'])) {
-      $view = views_embed_view('user_points_and_badges', 'page_2' , $setting['points_category'], $argument);
-    }
-  }
+  $view = views_embed_view('user_points_and_badges', 'page_3' , $conf['category'], $argument);
   
   $block->content = render($view);
+  // $block->content = '';
   return $block;
 }
 
 function group_leaderboard_edit($form , &$form_state) {
   $nid = $form_state['contexts']['panelizer']->argument;
+  $categories = array();
   $options = array();
   $groups = db_select('node' , 'n')
     ->fields('n' , array('nid' , 'title'))
@@ -51,15 +42,32 @@ function group_leaderboard_edit($form , &$form_state) {
     ->execute();
 
   foreach ($groups as $group) {
-    $options[$group->nid] = $group->title;
+  	$options[$group->nid] = $group->title;
   }
 
   $form['groups'] = array(
-    '#type' => 'select',
+  	'#type' => 'select',
     '#multiple' => TRUE,
-    '#title' => t('Select a group'),
-    '#options' => $options,
-    '#default_value' => $form_state['conf']['groups'],
+  	'#title' => t('Select a group'),
+    '#required' => TRUE,
+  	'#options' => $options,
+  	'#default_value' => $form_state['conf']['groups'],
+  );
+
+  $vocabulary = taxonomy_vocabulary_machine_name_load('Userpoints');
+  $terms = entity_load('taxonomy_term', FALSE, array('vid' => $vocabulary->vid));
+
+  foreach($terms as $term) {
+    $categories[$term->tid] = $term->name;
+  }
+
+  $form['category'] = array(
+    '#type' => 'select',
+    // '#multiple' => TRUE,
+    '#title' => t('Select a category'),
+    '#options' => $categories,
+    '#required' => TRUE,
+    '#default_value' => $form_state['conf']['category'],
   );
 
   $form['nid'] = array(
@@ -75,29 +83,5 @@ function group_leaderboard_edit_submit(&$form, &$form_state) {
     foreach ($form_state['values'] as $form_key => $value) {
       $form_state['conf'][$form_key] = $value;
     }
-  }
-  $nid = $form_state['input']['nid'];
-  $node = node_load($nid);
-  $section_id = $node->oa_section_ref[LANGUAGE_NONE][0]['target_id'];
-  $setting = db_select('leaderboard_points', 'l')
-    ->fields('l')
-    ->condition('lid', $section_id, '=')
-    ->execute()
-    ->fetchAssoc();
-
-  if (!empty($setting)) {
-    $category = $setting['points_category'];
-  } else {
-    $term = new stdClass();
-    $term->name = $node->title;
-    $term->vid = 5;
-    taxonomy_term_save($term);
-
-    db_insert('leaderboard_points')
-      ->fields(array(
-        'lid' => $section_id,
-        'points_category' => $term->tid,
-      ))
-      ->execute();
   }
 } 

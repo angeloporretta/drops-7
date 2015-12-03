@@ -1,7 +1,7 @@
 name = Add points and badges view
 core = 7.x
 package = IMPETUS
-version = 7.x-1.0
+version = 7.x-2.0
 project = add_points_and_badges_view
 dependencies[] = ctools
 dependencies[] = features

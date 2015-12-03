@@ -25,6 +25,9 @@ function custom_impetus_points_schema() {
         'unsigned' => TRUE,
         'not null' => TRUE,  
       ),
+      'categories' => array(
+        'type' => 'text',
+      ),
     ),
     'foreign keys' => array(
       'nid' => array(

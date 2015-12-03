@@ -13,7 +13,7 @@ function add_points_and_badges_view_taxonomy_default_vocabularies() {
       'name' => 'Userpoints',
       'machine_name' => 'userpoints',
       'description' => 'Automatically created by the userpoints module',
-      'hierarchy' => 1,
+      'hierarchy' => 0,
       'module' => 'userpoints',
       'weight' => 0,
     ),
