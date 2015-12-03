@@ -70,6 +70,7 @@ function impetus_preprocess_page(&$vars) {
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix-anchors.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/fix.js');
   drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/remove-white-space.js');
+  drupal_add_js(drupal_get_path('theme' , 'impetus') . '/assets/javascripts/move-envelope.js');
   
   // General pages.
   if (module_exists('chosen')) {

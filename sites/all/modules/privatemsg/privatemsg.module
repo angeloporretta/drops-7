@@ -215,7 +215,7 @@ function privatemsg_menu() {
     'menu_name'        => 'user-menu',
   );
   $items['messages/new'] = array(
-    'title'            => 'Write new message',
+    'title'            => 'Compose a new message',
     'page callback'    => 'drupal_get_form',
     'page arguments'   => array('privatemsg_new', 2, 3, NULL),
     'file'             => 'privatemsg.pages.inc',
@@ -1503,7 +1503,7 @@ function _privatemsg_block_menu() {
 
   $links = array();
   if (privatemsg_user_access('write privatemsg')) {
-    $links[] = l(t('Write new message'), 'messages/new');
+    $links[] = l(t('Compose a new message'), 'messages/new');
   }
   if (privatemsg_user_access('read privatemsg') || privatemsg_user_access('read all private messages') ) {
     $links[] = l(privatemsg_title_callback(), 'messages');

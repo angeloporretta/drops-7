@@ -1,0 +1,65 @@
+<?php
+
+/**
+ * @file
+ * Install file for private_message_email_notification.module
+ */
+
+/**
+ * Implements hook_schema().
+ */
+function private_message_email_notification_schema() {
+  $schema = array();
+  $schema['private_message_email_notification'] = array(
+    'description'       => 'Holds message ids that have to be ',
+    'fields'        => array(
+      'mid'    => array(
+        'description'   => 'Private Message ID',
+        'type'          => 'int',
+        'not null'      => TRUE,
+        'unsigned'      => TRUE,
+      ),
+      'thread_id'     => array(
+        'description'   => 'Messages thread ID',
+        'type'          => 'int',
+        'not null'      => TRUE,
+        'unsigned'      => TRUE,
+      ),
+      'sender'        => array(
+        'description'   => 'ID of the sender',
+        'type'          => 'int',
+        'not null'      => TRUE,
+        'unsigned'      => TRUE,
+      ),
+      'recipient'     => array(
+        'description'   => 'ID of the recipient object, typically user',
+        'type'          => 'int',
+        'not null'      => TRUE,
+        'unsigned'      => TRUE,
+      ),
+      'is_new'     => array(
+        'description'   => 'Whether the user has read this message',
+        'type'          => 'int',
+        'default'       => 1,
+        'not null'      => TRUE,
+        'unsigned'      => TRUE,
+      ),
+      'deleted' => array(
+        'description'   => 'Whether the user has deleted this message',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+        'default' => 0
+      ),
+    ),
+
+    'primary key'     => array('mid', 'recipient'),
+    'indexes'         => array(
+      'list'         => array('recipient', 'deleted', 'is_new'),
+      'messages'     => array('mid', 'recipient'),
+      'participants' => array('thread_id', 'recipient', 'deleted'),
+    ),
+  );
+
+  return $schema;
+}

@@ -1,0 +1,4 @@
+name = Custom message email notification
+description = Custom module that provides the email notification feature
+package = custom
+core = 7.x
