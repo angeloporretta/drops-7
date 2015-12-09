@@ -1,0 +1,15 @@
+<?php
+
+function custom_menu_weights_form_alter(&$form, &$form_state, $form_id) {
+	if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
+		if(isset($form['#node']->menu['menu_name']) && $form['#node']->menu['menu_name'] == 'og-menu-single') {
+			$form['#submit'][] = 'custom_weight_callback';
+		}
+	}
+}
+
+function custom_weight_callback(&$form, &$form_state) {
+	$weight = $form_state['input']['menu']['weight'];
+	$nid = $form_state['values']['nid'];
+	$form_state['values']['menu']['weight'] = $weight;
+}

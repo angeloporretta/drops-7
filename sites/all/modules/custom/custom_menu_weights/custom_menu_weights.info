@@ -1,0 +1,4 @@
+name = Custom Menu Link Weight
+description = Adds the possibility to alter the menu link weight from the node edit page
+package = custom
+core = 7.x

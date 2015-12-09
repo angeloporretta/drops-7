@@ -25,6 +25,7 @@ function ctools_node_form_menu_content_type_render($subtype, $conf, $panel_args,
   if (isset($context->form)) {
     if (isset($context->form['menu'])) {
       $block->content['menu'] = $context->form['menu'];
+      $block->content['menu']['link']['weight']['#access'] = TRUE;
       unset($block->content['menu']['#pre_render']);
       unset($block->content['menu']['#theme_wrappers']);
       $block->content['menu']['#type'] = '';
