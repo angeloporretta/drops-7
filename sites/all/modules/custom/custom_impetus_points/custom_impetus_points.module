@@ -27,13 +27,22 @@ function custom_impetus_points_form_alter(&$form, &$form_state, $form_id) {
       $category_string .= $category . ",";
     }
     rtrim($category_string, ",");
-    $form['points'] = array(
+
+    $form['points-fieldset'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Award points for submission'),
+      '#collapsible' => TRUE,
+      '#collapsed' => TRUE,
+      '#weight' => -10,
+    );
+
+    $form['points-fieldset']['points'] = array(
       '#type' => 'textfield',
       '#title' => t('Points earned on form submit'),
       '#required' => FALSE,
       '#weight' => -10,
     );
-    $form['categories'] = array(
+    $form['points-fieldset']['categories'] = array(
       '#type' => 'autocomplete_deluxe',
       '#autocomplete_deluxe_path' => $base_url . '/autocomplete_deluxe/taxonomy/field_points_category',
       '#not_found_message' => t("The term '@term' will be added."),
@@ -44,7 +53,7 @@ function custom_impetus_points_form_alter(&$form, &$form_state, $form_id) {
     );
 
     if ($settings) {
-      $form['points']['#default_value'] = $settings['points'];
+      $form['points-fieldset']['points']['#default_value'] = $settings['points'];
     }
     $form['#submit'][] = 'save_points_settings';
   }
@@ -159,7 +168,7 @@ function custom_impetus_points_comment_insert($comment) {
       );
     }
   } else if (isset($node->field_add_points[LANGUAGE_NONE][0]['value']) && !empty($node->field_add_points[LANGUAGE_NONE][0]['value'])) {
-  	$points = $node->field_add_points[LANGUAGE_NONE][0]['value'];
+    $points = $node->field_add_points[LANGUAGE_NONE][0]['value'];
     if (isset($node->field_points_category[LANGUAGE_NONE][0]['tid']) && !empty($node->field_points_category[LANGUAGE_NONE][0]['tid'])) {
       foreach($node->field_points_category[LANGUAGE_NONE] as $tid) {
         $category_id = $tid['tid'];
