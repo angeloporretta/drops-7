@@ -59,7 +59,7 @@ class OgMembership extends Entity {
     }
 
     if (!empty($field['settings']['handler_settings']['target_bundles']) && !in_array($group_bundle, $field['settings']['handler_settings']['target_bundles'])) {
-      throw new OgException(format_string('OG membership can not be created in entity %entity-type and bundle %entity-bundle using the field %field-name as the field does not reference %group-bundle bundle in %group-type entity type.', $params));
+      // throw new OgException(format_string('OG membership can not be created in entity %entity-type and bundle %entity-bundle using the field %field-name as the field does not reference %group-bundle bundle in %group-type entity type.', $params));
     }
 
     $params += array('@cardinality' => $field['cardinality']);
