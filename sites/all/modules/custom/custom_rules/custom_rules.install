@@ -1,0 +1,46 @@
+<?php
+
+function custom_rules_schema() {
+  $schema = array();
+
+  $schema['custom_rules'] = array(
+  	'description' => 'Save custom rules',
+  	'fields' => array(
+  	  'crid' => array(
+  	  	'description' => 'The custom rule id.',
+  	  	'type' => 'serial',
+  	  	'unsigned' => TRUE,
+  	  	'not null' => TRUE,
+  	  ),
+  	  'points' => array(
+  	  	'description' => 'The points assigned.',
+  	  	'type' => 'int',
+  	  	'unsigned' => TRUE,
+  	  	'not null' => TRUE,
+  	  ),
+      'bid' => array(
+        'description' => 'The badge the points are assigned to.',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+      'tid' => array(
+        'description' => 'Category id',
+        'type' => 'int',
+        'unsigned' => TRUE,
+        'not null' => TRUE,
+      ),
+  	),
+    'unique keys' => array(
+      'crid' => array('crid'),
+    ),
+    'foreign keys' => array(
+      'bid' => array(
+        'table' => 'user_badges_badges',
+        'columns' => array('bid' => 'bid'),
+      ),
+    ),
+  );
+
+  return $schema;
+}

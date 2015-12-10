@@ -1,0 +1,6 @@
+name = Custom rules
+description = Adds another way of adding custom rules
+package = custom
+dependencies[] = rules
+
+core = 7.x

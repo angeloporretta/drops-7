@@ -1,0 +1,253 @@
+<?php
+
+function custom_rules_menu() {
+	
+  $items = array();
+  $items['admin/config/add_points'] = array(
+  	'title' => t('Points And Badges Rules'),
+  	'page callback' => 'drupal_get_form',
+  	'page arguments' => array('add_custom_rules'),
+	'access arguments' => array('add custom rules'),
+	'type' => MENU_NORMAL_ITEM,
+  ); 
+
+  return $items;
+}
+
+function custom_rules_permission() {
+  return array(
+  	'add custom rules' => array(
+  	  'title' => t('Add custom rules'),
+  	  'description' => t('Allow users to add custom rules for points and badges'),
+  	),
+  );
+}
+
+function add_custom_rules($form, &$form_state) {
+
+  $form['#tree'] = TRUE;
+
+  $badges = get_badges();
+
+  $rules = get_rules();
+
+  $categories = get_categories();
+
+  $form['item'] = array(
+  	'#type' => 'fieldset',
+  	'#title' => t('Add new rules'),
+    '#prefix' => '<div id="item-fieldset-wrapper">',
+    '#suffix' => '</div>',
+  );
+
+  $default_values = array();
+  if (empty($form_state['num_rules'])) {
+      if (!empty($rules)) {
+        $form_state['num_rules'] = sizeof($rules);
+      } else {
+        $form_state['num_rules'] = 1;
+      }
+    }
+
+  for($i = 0 ; $i < $form_state['num_rules'] ; $i++) {
+
+    $form['item'][$i]['points'] = array(
+  	  '#title' => t('On this number of points'),
+  	  '#required' => FALSE,
+      '#default_value' => $rules[$i]['points'],
+  	  '#type' => 'textfield',
+    );
+
+    $form['item'][$i]['badge'] = array(
+  	  '#title' => t('Receive this badge'),
+  	  '#required' => FALSE,
+  	  '#type' => 'select',
+      '#default_value' => $rules[$i]['bid'],
+  	  '#options' => $badges,
+    );
+
+    $form['item'][$i]['tid'] = array(
+      '#title' => t('Category'),
+      '#required' => TRUE,
+      '#type' => 'select',
+      '#default_value' => $rules[$i]['tid'],
+      '#options' => $categories,
+    );
+  }
+
+  $form['item']['add_more_groups'] = array(
+      '#type' => 'submit',
+      '#value' => t('Add another rule'),
+      '#submit' => array('add_more_rules'),
+      '#ajax' => array(
+        'callback' => 'add_rules_ajax_callback',
+        'wrapper' => 'item-fieldset-wrapper',
+      ),
+    );
+
+    if ($form_state['num_rules'] > 1) {
+      $form['item']['remove_group'] = array(
+        '#type' => 'submit',
+        '#value' => t('Remove the last rule'),
+        '#submit' => array('remove_rules'),
+        '#ajax' => array(
+          'callback' => 'remove_rules_ajax_callback',
+          'wrapper' => 'item-fieldset-wrapper',
+        ),
+      );
+    }
+
+  $form['submit'] = array(
+  	'#type' => 'submit',
+  	'#value' => t('Submit'), 
+  );
+
+  return $form;
+}
+
+function add_custom_rules_submit($form, &$form_state) {
+
+  db_delete('custom_rules')
+    ->execute();
+
+  foreach($form_state['values']['item'] as $key => $value) {
+    if(is_numeric($key) && !empty($value['points']) && !empty($value['badge']) && !empty($value['tid'])) {
+      $points = $value['points'];
+      $bid = $value['badge'];
+      $tid = $value['tid'];
+      db_insert('custom_rules')
+        ->fields(array(
+          'points' => $points,
+          'bid' => $bid,
+          'tid' => $tid,
+        ))
+        ->execute();
+    }
+  }
+  drupal_flush_all_caches();
+}
+
+function add_more_rules($form , &$form_state) {
+    if (!isset($form_state['num_rules'])) {
+      $form_state['num_rules'] = 0;
+      $form_state['num_rules']++;
+    }
+    $form_state['num_rules']++;
+    $form_state['rebuild'] = TRUE;
+}
+
+function remove_rules($form , &$form_state) {
+    $form_state['num_rules']--;
+    $form_state['rebuild'] = TRUE;
+}
+
+function add_rules_ajax_callback($form , $form_state) {
+    return $form['item'];
+  }
+
+  function remove_rules_ajax_callback($form , $form_state) {
+    return $form['item'];
+  }
+
+function get_badges() {
+  $output = array();
+  $badges = db_select('user_badges_badges' , 'b')
+    ->fields('b')
+    ->execute();
+
+  while ($badge = $badges->fetchAssoc()) {
+  	$output[$badge['bid']] = $badge['name'];
+  }
+
+  return $output;
+}
+
+function get_rules() {
+  $output = array();
+  $rules = db_select('custom_rules', 'c')
+    ->fields('c')
+    ->execute();
+
+  while($rule = $rules->fetchAssoc()) {
+    $output[] = array('crid' => $rule['crid'], 'points' => $rule['points'], 'bid' => $rule['bid'], 'tid' => $rule['tid']);
+  }
+
+  return $output;
+}
+
+function custom_rules_default_rules_configuration() {
+  $configs = array();
+
+  $custom_rules = get_rules();
+
+  foreach ($custom_rules as $custom_rule) {
+    $value = intval($custom_rule['points']);
+    $tid = $custom_rule['tid'];
+    $bid = $custom_rule['bid'];
+    $rule = '{ "rules_add_badge_' . $custom_rule['crid'] . '" : {
+    "LABEL" : "Add badge",
+    "PLUGIN" : "reaction rule",
+    "OWNER" : "rules",
+    "REQUIRES" : [ "rules", "user_badges", "userpoints_rules" ],
+    "ON" : { "userpoints_event_points_awarded_after" : [] },
+    "IF" : [
+      { "AND" : [
+          { "data_is" : { "data" : [ "userpoints-transaction:tid" ], "value" : "' . $tid . '" } },
+          { "userpoints_condition_check_points" : {
+              "user" : [ "userpoints-transaction:user" ],
+              "tid" : "' . $tid . '",
+              "threshold" : "' . $value . '",
+              "comparison" : "ge"
+            }
+          }
+        ]
+      }
+    ],
+    "DO" : [
+      { "add_badge_by_name" : { "badge" : "' . $bid . '", "user" : [ "userpoints-transaction:user" ] } }
+    ]
+  }
+}';
+  $id = 'rules_add_badge_' . $custom_rule['crid'];
+  $configs[$id] = rules_import($rule);
+  }
+  return $configs;
+}
+
+function custom_rules_entity_property_info() {
+  $info = array();
+  if (module_exists('userpoints')) {
+    $info['user']['properties']['points'] = array(
+      'label' => t('!Points', userpoints_translation()),
+      'description' => t('The amount of !points this user has. If there are multiple categories, only the default category is taken into account.', userpoints_translation()),
+      'getter callback' => 'custom_rules_get_user_property',
+      'type' => 'integer',
+      'computed' => TRUE,
+    );
+  }
+  return $info;
+}
+
+/**
+ * Callback for getting user properties defined by custom_rules_entity_property_info().
+ */
+function custom_rules_get_user_property($account, $options, $name, $entity_type) {
+  switch ($name) {
+    case 'points':
+      return module_invoke('userpoints', 'get_current_points', $account->uid);
+  }
+}
+
+function get_categories() {
+
+  $categories = array(0 => 'General');
+
+  $vocabulary = taxonomy_vocabulary_machine_name_load('Userpoints');
+  $terms = entity_load('taxonomy_term', FALSE, array('vid' => $vocabulary->vid));
+
+  foreach($terms as $term) {
+    $categories[$term->tid] = $term->name;
+  }
+
+  return $categories;
+}
