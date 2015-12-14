@@ -1,7 +1,0 @@
-name = File Tracker
-description = Tracks the views and downloads of the files in the file content type.
-package = custom
-dependencies[] = bulk_file_upload
-dependencies[] = realname
-core = 7.x
-

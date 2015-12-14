@@ -1,4 +1,0 @@
-name = Change Section Destination
-description = Custom module to change the section destination
-package = custom
-core = 7.x
