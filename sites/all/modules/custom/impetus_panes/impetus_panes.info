@@ -9,6 +9,5 @@ dependencies[] = event_rsvp
 dependencies[] = lightbox2
 dependencies[] = privatemsg
 dependencies[] = realname
-dependencies[] = file_tracker
 package = custom
 core = 7.x
