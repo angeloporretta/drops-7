@@ -161,6 +161,7 @@ function _webform_ranking_component_get_form($form, $form_state, $component) {
     $form['extra']['row_fieldset']['num_row_labels'][$i] = array(
       '#type' => 'textfield',
       '#title' => t('Add row label'),
+      '#maxlength' => 512,
       '#default_value' => isset($component['extra']['row_fieldset']['num_row_labels'][$i]) ? $component['extra']['row_fieldset']['num_row_labels'][$i] : '',
     );
   }
