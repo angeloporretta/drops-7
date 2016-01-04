@@ -269,6 +269,10 @@ function theme_webform_ranking_table($variables) {
     $output .= '<label>' . $variables['element']['#webform_component']['name'] . $required . '</label>';
   }
 
+  if (isset($variables['element']['#webform_component']['extra']['description']) && !empty($variables['element']['#webform_component']['extra']['description'])) {
+    $output .= '<div class="description" style="font-size: 0.85em;">' . $variables['element']['#webform_component']['extra']['description'] . "</div>";
+  }
+
   $output .= '<table class="ranking-table">';
   $output .= '<thead><th></th>';
   foreach($columns as $column) {
@@ -299,9 +303,6 @@ function theme_webform_ranking_table($variables) {
   $output .= '</tbody>';
   $output .= "</table>";
 
-  if (isset($variables['element']['#webform_component']['extra']['description']) && !empty($variables['element']['#webform_component']['extra']['description'])) {
-    $output .= '<div class="description" style="font-size: 0.85em;">' . $variables['element']['#webform_component']['extra']['description'] . "</div>";
-  }
   return $output;
 }
 
