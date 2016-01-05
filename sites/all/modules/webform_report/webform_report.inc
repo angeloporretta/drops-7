@@ -40,7 +40,7 @@ function _webform_report_get_webforms() {
 function _webform_report_get_components($nid) {
   
   $components = array();
-  
+
   // include meta components
   $components[-1] = array('name' => t('Submitted By User'), 'type' => 'string');
   $components[-2] = array('name' => t('Submission Date'), 'type' => 'date');
@@ -403,7 +403,8 @@ function _webform_report_get_report_data($node) {
     }   // end - foreach ($columns as $index => $col)...
     
     // query submissions  
-    $rs = _webform_report_get_submissions($node);  
+    $rs = _webform_report_get_submissions($node);
+    $webform_node = node_load($node->wnid);
     if ($rs) {
 
       // get other report criteria
@@ -486,7 +487,27 @@ function _webform_report_get_report_data($node) {
         // if component is on report
         if (array_key_exists($row->cid, $fields)) {
           // add raw data
-          $data[$row->cid][] = $row->data;
+          if ($webform_node->webform['components'][$row->cid]['type'] == 'ranking') {
+            $value = unserialize($row->data);
+            $output = '';
+            foreach($value as $value_key => $value_value) {
+              $label = $webform_node->webform['components'][$row->cid]['extra']['row_fieldset']['num_row_labels'][$value_key -1];
+              $value_data = $webform_node->webform['components'][$row->cid]['extra']['ranking_fieldset']['num_labels'][$value_value];
+              $output .= $label . ": " . $value_data . "<br />"; 
+            }
+            $data[$row->cid][] = $output;
+          } else if ($webform_node->webform['components'][$row->cid]['type'] == 'rating') {
+            $value = unserialize($row->data);
+            $output = '';
+            foreach($value as $value_key => $value_value) {
+              $label = $webform_node->webform['components'][$row->cid]['extra']['row_fieldset']['num_row_labels'][$value_key -1];
+              $value_data = $webform_node->webform['components'][$row->cid]['extra']['rating_fieldset']['num_labels'][$value_value];
+              $output .= $label . ": " . $value_data . "<br />"; 
+            }
+            $data[$row->cid][] = $output;
+          } else {
+            $data[$row->cid][] = $row->data;
+          }
         }
         
       }   // end - while (TRUE)...
