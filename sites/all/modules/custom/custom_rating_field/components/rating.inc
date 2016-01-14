@@ -454,25 +454,26 @@ function _webform_analysis_rating($component, $sids = array()) {
  * Implements _webform_table_component().
  */
 function _webform_table_rating($component, $value) {
-  if ($value[0]) {
-
-    $sub_elements = $component['extra']['element'];
-
-    $value_array = unserialize($value[0]);
-
-    if (empty($value_array)) {
-      return array();
+  if (isset($value[0]) && !empty($value[0])) {
+    $unserialized_value = unserialize($value[0]);
+    $output = '';
+    foreach($unserialized_value as $row => $option) {
+      if ($component['extra']['rating_col_type'] == 0) {
+        if (empty($component['extra']['row_fieldset']['num_row_labels'][$row - 1])) {
+          $output .= $component['extra']['rating_fieldset']['num_labels'][$option] . "\xA";
+        } else {
+          $output .= $component['extra']['row_fieldset']['num_row_labels'][$row - 1] . ": " . $component['extra']['rating_fieldset']['num_labels'][$option] . "\xA";
+        }
+      } else {
+        if (empty($component['extra']['row_fieldset']['num_row_labels'][$row - 1])) {
+          $output .= $option . "\xA";
+        } else {
+          $output .= $component['extra']['row_fieldset']['num_row_labels'][$row - 1] . ": " . $option . "\xA";
+        }
+      }
     }
-
-    $col = 1;
-    $headers = array();
-    $display_array = _webform_display_array($sub_elements, $value_array, $headers);
-
-    $output = theme('table', array('header' => $headers, 'rows' => $display_array));
-
     return $output;
-  }
-  else {
+  } else {
     return '';
   }
 }

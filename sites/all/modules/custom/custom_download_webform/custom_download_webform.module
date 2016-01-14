@@ -41,7 +41,6 @@ function download_webform_results($webform_id) {
 
   if (!empty($webform_settings)) {
     $webform_settings_values = unserialize($webform_settings['config']);
-    // dsm($webform_settings_values);
     $node = node_load($webform_settings['nid']);
     $format = $webform_settings_values['format'];
     $delimiter = $webform_settings_values['delimiter'];
@@ -61,39 +60,179 @@ function download_webform_results($webform_id) {
         unset($components[$key]);
       }
     }
-    $options = array(
-      'delimiter' => $delimiter,
-      'components' => $components,
-      'header_keys' => $header_keys,
-      'select_keys' => $select_keys,
-      'select_format' => $select_format,
-      'range' => $range,
-      'download' => $download,
-    );
-    if ($options['range']['range_type'] != 'all') {
-     $options['sids'] = webform_download_sids($node->nid, $options['range']);
+    
+      $options = array(
+        'delimiter' => $delimiter,
+        'components' => $components,
+        'header_keys' => $header_keys,
+        'select_keys' => $select_keys,
+        'select_format' => $select_format,
+        'range' => $range,
+        'download' => $download,
+      );
+      if ($options['range']['range_type'] != 'all') {
+        $options['sids'] = webform_download_sids($node->nid, $options['range']);
+      }
+    if ($webform_settings_values['format'] == 'delimited') {
+      // Determine an appropriate batch size based on the form and server specs.
+      if (!isset($options['range']['batch_size'])) {
+        // Start the batch size at 50,000 per batch, but divide by number of
+        // components in the form. e.g. If a form had 10 components, it would
+        // export 5,000 submissions at a time.
+        $batch_size = ceil(50000 / max(1, count($node->webform['components'])));
+
+        // Every 32MB of additional memory after 64MB adds a multiplier in size.
+        $memory_limit = parse_size(ini_get('memory_limit'));
+        $mb = 1048576;
+        $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
+        $batch_size = ceil($batch_size * $memory_modifier);
+        $options['range']['batch_size'] = $batch_size;
+      }
+      $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
+      // Set up a batch to export the results.
+      $batch = webform_results_export_batch($node, $format, $options);
+      batch_set($batch);
+      batch_process($_SERVER['HTTP_REFERER']);
+    } else if ($webform_settings_values['format'] == 'excel') {
+      $node->title = str_replace(",", " ", $node->title);
+      header("Content-type: application/vnd.ms-excel");
+      header("Content-Disposition: attachment;Filename=" . $node->title . ".xls");
+      print "<html>";
+      print "<meta http-equiv=\"Content-Type\" content=\"text/html; charset=Windows-1252\">";
+      print "<body>";
+      print "<table>";
+      print "<thead>";
+      foreach($components as $key => $component) {
+        if(is_numeric($key)) {
+          if ($key != 'info') {
+            if ($node->webform['components'][$key]['type'] == 'ranking' || $node->webform['components'][$key]['type'] == 'rating') {
+              foreach($node->webform['components'][$key]['extra']['row_fieldset']['num_row_labels'] as $row_labels) {
+                print "<th>[" . $node->webform['components'][$key]['name'] . "] " . $row_labels . "</th>";
+              }
+            } else {
+              print "<th>" . $node->webform['components'][$key]['name'] . "</th>";
+            }
+          } else {
+            unset($components[$key]);
+          }
+        } else {
+          if ($key != 'info') {
+            print "<th>" . $key . "</th>";
+          } else {
+            unset($components[$key]);
+          }
+        }
+      }
+      print "</thead>";
+      print "<tbody>";
+      $submissions = webform_get_submissions($node->nid);
+      if ($options['range']['range_type'] != 'all') {
+        if ($options['range']['range_type'] == 'latest') {
+          $latest = intval($options['range']['latest']);
+          $submissions = array_slice($submissions, 0 - $latest, $latest, TRUE);
+        } elseif ($options['range']['range_type'] == 'range_serial') {
+          $start = intval($options['range']['start']);
+          $end = intval($options['range']['end']);
+          $submissions = array_slice($submissions, $start, $end, TRUE);
+        }
+      }
+      $build_result_array = array();
+      $index = 0;
+      foreach($submissions as $key => $submission) {
+        $index++;
+        foreach($components as $comp_key) {
+          if ($comp_key == 'webform_serial') {
+            $build_result_array[$index][] = $submission->serial;
+          } else if ($comp_key == 'webform_sid') {
+            $build_result_array[$index][] = $submission->sid;
+          } else if($comp_key == 'webform_time') {
+            $time = date('g:i A',$submission->submitted);
+            $build_result_array[$index][] = $time;
+          } else if($comp_key == 'webform_draft') {
+            $build_result_array[$index][] = $submission->is_draft == 0 ? "No" : "Yes";
+          } else if($comp_key == 'webform_ip_address') {
+            $build_result_array[$index][] = $submission->remote_addr;
+          } else if($comp_key == 'webform_uid') {
+            $build_result_array[$index][] = $submission->uid;
+          } else if($comp_key == 'webform_username') {
+            $build_result_array[$index][] = $submission->name;
+          } else if ($node->webform['components'][$comp_key]['type'] == 'rating') {
+            $unserialized_value = unserialize($submission->data[$comp_key][0]);
+            $output = '';
+
+            if (!empty($unserialized_value)) {
+              foreach($unserialized_value as $rating_key => $rating_value) {
+                if ($node->webform['components'][$comp_key]['extra']['rating_col_type'] == 0) {
+                  $build_result_array[$index][] = $node->webform['components'][$comp_key]['extra']['rating_fieldset']['num_labels'][$rating_value];
+                } else {
+                  $build_result_array[$index][] = $rating_value;
+                }
+              }
+            }
+            // $build_result_array[$index][] = $output;
+          } else if ($node->webform['components'][$comp_key]['type'] == 'ranking') {
+            // $output = '';
+            $unserialized_value = unserialize($submission->data[$comp_key][0]);
+            if (!empty($unserialized_value)) {
+              foreach($unserialized_value as $row => $option) {
+                if ($component['extra']['ranking_col_type'] == 0) {
+                  $build_result_array[$index][] = $component['extra']['ranking_fieldset']['num_labels'][$option];
+                } else {
+                  $build_result_array[$index][] = $option;
+                }
+              }
+            }
+            $build_result_array[$index][] = $output;
+          } else if ($node->webform['components'][$comp_key]['type'] == 'matrix') {
+            $unserialized_value = unserialize($submission->data[$comp_key][0]);
+            $output = '';
+            foreach($unserialized_value as $value) {
+              foreach ($value as $key => $item) {
+                if ($key == sizeof($value)) {
+                  $output .= $item;
+                } else {
+                  $output .= $item . ",";
+                }
+              }
+              $output .= ";";
+            }
+            $build_result_array[$index][] = $output;
+          } else if ($node->webform['components'][$comp_key]['type'] == 'select') {
+            $options_array = array();
+            $select_output = '';
+            //build array of options
+            $select_options = explode("\n", $node->webform['components'][$comp_key]['extra']['items']);
+            if (end($select_options) == '') {
+              array_pop($select_options);
+            }
+            foreach ($select_options as $item ) {
+              $select_item = explode("|", $item);
+              $options_array[$select_item[0]] = $select_item[1];
+            }
+            foreach($submission->data[$comp_key] as $response_key) {
+              if (!empty($options_array[$response_key])) {
+                $select_output .= $options_array[$response_key] . ";";
+              }
+            }
+            $build_result_array[$index][] = $select_output;
+          } else {
+            $build_result_array[$index][] = $submission->data[$comp_key][0];
+          }
+        }
+      }
+
+      foreach($build_result_array as $row) {
+        print "<tr>";
+        foreach ($row as $cell) {
+          print "<td>" . $cell . "</td>";
+        }
+        print "</tr>";
+      }
+      print "</tbody>";
+      print "</table>";
+      print "</body>";
+      print "</html>";
     }
-
-    // Determine an appropriate batch size based on the form and server specs.
-  if (!isset($options['range']['batch_size'])) {
-    // Start the batch size at 50,000 per batch, but divide by number of
-    // components in the form. e.g. If a form had 10 components, it would
-    // export 5,000 submissions at a time.
-    $batch_size = ceil(50000 / max(1, count($node->webform['components'])));
-
-    // Every 32MB of additional memory after 64MB adds a multiplier in size.
-    $memory_limit = parse_size(ini_get('memory_limit'));
-    $mb = 1048576;
-    $memory_modifier = max(1, ($memory_limit - (64 * $mb)) / (32 * $mb));
-    $batch_size = ceil($batch_size * $memory_modifier);
-    $options['range']['batch_size'] = $batch_size;
-  }
-
-  $options['file_name'] = drupal_tempnam('temporary://', 'webform_');
-  // Set up a batch to export the results.
-  $batch = webform_results_export_batch($node, $format, $options);
-  batch_set($batch);
-  batch_process($_SERVER['HTTP_REFERER']);
   }
 
 }
@@ -101,7 +240,7 @@ function download_webform_results($webform_id) {
 function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'webform_results_download_form') {
 
-    $webform_settings = db_select('webform_table_settings', 'w')
+  	$webform_settings = db_select('webform_table_settings', 'w')
       ->fields('w')
       ->condition('nid', arg(1), '=')
       ->execute()
@@ -129,15 +268,15 @@ function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
       $form['components']['#default_value'] = $new_components;
     }
     $form['markup'] = array(
-      '#markup' => t('Download your link') . l(t(' here'), 'node/' . arg(1) . '/download-results', array('attributes' => array('target' => '_blank'))),
+      '#markup' => t('Download your link') . l(t(' here'), 'node/' . arg(1) . '/download-results', array('attributes' => array('target' => '_blank', 'class' => array('btn', 'btn-primary')))),
       '#suffix' => '</br ><span>Give the following link to your users: ' . url($base_url . '/node/' . arg(1) . '/download-results') . '</span></br >',
     );
 
-    $form['save-config'] = array(
-      '#type' => 'submit',
-      '#value' => t('Save config'),
-      '#submit' => array('save_table_config'),
-    );
+  	$form['save-config'] = array(
+  	  '#type' => 'submit',
+  	  '#value' => t('Save config'),
+  	  '#submit' => array('save_table_config'),
+  	);
   }
 }
 
@@ -157,18 +296,18 @@ function save_table_config($form, &$form_state) {
     ->fetchAssoc();
 
   if (empty($webform_setting)) {
-    db_insert('webform_table_settings')
+  	db_insert('webform_table_settings')
       ->fields(array(
         'nid' => arg(1),
         'config' => $config,
       ))
       ->execute();
   } else {
-    db_update('webform_table_settings')
-      ->fields(array(
-        'config' => $config, 
-    ))
-    ->condition('nid', arg(1), '=')
-    ->execute();
+  	db_update('webform_table_settings')
+  	  ->fields(array(
+  	  	'config' => $config, 
+	  ))
+	  ->condition('nid', arg(1), '=')
+	  ->execute();
   }
 }
