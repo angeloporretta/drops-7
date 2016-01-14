@@ -157,21 +157,26 @@ function download_webform_results($webform_id) {
           } else if($comp_key == 'webform_username') {
             $build_result_array[$index][] = $submission->name;
           } else if ($node->webform['components'][$comp_key]['type'] == 'rating') {
-            $unserialized_value = unserialize($submission->data[$comp_key][0]);
-            $output = '';
+            if (isset($submission->data[$comp_key])) {
+              $unserialized_value = unserialize($submission->data[$comp_key][0]);
 
-            if (!empty($unserialized_value)) {
-              foreach($unserialized_value as $rating_key => $rating_value) {
-                if ($node->webform['components'][$comp_key]['extra']['rating_col_type'] == 0) {
-                  $build_result_array[$index][] = $node->webform['components'][$comp_key]['extra']['rating_fieldset']['num_labels'][$rating_value];
-                } else {
-                  $build_result_array[$index][] = $rating_value;
+              if (isset($unserialized_value) && !empty($unserialized_value)) {
+                foreach($unserialized_value as $rating_key => $rating_value) {
+                  if ($node->webform['components'][$comp_key]['extra']['rating_col_type'] == 0) {
+                    $build_result_array[$index][] = $node->webform['components'][$comp_key]['extra']['rating_fieldset']['num_labels'][$rating_value];
+                  } else {
+                    $build_result_array[$index][] = $rating_value;
+                  }
                 }
               }
+            } else {
+              $unserialized_value = array();
+              $build_result_array[$index][] = '';
             }
             // $build_result_array[$index][] = $output;
           } else if ($node->webform['components'][$comp_key]['type'] == 'ranking') {
-            // $output = '';
+
+            $component = $node->webform['components'][$comp_key];
             $unserialized_value = unserialize($submission->data[$comp_key][0]);
             if (!empty($unserialized_value)) {
               foreach($unserialized_value as $row => $option) {
@@ -182,7 +187,6 @@ function download_webform_results($webform_id) {
                 }
               }
             }
-            $build_result_array[$index][] = $output;
           } else if ($node->webform['components'][$comp_key]['type'] == 'matrix') {
             $unserialized_value = unserialize($submission->data[$comp_key][0]);
             $output = '';
@@ -240,7 +244,7 @@ function download_webform_results($webform_id) {
 function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
   if ($form_id == 'webform_results_download_form') {
 
-  	$webform_settings = db_select('webform_table_settings', 'w')
+    $webform_settings = db_select('webform_table_settings', 'w')
       ->fields('w')
       ->condition('nid', arg(1), '=')
       ->execute()
@@ -272,11 +276,11 @@ function custom_download_webform_form_alter(&$form, &$form_state, $form_id) {
       '#suffix' => '</br ><span>Give the following link to your users: ' . url($base_url . '/node/' . arg(1) . '/download-results') . '</span></br >',
     );
 
-  	$form['save-config'] = array(
-  	  '#type' => 'submit',
-  	  '#value' => t('Save config'),
-  	  '#submit' => array('save_table_config'),
-  	);
+    $form['save-config'] = array(
+      '#type' => 'submit',
+      '#value' => t('Save config'),
+      '#submit' => array('save_table_config'),
+    );
   }
 }
 
@@ -296,18 +300,18 @@ function save_table_config($form, &$form_state) {
     ->fetchAssoc();
 
   if (empty($webform_setting)) {
-  	db_insert('webform_table_settings')
+    db_insert('webform_table_settings')
       ->fields(array(
         'nid' => arg(1),
         'config' => $config,
       ))
       ->execute();
   } else {
-  	db_update('webform_table_settings')
-  	  ->fields(array(
-  	  	'config' => $config, 
-	  ))
-	  ->condition('nid', arg(1), '=')
-	  ->execute();
+    db_update('webform_table_settings')
+      ->fields(array(
+        'config' => $config, 
+    ))
+    ->condition('nid', arg(1), '=')
+    ->execute();
   }
 }
