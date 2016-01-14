@@ -571,3 +571,7 @@ margin-bottom:10px;
     width: 27px;
     margin: 0 auto !important;
 }
+
+.page-node-webform-results-download #edit-submit {
+	display: none;
+}
