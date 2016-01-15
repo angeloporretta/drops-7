@@ -215,7 +215,7 @@ function download_webform_results($webform_id) {
             }
             foreach($submission->data[$comp_key] as $response_key) {
               if (!empty($options_array[$response_key])) {
-                $select_output .= $options_array[$response_key] . ";";
+                $select_output .= $options_array[$response_key] . ",";
               }
             }
             $build_result_array[$index][] = $select_output;
