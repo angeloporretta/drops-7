@@ -463,6 +463,7 @@ function _webform_table_ranking($component, $value) {
           $output .= $component['extra']['row_fieldset']['num_row_labels'][$row - 1] . ": " . $component['extra']['ranking_fieldset']['num_labels'][$option] . "\xA";
         }
       } else {
+        $option = intval($option) + 1;
         if (empty($component['extra']['row_fieldset']['num_row_labels'][$row - 1])) {
           $output .= $option . "\xA";
         } else {

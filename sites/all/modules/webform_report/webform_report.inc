@@ -492,7 +492,11 @@ function _webform_report_get_report_data($node) {
             $output = '';
             foreach($value as $value_key => $value_value) {
               $label = $webform_node->webform['components'][$row->cid]['extra']['row_fieldset']['num_row_labels'][$value_key -1];
-              $value_data = $webform_node->webform['components'][$row->cid]['extra']['ranking_fieldset']['num_labels'][$value_value];
+              if ($webform_node->webform['components'][$row->cid]['extra']['ranking_col_type'] == 0) {
+                $value_data = $webform_node->webform['components'][$row->cid]['extra']['ranking_fieldset']['num_labels'][$value_value];
+              } else {
+                $value_data = intval($value_value) + 1;
+              }
               $output .= $label . ": " . $value_data . "<br />"; 
             }
             $data[$row->cid][] = $output;
@@ -501,7 +505,11 @@ function _webform_report_get_report_data($node) {
             $output = '';
             foreach($value as $value_key => $value_value) {
               $label = $webform_node->webform['components'][$row->cid]['extra']['row_fieldset']['num_row_labels'][$value_key -1];
-              $value_data = $webform_node->webform['components'][$row->cid]['extra']['rating_fieldset']['num_labels'][$value_value];
+              if ($webform_node->webform['components'][$row->cid]['extra']['rating_col_type'] == 0) {
+                $value_data = $webform_node->webform['components'][$row->cid]['extra']['rating_fieldset']['num_labels'][$value_value];
+              } else {
+                $value_data = intval($value_value) + 1;
+              }
               $output .= $label . ": " . $value_data . "<br />"; 
             }
             $data[$row->cid][] = $output;
@@ -1500,7 +1508,12 @@ function webform_report_export_form_submit($form_id, $form_state) {
 function _webform_report_output_csv($headers, $rows, $format = 'text', $delim = ',') {
 
   $output = '';
-  
+  if (arg(0) == 'node' && is_numeric(arg(1))) {
+    $webform_report_node = node_load(arg(1));
+    if (isset($webform_report_node->wnid)) {
+      $webform_node = node_load($webform_report_node->wnid);
+    }
+  }
   // set delimiter to tab and output bof for excel
   if ($format == 'excel') {
     $delim = '\t';
@@ -1517,7 +1530,19 @@ function _webform_report_output_csv($headers, $rows, $format = 'text', $delim = 
   // output headers
   $tmp = array();
   foreach ($headers as $header) {
-    $tmp[] .= _webform_report_format_csv_column($header['data'], $delim);
+    if ($header['type'] == 'rating') {
+      $field_id = $header['field'];
+      foreach ($webform_node->webform['components'][$field_id]['extra']['row_fieldset']['num_row_labels'] as $row_label) {
+        $tmp[] .= _webform_report_format_csv_column('[' . $webform_node->webform['components'][$field_id]['name'] . '] ' . $row_label, $delim);
+      }
+    } else if ($header['type'] == 'ranking') {
+      $field_id = $header['field'];
+      foreach ($webform_node->webform['components'][$field_id]['extra']['row_fieldset']['num_row_labels'] as $row_label) {
+        $tmp[] .= _webform_report_format_csv_column('[' . $webform_node->webform['components'][$field_id]['name'] . '] ' . $row_label, $delim);
+      }
+    } else {
+      $tmp[] .= _webform_report_format_csv_column($header['data'], $delim);
+    }
   }
   $output .= _webform_report_format_csv_row($tmp, $format, $delim);
 
@@ -1527,14 +1552,53 @@ function _webform_report_output_csv($headers, $rows, $format = 'text', $delim = 
     foreach ($row as $cell) {
       // output cell if not hidden
       if (!array_key_exists('hidden', $cell) || $cell['hidden'] == FALSE) {
-        // special handling for file types - use entire path
-        if (array_key_exists('path', $cell)) {
+        $field_id = $cell['field'];
+        if (isset($webform_node->webform['components'][$field_id]) && $webform_node->webform['components'][$field_id]['type'] == 'ranking') {
+          $ranking_output = array();
+          //build array of values
+          $ranking_rows = explode("<br />", $cell['data']);
+          array_pop($ranking_rows);
+          foreach($ranking_rows as $ranking_items) {
+            $ranking_items_array = explode(": ", $ranking_items);
+            $ranking_output[$ranking_items_array[0]] = $ranking_items_array[1];
+          }
+          foreach($webform_node->webform['components'][$field_id]['extra']['row_fieldset']['num_row_labels'] as $row_label) {
+            if (array_key_exists($row_label, $ranking_output)) {
+              $data = $ranking_output[$row_label];
+              $tmp[] = _webform_report_format_csv_column($data, $delim);
+            } else {
+              $data = '';
+              $tmp[] = _webform_report_format_csv_column($data, $delim);
+            }
+          }
+        } else if (isset($webform_node->webform['components'][$field_id]) && $webform_node->webform['components'][$field_id]['type'] == 'rating') {
+          $rating_output = array();
+          //build array of values
+          $rating_rows = explode("<br />", $cell['data']);
+          array_pop($rating_rows);
+          foreach($rating_rows as $rating_items) {
+            $rating_items_array = explode(": ", $rating_items);
+            $rating_output[$rating_items_array[0]] = $rating_items_array[1];
+          }
+          foreach($webform_node->webform['components'][$field_id]['extra']['row_fieldset']['num_row_labels'] as $row_label) {
+            if (array_key_exists($row_label, $rating_output)) {
+              $data = $rating_output[$row_label];
+              $tmp[] = _webform_report_format_csv_column($data, $delim);
+            } else {
+              $data = '';
+              $tmp[] = _webform_report_format_csv_column($data, $delim);
+            }
+          }
+        } else if (array_key_exists('path', $cell)) {
+          // special handling for file types - use entire path
           $data = $cell['path'];
+          $tmp[] = _webform_report_format_csv_column($data, $delim);
         }
         else {
           $data = strip_tags($cell['data']);
+          $tmp[] = _webform_report_format_csv_column($data, $delim);
         }
-        $tmp[] = _webform_report_format_csv_column($data, $delim);
+        
       }
     }
     $output .= _webform_report_format_csv_row($tmp, $format, $delim);
