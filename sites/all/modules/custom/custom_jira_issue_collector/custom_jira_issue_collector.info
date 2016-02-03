@@ -1,0 +1,8 @@
+name = JIRA Issue Collector Customizations
+description = Adds Impetus JIRA Issue Collector customizations
+package = Custom
+core = 7.x
+version = 7.x-1.0
+dependencies[] = jira_issue_collector
+stylesheets[all][] = custom_jira_issue_collector.css
+scripts[] = custom_jira_issue_collector.js

@@ -1,0 +1,10 @@
+<?php
+
+/**
+ * @file
+ * Jira Issue collector customizations
+ *
+ * The customization are done via css and Javascript so we don't need to define
+ * any functions
+ *
+ */

@@ -1,0 +1,30 @@
+/*
+ * Custom styles for the Jira Issue Collector link
+ */
+
+#atlwdg-trigger {
+  font-family: Roboto, sans-serif;
+  text-transform: uppercase;
+  font-weight: bold;
+  font-size: 9.5pt;
+  background-color: rgb(37,28,84);
+  color: white !important;
+  border-width: 0;
+  border-radius: 0;
+  box-shadow: none;
+  width: 137px;
+  height: 30px;
+  padding: 15px 10px 5px 60px;
+  vertical-align: middle;
+}
+
+#jira-help-icon {
+  font-family: FontAwesome;
+  color: white;
+  position: fixed;
+  bottom: 0;
+  right: 157px;
+  font-size: 30pt;
+  margin-bottom: 10px;
+  z-index: 1;
+}
