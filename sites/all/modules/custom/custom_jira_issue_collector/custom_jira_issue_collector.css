@@ -2,11 +2,17 @@
  * Custom styles for the Jira Issue Collector link
  */
 
+.atlwdg-popup {
+  max-width: 90%;
+}
+
 #atlwdg-trigger {
+  box-sizing: content-box;
   font-family: Roboto, sans-serif;
   text-transform: uppercase;
   font-weight: bold;
   font-size: 9.5pt;
+  text-align: center;
   background-color: rgb(37,28,84);
   color: white !important;
   border-width: 0;
@@ -14,17 +20,17 @@
   box-shadow: none;
   width: 137px;
   height: 30px;
-  padding: 15px 10px 5px 60px;
+  padding: 15px 13px 5px 55px;
   vertical-align: middle;
 }
 
 #jira-help-icon {
   font-family: FontAwesome;
+  line-height: 30pt;
   color: white;
   position: fixed;
-  bottom: 0;
-  right: 157px;
+  bottom: 3px;
+  right: 153px;
   font-size: 30pt;
-  margin-bottom: 10px;
   z-index: 1;
 }

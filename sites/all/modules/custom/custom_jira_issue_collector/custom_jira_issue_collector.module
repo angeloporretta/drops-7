@@ -4,7 +4,27 @@
  * @file
  * Jira Issue collector customizations
  *
- * The customization are done via css and Javascript so we don't need to define
- * any functions
- *
  */
+
+/**
+ * Implements hook_init().
+ *
+ * Inserts JavaScript and css
+ */
+function custom_jira_issue_collector_init() {
+  global $user;
+
+  $url = variable_get('jira_issue_collector_url', false);
+
+  // only add issue collector customizations if issue collector link shown
+  if (!empty($url)
+    && function_exists('_jira_issue_collector_visibility_pages')
+    && _jira_issue_collector_visibility_pages()
+    && function_exists('_jira_issue_collector_visibility_roles')
+    && _jira_issue_collector_visibility_roles($user)
+  ) {
+    drupal_add_css(drupal_get_path('module', 'custom_jira_issue_collector') . '/custom_jira_issue_collector.css');
+    drupal_add_js(drupal_get_path('module', 'custom_jira_issue_collector') . '/custom_jira_issue_collector.js', 'file');
+  }
+
+}
