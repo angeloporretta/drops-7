@@ -575,3 +575,5 @@ margin-bottom:10px;
 .page-node-webform-results-download #edit-submit {
 	display: none;
 }
+
+iframe.crocodoc {min-height:1000px;}
