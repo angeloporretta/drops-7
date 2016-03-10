@@ -96,7 +96,8 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         $allowed_space_nodes[$i] = (object)$allowed_space_nodes[$i];
         $submenu_items = impetus_panes_submenu_tree_all_data('og-menu-single', $allowed_space_nodes[$i]->mlid);
         $allowed_space_nodes[$i]->section_nodes = array();
-         
+        usort($submenu_items , "compare_weight_callback");
+        // $submenu_items = _sort_by_weight($submenu_items);
         if (!empty($submenu_items)) {
           foreach ($submenu_items as $submenu_item) {
             $section_node = menu_get_object('node', 1, $submenu_item['link_path']);
@@ -179,7 +180,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
 function impetus_panes_submenu_tree_all_data($menu_name, $plid) {
   $return = array();
   $childrens = db_select('menu_links' , 'm')
-    ->fields('m' , array('link_title' , 'link_path'))
+    ->fields('m' , array('link_title' , 'link_path', 'weight'))
     ->condition('menu_name' , $menu_name , '=')
     ->condition('plid' , $plid , '=')
     ->execute();
