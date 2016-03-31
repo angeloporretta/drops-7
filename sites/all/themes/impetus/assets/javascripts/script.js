@@ -230,6 +230,20 @@
         $('#lightbox2-overlay').fadeOut(500);
       }
     });
+
+    //disable submit buttons after first click
+    $(document).on("click",".node-type-webform .form-actions .webform-submit", function() {
+      var my_button = $(this);
+      setTimeout(function() {
+        my_button.attr('disabled','disabled');
+      }, 1);  
+    });
+    $(document).on("click","form.comment-form input.form-submit", function() {
+      var my_button = $(this);
+      setTimeout(function() {
+        my_button.attr('disabled','disabled');
+      }, 1);   
+    });
     
   });
 })(jQuery);
