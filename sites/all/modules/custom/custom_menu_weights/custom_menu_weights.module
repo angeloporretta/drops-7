@@ -13,3 +13,52 @@ function custom_weight_callback(&$form, &$form_state) {
 	$nid = $form_state['values']['nid'];
 	$form_state['values']['menu']['weight'] = $weight;
 }
+
+function custom_menu_weights_node_insert($node) {
+	$enabled = $node->menu['enabled'];
+	$nid = $node->nid;
+	if (isset($nid) && !empty($nid)) {
+		db_insert('node_menu_links')
+			->fields(array(
+		 		'nid' => $nid,
+		 		'enabled' => $enabled,
+		 		))
+		 	->execute();
+	}
+}
+
+function custom_menu_weights_node_update($node) {
+	$enabled = $node->menu['enabled'];
+	$nid = $node->nid;
+	$settings = _get_menu_links_settings($nid);
+	if($settings == -1) {
+		//insert
+		db_insert('node_menu_links')
+			->fields(array(
+		 		'nid' => $nid,
+		 		'enabled' => $enabled,
+		 		))
+		 	->execute();
+	} else {
+		//update
+		db_update('node_menu_links')
+		  ->fields(array(
+		  	'enabled' => $enabled
+		  	))
+		  ->condition('nid', $nid)
+		  ->execute();
+	}
+}
+
+function _get_menu_links_settings($nid) {
+	$settings = db_select('node_menu_links', 'n')
+	  ->fields('n')
+	  ->condition('nid', $nid)
+	  ->execute()
+	  ->fetchAssoc();
+	if(!isset($settings['enabled']) || $settings['enabled'] == '') {
+		return -1;
+	}
+
+	return $settings['enabled'];
+}

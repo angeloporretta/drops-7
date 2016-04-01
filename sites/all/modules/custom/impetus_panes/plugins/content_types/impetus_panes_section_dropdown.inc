@@ -48,6 +48,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       ->fields('m' , array('link_title' , 'mlid' , 'weight'))
       ->condition('menu_name' , 'og-menu-single' , '=')
       ->condition('plid' , 0 ,'=')
+      ->condition('hidden', 0)
       ->condition('link_path' , 'node/' . $menu_item['nid']);
     $result = $menu->execute();
     while ($men = $result->fetchAssoc()) {
@@ -55,6 +56,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       $og_menu[] = $men;
     }
   }
+  if (!empty($og_menu))
   usort($og_menu , "compare_weight_callback");
 
   // $menu = db_select('menu_links' , 'm');
@@ -73,9 +75,14 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
   //   $og_menu[] = $men;
   // }
   $i = 0;
+  if (!empty($og_menu)) {
   $allowed_space_nodes = $og_menu;
   foreach($allowed_space_nodes as $nodes) {
     $node = node_load($nodes['nid']);
+    $node_menu_setting = _get_menu_links_settings($node->nid);
+    if (isset($node_menu_setting['enabled']) && empty($node_menu_setting['enabled'])) {
+      unset($allowed_space_nodes[$i]);
+    }
     if (node_access('view' , $node) == FALSE) {
       unset($allowed_space_nodes[$i]);
     }
@@ -88,7 +95,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
     }
     $i++;
   }
-    
+
     // Get the sections under the allowed spaces.
   if (!empty($allowed_space_nodes)) {
     //sort the spaces based on the og menu
@@ -108,6 +115,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
         }
     }
   }
+
   if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
     $current_node = node_load(arg(1));
   }
@@ -166,7 +174,7 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       }
     }
     $block->content .= '</ul>';
-  
+  }
   return $block;
 }
 

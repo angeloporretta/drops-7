@@ -1,0 +1,39 @@
+<?php
+
+function custom_menu_weights_schema() {
+  $schema = array();
+
+    $schema['node_menu_links'] = array(
+      'description' => 'Save settings for node menu links.',
+      'fields' => array(
+        'sid' => array(
+          'type' => 'serial',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'nid' => array(
+          'description' => 'The identifier for a node',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+        'enabled' => array(
+          'description' => 'Whether the menu link is enabled or not(1 for enabled , 0 for disabled)',
+          'type' => 'int',
+          'unsigned' => TRUE,
+          'not null' => TRUE,
+        ),
+      ),
+      'foreign keys' => array(
+        'nid' => array(
+          'table' => 'node',
+          'columns' => array('nid' => 'nid'),
+        ),
+      ),
+      'primary key' => array('sid'),
+    );
+
+  return $schema;
+}
+
+?>
