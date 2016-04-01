@@ -338,3 +338,16 @@ function impetus_preprocess_comment(&$variables) {
     }
   }
 }
+
+function _get_menu_links_settings($nid) {
+  $settings = db_select('node_menu_links', 'n')
+    ->fields('n')
+    ->condition('nid', $nid)
+    ->execute()
+    ->fetchAssoc();
+  if(!isset($settings['enabled']) || $settings['enabled'] == '') {
+    return -1;
+  }
+
+  return $settings['enabled'];
+}
