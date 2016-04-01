@@ -28,24 +28,26 @@ function custom_menu_weights_node_insert($node) {
 }
 
 function custom_menu_weights_node_update($node) {
-	$enabled = $node->menu['enabled'];
-	$nid = $node->nid;
-	$settings = _get_menu_links_settings($nid);
-	if($settings == -1) {
-		//insert
-		db_insert('node_menu_links')
-			->fields(array(
-		 		'nid' => $nid,
-		 		'enabled' => $enabled,
-		 		))
-		 	->execute();
-	} else {
-		//update
-		db_update('node_menu_links')
-		  ->fields(array(
-		  	'enabled' => $enabled
-		  	))
-		  ->condition('nid', $nid)
-		  ->execute();
+	if (isset($node->menu['enabled']) && $node->menu['enabled'] != '') {
+		$enabled = $node->menu['enabled'];
+		$nid = $node->nid;
+		$settings = _get_menu_links_settings($nid);
+		if($settings == -1) {
+			//insert
+			db_insert('node_menu_links')
+				->fields(array(
+			 		'nid' => $nid,
+			 		'enabled' => $enabled,
+			 		))
+			 	->execute();
+		} else {
+			//update
+			db_update('node_menu_links')
+			  ->fields(array(
+			  	'enabled' => $enabled
+			 		))
+				->condition('nid', $nid)
+				->execute();
+		}
 	}
 }
