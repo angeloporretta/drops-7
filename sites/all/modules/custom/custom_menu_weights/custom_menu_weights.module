@@ -15,15 +15,17 @@ function custom_weight_callback(&$form, &$form_state) {
 }
 
 function custom_menu_weights_node_insert($node) {
-	$enabled = $node->menu['enabled'];
-	$nid = $node->nid;
-	if (isset($nid) && !empty($nid)) {
-		db_insert('node_menu_links')
-			->fields(array(
-		 		'nid' => $nid,
-		 		'enabled' => $enabled,
-		 		))
-		 	->execute();
+	if (isset($node->menu['enabled']) && $node->menu['enabled'] != '') {
+		$enabled = $node->menu['enabled'];
+		$nid = $node->nid;
+		if (isset($nid) && !empty($nid)) {
+			db_insert('node_menu_links')
+				->fields(array(
+			 		'nid' => $nid,
+			 		'enabled' => $enabled,
+			 		))
+			 	->execute();
+		}
 	}
 }
 
