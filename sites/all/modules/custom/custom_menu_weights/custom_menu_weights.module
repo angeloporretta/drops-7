@@ -15,7 +15,7 @@ function custom_weight_callback(&$form, &$form_state) {
 }
 
 function custom_menu_weights_node_insert($node) {
-	if (isset($node->menu['enabled']) && $node->menu['enabled'] != '') {
+	if (isset($node->menu['enabled']) &&  strlen($node->menu['enabled'])) {
 		$enabled = $node->menu['enabled'];
 		$nid = $node->nid;
 		if (isset($nid) && !empty($nid)) {
@@ -30,7 +30,7 @@ function custom_menu_weights_node_insert($node) {
 }
 
 function custom_menu_weights_node_update($node) {
-	if (isset($node->menu['enabled']) && $node->menu['enabled'] != '') {
+	if (isset($node->menu['enabled']) && strlen($node->menu['enabled'])) {
 		$enabled = $node->menu['enabled'];
 		$nid = $node->nid;
 		$settings = _get_menu_links_settings($nid);
