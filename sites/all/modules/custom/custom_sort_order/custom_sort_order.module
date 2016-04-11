@@ -2,24 +2,24 @@
 
 function custom_sort_order_form_alter(&$form, &$form_state, $form_id) {
   if (isset($form['#node_edit_form']) && $form['#node_edit_form']) {
-  	$form['comment_settings']['comment_sort'] = array(
-  	  '#type' => 'select',
-  	  '#title' => '<strong>' . t('Sort comments by:') . '</strong>',
-  	  '#options' => array(
+    $form['comment_settings']['comment_sort'] = array(
+      '#type' => 'select',
+      '#title' => '<strong>' . t('Sort comments by:') . '</strong>',
+      '#options' => array(
         'old' => t('Date (oldest on top)'),
-  	  	'new' => t('Date (newest on top)'),
-  	  ),
-  	  '#weight' => 100,
-  	);
-  	if (is_numeric(arg(1))) {
-  	  $default = node_sort_value(arg(1));
+        'new' => t('Date (newest on top)'),
+      ),
+      '#weight' => 100,
+    );
+    if (is_numeric(arg(1))) {
+      $default = node_sort_value(arg(1));
 
-  	  if ($default) {
-  	  	$form['comment_settings']['comment_sort']['#default_value'] = $default;
-  	  } else {
+      if ($default) {
+        $form['comment_settings']['comment_sort']['#default_value'] = $default;
+      } else {
         $form['comment_settings']['comment_sort']['#default_value'] = 'old';
       }
-  	}
+    }
   }
 }
 
@@ -45,14 +45,14 @@ function custom_sort_order_node_delete($node) {
 
 function custom_sort_order_node_update($node) {
   $nid = $node->nid;
-	if(isset($node->comment_sort)) {
-	  $option = $node->comment_sort;	
-	}
+  if(isset($node->comment_sort)) {
+    $option = $node->comment_sort;  
+  }
 
   $exists = node_sort_value($node->nid);
   if (isset($option)) {
     if (!$exists) {
-    	db_insert('sort_order')
+      db_insert('sort_order')
         ->fields(array(
           'nid' => $nid,
           'option' => $option,
@@ -60,12 +60,12 @@ function custom_sort_order_node_update($node) {
         ->execute();
 
     } else {
-  	db_update('sort_order')
-  	  ->fields(array(
-  	    'option' => $option,
-  	  ))
-  	  ->condition('nid', $nid, '=')
-  	  ->execute();
+    db_update('sort_order')
+      ->fields(array(
+        'option' => $option,
+      ))
+      ->condition('nid', $nid, '=')
+      ->execute();
     }
   }
 }
@@ -77,7 +77,39 @@ function node_sort_value($node) {
     ->execute()
     ->fetchAssoc();
   if (!empty($option)) {
-  	return $option['option'];
+    return $option['option'];
   }
   return FALSE;
+}
+
+/* Implements hook_query_TAG_alter().
+ *
+ * Alter comments query to order by DESC as well as the default ASC.
+ */
+function custom_sort_order_query_comment_filter_alter(QueryAlterableInterface $query) {
+  if (arg(0) == 'node' && is_numeric(arg(1)) && arg(2) == '') {
+    $node = node_load(arg(1));
+    $setting = node_sort_value($node->nid);
+    if (isset($setting) && $setting == 'new') {
+      $orderby = &$query->getOrderBy();
+      $expressions = &$query->getExpressions();
+      // Sorting for threaded comments.
+      if (isset($orderby['torder'])) {
+        // Get rid of the expressions that prepare the threads for ASC ordering.
+        unset($expressions['torder']);
+        unset($orderby['torder']);
+        // Simply order by the thread field.
+        $orderby['c.thread'] = 'DESC';
+      }
+      // Sorting for flat comments.
+      else {
+        $direction = 'DESC';
+        if (isset($orderby['c.cid'])) {
+          unset($orderby['c.cid']);
+        }
+        $orderby['c.created'] = $direction;
+        $orderby['c.cid'] = $direction;
+      }
+    }
+  }
 }

@@ -32,8 +32,6 @@ function ctools_node_comments_content_type_render($subtype, $conf, $panel_args, 
   }
   else if ($node->comment) {
     $block->content = ctools_comment_render($node, $conf);
-    // Update the history table, stating that this user viewed this node.
-    node_tag_new($node);
   }
 
   return $block;
@@ -87,26 +85,15 @@ function ctools_node_comments_content_type_admin_title($subtype, $conf, $context
  * difficult to modify this.
  */
 function ctools_comment_render($node, $conf) {
-  $setting = node_sort_value($node->nid);
   $output = '';
   if (!user_access('access comments') || !$node->comment) {
     return;
   }
   $mode = $conf['mode'];
   $comments_per_page = $conf['comments_per_page'];
-  if (isset($conf['sort'])) {
-    $sort = $conf['sort'];
-  }
 
   $cids = comment_get_thread($node, $mode, $comments_per_page);
   $comments = comment_load_multiple($cids);
-  if (isset($setting) && $setting) {
-    if ($setting == 'new') {
-      $comments = array_reverse($comments , TRUE);
-    }
-  } else if (isset($sort) && $sort == 'DESC') {
-    $comments = array_reverse($comments , TRUE);
-  }
   if ($comments) {
     global $user;
     if (!in_array('comment reply manager', $user->roles) && module_exists("ziggeo_integration")) {
@@ -125,7 +112,10 @@ function ctools_comment_render($node, $conf) {
     drupal_add_css(drupal_get_path('module', 'comment') . '/comment.css');
     comment_prepare_thread($comments);
     $build = comment_view_multiple($comments, $node);
+
+    global $pager_page_array;
     $build['pager']['#theme'] = 'pager';
+    $build['pager']['#element'] = max(array_keys($pager_page_array));
     return drupal_render($build);
   }
   return;
