@@ -49,7 +49,8 @@ function impetus_panes_section_dropdown_custom_pane_render($subtype, $conf, $arg
       ->condition('menu_name' , 'og-menu-single' , '=')
       ->condition('plid' , 0 ,'=')
       ->condition('hidden', 0)
-      ->condition('link_path' , 'node/' . $menu_item['nid']);
+      ->condition('link_path' , 'node/' . $menu_item['nid'])
+      ->groupBy('link_path');
     $result = $menu->execute();
     while ($men = $result->fetchAssoc()) {
       $men['nid'] = $menu_item['nid'];
