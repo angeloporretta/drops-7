@@ -73,7 +73,19 @@ function menuperformance_form_node_form_alter(&$form, &$form_state) {
     $type = $form['#node']->type;
     $enabled_value = _get_menu_links_settings($form['nid']['#value']);
     if ($enabled_value == -1) {
-      $enabled_value = 0;
+      $menu_setting = db_select('menu_links', 'm')
+        ->fields('m')
+        ->condition('link_path', 'node/' . $form['nid']['#value'])
+        ->condition('menu_name', 'og-menu-single')
+        ->execute()
+        ->fetchAssoc();
+        if ($menu_setting['hidden'] == 0) {
+          $enabled = 1;
+        } else {
+          $enabled = 0;
+        }
+    } else {
+      $enabled = $enabled_value['enabled'];
     }
     $options = array();
 
@@ -94,7 +106,7 @@ function menuperformance_form_node_form_alter(&$form, &$form_state) {
     $form['menu']['enabled'] = array(
       '#type' => 'checkbox',
       '#title' => t('Provide a menu link'),
-      '#default_value' => $enabled_value,
+      '#default_value' => $enabled,
     );
     $form['menu']['link'] = array(
       '#type' => 'container',
