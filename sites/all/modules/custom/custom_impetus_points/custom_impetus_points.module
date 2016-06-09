@@ -74,9 +74,11 @@ function add_webform_points($form, $form_state) {
     'uid' => $user->uid,
     'points' => $points,
   );
-  foreach($categories as $tid => $category) {
-    $params['tid'] = $tid;
-    userpoints_userpointsapi($params);
+  if (!empty($categories)) {
+    foreach($categories as $tid => $category) {
+      $params['tid'] = $tid;
+      userpoints_userpointsapi($params);
+    }
   }
 }
 

@@ -2828,9 +2828,11 @@ function _webform_client_form_validate(&$elements, &$form_state, $form_id = NULL
         if ($key == $form_key) {
           $elements['#value'] = $items;
         } else {
-          foreach($items as $key_1 => $value_1) {
-            if ($key_1 == $form_key) {
-              $elements['#value'] = $value_1;
+          if (!empty($items)) {
+            foreach($items as $key_1 => $value_1) {
+              if ($key_1 == $form_key) {
+                $elements['#value'] = $value_1;
+              }
             }
           }
         }
